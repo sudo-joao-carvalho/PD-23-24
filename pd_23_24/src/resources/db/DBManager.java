@@ -7,7 +7,8 @@ public class DBManager {
     private Connection conn;
 
     public DBManager() throws SQLException {
-        this.conn = DriverManager.getConnection("jdbc:sqlite:pd_23_24/src/resources/db/PD-2023-24-TP.db");
+
+        this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
     }
 
     public boolean connectToDB(String directory, int port) {
@@ -69,6 +70,12 @@ public class DBManager {
         }
 
         return true;
+    }
+
+    public void close() throws SQLException
+    {
+        if (conn != null)
+            conn.close();
     }
 
     public String listAllUsers(int id) throws SQLException {
