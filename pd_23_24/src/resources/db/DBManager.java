@@ -7,7 +7,6 @@ public class DBManager {
     private Connection conn;
 
     public DBManager() throws SQLException {
-
         this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
     }
 
@@ -23,7 +22,7 @@ public class DBManager {
             return true;
         }
 
-        File file = new File("pd_23_24/src/resources/db/PD-2023-24-TP.db");
+        File file = new File("src/resources/db/PD-2023-24-TP.db");
 
         FileInputStream fis;
 
@@ -99,7 +98,7 @@ public class DBManager {
             int autenticado = resultSet.getInt("Autenticado");
 
             str.append(id).append("\t").append(username).append("\t").append(nome);
-            str.append("\t").append(administrador).append("\t").append(autenticado).append("\n");
+            str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\n");
         }
 
         resultSet.close();

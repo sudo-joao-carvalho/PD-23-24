@@ -10,6 +10,10 @@ public class ResourceManager {
         this.dbManager = new DBManager();
     }
 
+    public String listUsers(Integer userId) throws SQLException {
+        return this.dbManager.listAllUsers(userId);
+    }
+
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente
