@@ -77,10 +77,10 @@ public class DBManager {
             conn.close();
     }
 
-    public String listAllUsers(int id) throws SQLException {
+    public String listAllUsers(Integer id) throws SQLException {
         Statement statement = conn.createStatement();
 
-        String sqlQuery = "SELECT Id, Nome, Admin, Autenticado, Email, Password FROM utilizador";
+        String sqlQuery = "SELECT Id, Nome, Admin, Autenticado, Email, Password, NIF FROM utilizador";
 
         if (id != -1)
             sqlQuery += " WHERE Id like '%" + id + "%'";
@@ -88,7 +88,7 @@ public class DBManager {
         ResultSet resultSet = statement.executeQuery(sqlQuery);
 
         StringBuilder str = new StringBuilder();
-        str.append("ID\tUsername\tNome\tAdministrador\tAutenticado\n");
+        str.append("ID\tUsername\tNome\tAdministrador\tAutenticado\tPassword\tEmail\t\t\t\t\tNIF\t\n");
 
         while(resultSet.next()){
             int Id = resultSet.getInt("Id");
@@ -96,9 +96,13 @@ public class DBManager {
             String nome = resultSet.getString("nome");
             int administrador = resultSet.getInt("Admin");
             int autenticado = resultSet.getInt("Autenticado");
+            String email = resultSet.getString("Email");
+            String password = resultSet.getString("Password");
+            int nif = resultSet.getInt("NIF");
+
 
             str.append(id).append("\t").append(username).append("\t").append(nome);
-            str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\n");
+            str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\t\t").append(password).append("\t\t").append(email).append("\t\t").append(nif).append("\n");
         }
 
         resultSet.close();
