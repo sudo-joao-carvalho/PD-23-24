@@ -87,28 +87,30 @@ public class ClientUI {
         userParams.add(email);
         userParams.add(Integer.toString(nif)); //nao esquecer que depois a ler tem que se fazer parse int
         userParams.add(password);
+        userParams.add("0"); //autenticado
+        userParams.add("0"); //admin
 
         //teste
-        ResourceManager resourceManager = new ResourceManager();
+        /*ResourceManager resourceManager = new ResourceManager();
         Data data = new Data(resourceManager);
 
         //mock add
         userParams.add("0");
         userParams.add("0");
 
-        data.insertUser(userParams);
-        //Send information to server
-        /*this.client.createDBHelper("INSERT","user" , userParams, -1 ,null);
+        data.insertUser(userParams);*/
 
-        if(client.waitToReceiveResultRequest().equals("false")){
+        //Send information to server -> depois disto o processo continua no server
+        this.client.createDBHelper("INSERT","user" , userParams, -1 /*,null*/);
+
+        /*if(client.waitToReceiveResultRequest().equals("false")){
             System.out.println("Could not create a new user! Try again!");
             return false;
-        }
+        }*/
 
         System.out.println("New user created! Welcome!");
-        return true;*/
-
         return true;
+
     }
 
     public void userMenu(){

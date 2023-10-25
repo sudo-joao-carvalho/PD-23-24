@@ -11,9 +11,13 @@ public class ResourceManager {
         this.dbManager = new DBManager();
     }
 
-    public String listUsers(Integer userId) throws SQLException {
-        return this.dbManager.listAllUsers(userId);
+    public boolean connectToDB(String DBDirectory, int port){
+        return this.dbManager.connectToDB(DBDirectory, port);
     }
+
+    /*public String listUsers(Integer userId) throws SQLException {
+        return this.dbManager.listAllUsers(userId);
+    }*/
 
     public boolean insertUser(ArrayList<String> userParameters){
         return this.dbManager.insertUser(userParameters);

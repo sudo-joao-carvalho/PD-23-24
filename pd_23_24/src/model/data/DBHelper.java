@@ -16,9 +16,12 @@ public class DBHelper implements Serializable {
     private boolean logout;
     private String username;
 
+    private boolean isRequestAlreadyProcessed;
+
 
     public DBHelper(){
         this.requestResult = new AtomicReference<>("");
+        this.isRequestAlreadyProcessed = false;
     }
 
 
@@ -44,5 +47,13 @@ public class DBHelper implements Serializable {
 
     public void setInsertParams(ArrayList<String> insertParams) {
         this.insertParams = insertParams;
+    }
+
+    public boolean isRequestAlreadyProcessed() {
+        return isRequestAlreadyProcessed;
+    }
+
+    public void setIsRequestAlreadyProcessed(boolean isRequestAlreadyProcessed) {
+        this.isRequestAlreadyProcessed = isRequestAlreadyProcessed;
     }
 }

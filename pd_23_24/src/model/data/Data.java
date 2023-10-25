@@ -12,9 +12,14 @@ public class Data {
         this.resourceManager = resourceManager;
     }
 
+    public boolean connectToDB(String DBDirectory, int port){
+        return this.resourceManager.connectToDB(DBDirectory, port);
+    }
+
     /*public int getVersion() {
         this.resourceManager.getVersion();
     }*/
+
     public boolean insertUser(ArrayList<String> parameters){
         return this.resourceManager.insertUser(parameters);
     }

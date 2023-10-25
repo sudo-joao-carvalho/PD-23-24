@@ -113,6 +113,7 @@ public class DBManager {
     }
 
     public boolean insertUser(ArrayList<String> userParameters){
+
         Statement statement = null;
         try{
             statement = conn.createStatement();

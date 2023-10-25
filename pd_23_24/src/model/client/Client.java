@@ -32,22 +32,23 @@ public class Client {
         this.serverPort = serverPort;
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> userParamsToInsert, int id/*, ArrayList<String> userLogin*/){
+        dbHelper = addDBHelper(queryOperation, sqlTable, userParamsToInsert, id /*, userLogin*/);
+    }
+
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> insertParams, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
             if (table.equals("UTILIZADORES")) {
-                insertParams.add("0");
-                insertParams.add("0");
+                //inseridos anteriormente na UI
+                //insertParams.add("0");
+                //insertParams.add("0");
                 insertUser(dbHelper, insertParams);
                 return dbHelper;
             }
         }
 
         return null;
-    }
-
-    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> userParamsToInsert, int id/*, ArrayList<String> userLogin*/){
-        dbHelper = addDBHelper(queryOperation, sqlTable, userParamsToInsert, id /*, userLogin*/);
     }
 
     public boolean insertUser(DBHelper dbHelper,ArrayList<String> parameters){
