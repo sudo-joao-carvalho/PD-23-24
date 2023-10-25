@@ -43,6 +43,7 @@ public class Server {
     private final Data data;
 
     private HandlerDB handlerDB;
+    private TCPHandler tcpHandler;
     private DBHelper dbHelper = null;
     private int serverPort;
 
@@ -60,7 +61,10 @@ public class Server {
         //dbHelper = new DBHelper();
         this.clients = new ArrayList<>();
 
-        this.handlerDB.start();
+        tcpHandler = new TCPHandler();
+        tcpHandler.start();
+
+        //this.handlerDB.start();
     }
 
 
@@ -216,23 +220,23 @@ public class Server {
                 int nBytes = is.read(msg);
                 String msgReceived = new String(msg, 0, nBytes);
 
-                if(msgReceived.equals("SERVER")){ // when server communicates with another server
-                    System.out.println("\nServer connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + serverPort);
-                    byte[] buffer = new byte[512];
-                    int readBytes = 0;
-                    FileInputStream fi = new FileInputStream(DBDirectory + "/PD-2022-23-TP-" + serverPort + ".db");
-
-                    do
-                    {
-                        readBytes = fi.read(buffer);
-                        if(readBytes == -1)
-                            break;
-                        os.write(buffer, 0, readBytes);
-                    }while(readBytes > 0);
-
-                    fi.close();
-                    socket.close();
-                }
+//                if(msgReceived.equals("SERVER")){ // when server communicates with another server
+//                    System.out.println("\nServer connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + serverPort);
+//                    byte[] buffer = new byte[512];
+//                    int readBytes = 0;
+//                    FileInputStream fi = new FileInputStream(DBDirectory + "/PD-2022-23-TP.db"/*"/PD-2022-23-TP-" + serverPort + ".db"*/);
+//
+//                    do
+//                    {
+//                        readBytes = fi.read(buffer);
+//                        if(readBytes == -1)
+//                            break;
+//                        os.write(buffer, 0, readBytes);
+//                    }while(readBytes > 0);
+//
+//                    fi.close();
+//                    socket.close();
+//                }
 
                 if(msgReceived.equals("CLIENT")){
                     System.out.println("\nClient connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());// when the server receives a new request from a client
