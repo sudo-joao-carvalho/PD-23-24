@@ -101,7 +101,7 @@ public class ClientUI {
         data.insertUser(userParams);*/
 
         //Send information to server -> depois disto o processo continua no server
-        this.client.createDBHelper("INSERT","user" , userParams, -1 /*,null*/);
+        this.client.createDBHelper("INSERT","utilizador" , userParams, -1 /*,null*/);
 
         /*if(client.waitToReceiveResultRequest().equals("false")){
             System.out.println("Could not create a new user! Try again!");

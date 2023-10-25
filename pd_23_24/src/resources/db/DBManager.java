@@ -113,6 +113,9 @@ public class DBManager {
     }
 
     public boolean insertUser(ArrayList<String> userParameters){
+        /*for (String userParameter : userParameters) {
+            System.out.println(userParameter);
+        }*/
 
         Statement statement = null;
         try{

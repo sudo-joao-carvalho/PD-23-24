@@ -70,8 +70,12 @@ public class Server {
             }else
                 System.out.println("Successfully connected to database");
 
+            System.out.println("ola0");
             if(!dbHelper.isRequestAlreadyProcessed())
-                data.insertUser(dbHelper.getInsertParams());
+                if(dbHelper.getOperation() != null)
+                    System.out.println("ola1");
+                    //data.insertUser(dbHelper.getInsertParams());
+                    //System.out.println(dbHelper.getInsertParams());
 
             dbHelper.setIsRequestAlreadyProcessed(true);
         }
