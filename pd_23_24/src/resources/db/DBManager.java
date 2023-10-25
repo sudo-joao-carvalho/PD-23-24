@@ -1,6 +1,7 @@
 package resources.db;
 import java.io.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DBManager {
     // aqui ficam as queries e a lógica toda das queries
@@ -110,6 +111,59 @@ public class DBManager {
 
         return str.toString();
     }
+
+    public boolean insertUser(ArrayList<String> userParameters){
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            return false;
+        }
+
+        int i = 0;
+        //Verificar se há algum com nome ou utilizador igual
+        String verificar = "SELECT Count(*) AS contador FROM utilizador WHERE lower(email)=lower('" + userParameters.get(0) + "') or lower(nome)=lower('" + userParameters.get(1)+"')";
+        try {
+            ResultSet resultSet = statement.executeQuery(verificar);
+
+            int contador = resultSet.getInt("contador");
+            if(contador != 0){
+                return false;
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        finally {
+            try{
+                statement.close();
+            }catch (SQLException e){
+
+            }
+        }
+
+
+        String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
+                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +
+                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i++) + "')";
+
+        try{
+            statement.executeUpdate(sqlQuery);
+            //saveQuery(sqlQuery);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }finally {
+            try{
+                statement.close();
+            }catch (SQLException e){
+
+            }
+        }
+        //updateVersion();
+        return true;
+    }
+
 
 }
 

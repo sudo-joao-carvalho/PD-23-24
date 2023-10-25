@@ -3,6 +3,7 @@ package resources;
 import resources.db.DBManager;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class ResourceManager {
     private DBManager dbManager;
@@ -12,6 +13,10 @@ public class ResourceManager {
 
     public String listUsers(Integer userId) throws SQLException {
         return this.dbManager.listAllUsers(userId);
+    }
+
+    public boolean insertUser(ArrayList<String> userParameters){
+        return this.dbManager.insertUser(userParameters);
     }
 
     // funções de BD (add, remove, consulta)

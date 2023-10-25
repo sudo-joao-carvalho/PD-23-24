@@ -2,6 +2,8 @@ package model.data;
 
 import resources.ResourceManager;
 
+import java.util.ArrayList;
+
 public class Data {
 
     private ResourceManager resourceManager;
@@ -13,4 +15,7 @@ public class Data {
     /*public int getVersion() {
         this.resourceManager.getVersion();
     }*/
+    public boolean insertUser(ArrayList<String> parameters){
+        return this.resourceManager.insertUser(parameters);
+    }
 }
