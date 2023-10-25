@@ -51,10 +51,10 @@ public class Client {
         return null;
     }
 
-    public boolean insertUser(DBHelper dbHelper,ArrayList<String> parameters){
+    public boolean insertUser(DBHelper dbHelper,ArrayList<String> userParameters){
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("UTILIZADOR");
-        dbHelper.setInsertParams(parameters);
+        dbHelper.setInsertParams(userParameters);
         return true;
     }
 }

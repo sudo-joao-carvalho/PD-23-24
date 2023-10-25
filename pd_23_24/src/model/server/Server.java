@@ -70,14 +70,25 @@ public class Server {
             }else
                 System.out.println("Successfully connected to database");
 
-            System.out.println("ola0");
+           /*System.out.println("ola0");
             if(!dbHelper.isRequestAlreadyProcessed())
-                if(dbHelper.getOperation() != null)
+                switch (dbHelper.getOperation()){
+                    case "INSERT" -> {
+                        switch (dbHelper.getTable()){
+                            case "UTILIZADOR" -> {
+                                data.insertUser(dbHelper.getInsertParams());
+                            }
+                        }
+
+                    }
+
+                }*/
+                /*if(dbHelper.getOperation() != null)
                     System.out.println("ola1");
                     //data.insertUser(dbHelper.getInsertParams());
-                    //System.out.println(dbHelper.getInsertParams());
+                    //System.out.println(dbHelper.getInsertParams());*/
 
-            dbHelper.setIsRequestAlreadyProcessed(true);
+            //dbHelper.setIsRequestAlreadyProcessed(true);
         }
     }
 
