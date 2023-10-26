@@ -50,18 +50,20 @@ public class Server {
     private int serverPort;
 
     private ArrayList<HandlerClient> clients;
-
+    private AtomicReference<Boolean> handleDB;
     public boolean isDbHelperReady = false;
 
     public Server(int port, String DBDirectory /*, Integer rmiPort*/) throws SQLException {
         this.serverPort = port;
         this.DBDirectory = DBDirectory;
 
+        this.handleDB = new AtomicReference<>(true);
+
         this.data = new Data(new ResourceManager());
 
         dbHelper = null;
         listDbHelper = new LinkedList<>();
-        
+
         this.clients = new ArrayList<>();
 
         tcpHandler = new TCPHandler();
@@ -116,6 +118,28 @@ public class Server {
                 isDbHelperReady = false;
                 dbHelper.setIsRequestAlreadyProcessed(true);
             }
+
+            //aqui tenho que fazer handleDB.set(false) no close do servidor
+            /*while(handleDB.get()){
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (listDbHelper.size() > 0 ){
+                    DBHelper dbHelper = listDbHelper.get(0);
+
+                    if(!dbHelper.isRequestAlreadyProcessed())
+                        if(dbHelper.getOperation() != null){
+                            data.insertUser(dbHelper.getInsertParams());
+                        }
+
+                    isDbHelperReady = false;
+                    dbHelper.setIsRequestAlreadyProcessed(true);
+                }
+            }*/
         }
     }
 
