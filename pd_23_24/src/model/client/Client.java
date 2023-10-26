@@ -9,6 +9,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 public class Client {
 
@@ -30,6 +31,8 @@ public class Client {
     public String serverIP;
     public int serverPort;
     public DBHelper dbHelper;
+
+    public boolean isDBHelperReady = false;
 
     ConnectToServer sTr;
 
@@ -132,14 +135,47 @@ public class Client {
 
         @Override
         public void run() {
-            try {
-                String n = "NEW REQUEST";
-                os.write(n.getBytes(), 0, n.length());
-
-                byte[] m = new byte[512];
-                int nBytes = is.read(m);
-            } catch (IOException e) {
+            //while(true){
+                //if(isDBHelperReady){
+            while (!isDBHelperReady) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
+                    try {
+                        String n = "NEW REQUEST";
+                        os.write(n.getBytes(), 0, n.length());
+
+                        byte[] m = new byte[512];
+                        int nBytes = is.read(m);
+                        //String msgReceived = new String(m, 0, nBytes);
+
+                        oos = new ObjectOutputStream(socketServer.getOutputStream());
+
+                        oos.writeObject(dbHelper);
+                        isDBHelperReady = false;
+                        /*if(msgReceived.equals("CONFIRMED")) {
+                            if (ois == null) {
+                                ois = new ObjectInputStream(socketServer.getInputStream());
+                            }
+
+                            if (oos == null) {
+                                oos = new ObjectOutputStream(socketServer.getOutputStream());
+                            }
+
+                            oos.writeObject(dbHelper);
+
+                        }*/
+                    } catch (IOException e) {
+
+                    }
+                //}
+
+            //}
+
         }
     }
 
@@ -155,6 +191,7 @@ public class Client {
                 //insertParams.add("0");
                 //insertParams.add("0");
                 insertUser(dbHelper, insertParams);
+                isDBHelperReady = true;
                 return dbHelper;
             }
         }

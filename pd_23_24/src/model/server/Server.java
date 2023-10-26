@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Server {
@@ -45,9 +46,12 @@ public class Server {
     private HandlerDB handlerDB;
     private TCPHandler tcpHandler;
     private DBHelper dbHelper = null;
+    private LinkedList<DBHelper> listDbHelper;
     private int serverPort;
 
     private ArrayList<HandlerClient> clients;
+
+    public boolean isDbHelperReady = false;
 
     public Server(int port, String DBDirectory /*, Integer rmiPort*/) throws SQLException {
         this.serverPort = port;
@@ -55,7 +59,8 @@ public class Server {
 
         this.data = new Data(new ResourceManager());
 
-        handlerDB = new HandlerDB();
+        dbHelper = null;
+        listDbHelper = new LinkedList<>();
 
         //isto nao vai ser feito aqui deve ser feito quando um novo cliente é criado e ele tera o seu proprio dbhelper
         //dbHelper = new DBHelper();
@@ -64,7 +69,8 @@ public class Server {
         tcpHandler = new TCPHandler();
         tcpHandler.start();
 
-        //this.handlerDB.start();
+        handlerDB = new HandlerDB();
+        this.handlerDB.start();
     }
 
 
@@ -80,7 +86,6 @@ public class Server {
             }else
                 System.out.println("Successfully connected to database");
 
-            System.out.println("ola0");
             /*if(!dbHelper.isRequestAlreadyProcessed())
                 switch (dbHelper.getOperation()){
                     case "INSERT" -> {
@@ -95,28 +100,30 @@ public class Server {
                 }*/
             ;
 
-            while(true){
+            while(!isDbHelperReady)
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+            if (listDbHelper.size() > 0 ){
+                DBHelper dbHelper = listDbHelper.get(0);
+
                 if(!dbHelper.isRequestAlreadyProcessed())
                     if(dbHelper.getOperation() != null){
                         data.insertUser(dbHelper.getInsertParams());
-                        //System.out.println("ola1");
                     }
 
+                isDbHelperReady = false;
                 dbHelper.setIsRequestAlreadyProcessed(true);
             }
-
-
-                    //data.insertUser(dbHelper.getInsertParams());
-                    //System.out.println(dbHelper.getInsertParams());*/
-
-            //dbHelper.setIsRequestAlreadyProcessed(true);
         }
     }
 
     class HandlerClient extends Thread{
 
         private Socket clientSocket;
-        //private AtomicReference<Boolean> handle;
         private OutputStream os;
         private InputStream is;
         private ObjectOutputStream oos;
@@ -139,16 +146,13 @@ public class Server {
                 try {
                     byte[] msg = new byte[1024];
                     int nBytes = is.read(msg);
-                    String msgReceived = new String(msg, 0, nBytes);
+                    //String msgReceived = new String(msg, 0, nBytes);
 
                     /*if(!msgReceived.equals("NEW REQUEST")){
                         continue;
                     }*/
 
                     System.out.println("\nServer received a new request from Client with\n\tIP:" + clientSocket.getInetAddress().getHostAddress()+"\tPort: " + clientSocket.getPort());
-
-                    //String s = prepare.get() ? "SERVER IS UPDATING - PLEASE TRY AGAIN" : "CONFIRMED";
-                   // os.write(s.getBytes(), 0, s.length());
 
                     /*if(prepare.get()){
                         throw new IOException();
@@ -167,17 +171,13 @@ public class Server {
                     this.dbHelper = null;
                     try{
                         this.dbHelper = (DBHelper) ois.readObject();
-                        /*if(dbHelper.isLogout()){
-                            for(TicketLineClientRemoteInterface ref : logoutListener){
-                                ref.logoutListener(dbHelper.getUsername());
-                            }
-                            clients.remove(this);
-                            listClientHandles.remove(this.handle);
-                            heartBeat.setNumberOfConnections(clients.size());
-                            return;
-                        }*/
+                        //System.out.println(dbHelper.getOperation());
 
-                        //listDbHelper.add(this.dbHelper);
+                        listDbHelper.add(this.dbHelper);
+
+                        /*String stringToSend = "CONFIRMED";
+                        os.write(stringToSend.getBytes(), 0, stringToSend.length());*/
+                        isDbHelperReady = true;
                     }catch (ClassNotFoundException  e){
                         e.printStackTrace();
                     }
