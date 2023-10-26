@@ -61,9 +61,7 @@ public class Server {
 
         dbHelper = null;
         listDbHelper = new LinkedList<>();
-
-        //isto nao vai ser feito aqui deve ser feito quando um novo cliente é criado e ele tera o seu proprio dbhelper
-        //dbHelper = new DBHelper();
+        
         this.clients = new ArrayList<>();
 
         tcpHandler = new TCPHandler();
