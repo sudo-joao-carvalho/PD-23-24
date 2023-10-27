@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Client {
 
@@ -34,6 +35,10 @@ public class Client {
 
     public boolean isDBHelperReady = false;
 
+    public boolean clientConnected = false;
+
+    public AtomicReference<String> requestResult;
+
     ConnectToServer sTr;
 
     public Client(String serverIP, int serverPort) throws IOException{
@@ -41,6 +46,7 @@ public class Client {
         this.serverPort = serverPort;
 
         //clientInit();
+        requestResult = new AtomicReference<>("");
 
         connectToServer(); //pelo TCP
     }
@@ -90,6 +96,14 @@ public class Client {
 //        return true;
 //    }
 
+    public String waitToReceiveResultRequest(){
+        while(true){
+            if(!requestResult.get().equals("")){
+                return requestResult.get();
+            }
+        }
+    }
+
     public void connectToServer(){
         Socket socketSr;
         OutputStream os = null;
@@ -100,6 +114,7 @@ public class Client {
             //String[] s = sv.split("-");
             try {
                 socketSr = new Socket(serverIP, serverPort);
+
                 os = socketSr.getOutputStream();
                 is = socketSr.getInputStream();
 
@@ -125,6 +140,8 @@ public class Client {
         private ObjectOutputStream oos;
         private ObjectInputStream ois;
 
+        private boolean clientConnected;
+
         public ConnectToServer(Socket socketServer, OutputStream os, InputStream is){
             this.socketServer = socketServer;
             this.is = is;
@@ -149,28 +166,43 @@ public class Client {
                         String n = "NEW REQUEST";
                         os.write(n.getBytes(), 0, n.length());
 
-                        byte[] m = new byte[512];
-                        int nBytes = is.read(m);
-                        //String msgReceived = new String(m, 0, nBytes);
+                        /*byte[] bArray = new byte[1024];
+                        int nBytes = is.read(bArray);
+                        String msgReceived = new String(bArray, 0, nBytes);*/
 
                         oos = new ObjectOutputStream(socketServer.getOutputStream());
 
                         oos.writeObject(dbHelper);
                         isDBHelperReady = false;
-                        /*if(msgReceived.equals("CONFIRMED")) {
-                            if (ois == null) {
+                        
+                        BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
+                        String msgReceived = bufferedReaderIn.readLine();
+
+                        System.out.println(msgReceived.length());
+
+                        System.out.println(msgReceived);
+
+
+                        if(msgReceived.contains("NEW")) {
+
+                            requestResult.set("true");
+                            System.out.println("entrei");
+                            //clientConnected = true;
+                            /*if (ois == null) {
                                 ois = new ObjectInputStream(socketServer.getInputStream());
                             }
 
                             if (oos == null) {
                                 oos = new ObjectOutputStream(socketServer.getOutputStream());
-                            }
+                            }*/
 
-                            oos.writeObject(dbHelper);
+                        }else if(msgReceived.contains("EXISTS")){
+                            requestResult.set("false");
+                            //clientConnected = false;
+                        }
 
-                        }*/
                     } catch (IOException e) {
-
+                        e.printStackTrace();
                     }
                 //}
 
@@ -199,7 +231,7 @@ public class Client {
         return null;
     }
 
-    public boolean insertUser(DBHelper dbHelper,ArrayList<String> userParameters){
+    public boolean insertUser(DBHelper dbHelper, ArrayList<String> userParameters){
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("utilizador");
         dbHelper.setInsertParams(userParameters);

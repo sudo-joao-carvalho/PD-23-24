@@ -113,9 +113,6 @@ public class DBManager {
     }
 
     public boolean insertUser(ArrayList<String> userParameters){
-        /*for (String userParameter : userParameters) {
-            System.out.println(userParameter);
-        }*/
 
         Statement statement = null;
         try{
@@ -124,28 +121,33 @@ public class DBManager {
             return false;
         }
 
-        int i = 0;
-        //Verificar se há algum com nome ou utilizador igual
-        String verificar = "SELECT Count(*) AS contador FROM utilizador WHERE lower(email)=lower('" + userParameters.get(0) + "') or lower(nome)=lower('" + userParameters.get(1)+"')";
+
+        boolean existeRegistro = false;
+
+        // Verificar se há algum com nome ou utilizador igual
+        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            int contador = resultSet.getInt("contador");
-            if(contador != 0){
-                return false;
-            }
-
-        }catch (SQLException e){
+            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+            existeRegistro = resultSet.next();
+        } catch (SQLException e) {
             e.printStackTrace();
-        }
-        finally {
-            try{
+            return false;
+        } finally {
+            try {
                 statement.close();
-            }catch (SQLException e){
-
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
             }
         }
 
+        if (existeRegistro) {
+            // Já existe um registro com nome ou utilizador igual, então retornamos false.
+            return false;
+        }
+
+        int i = 0;
 
         String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
                 userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +

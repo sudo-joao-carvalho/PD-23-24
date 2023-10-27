@@ -24,14 +24,7 @@ public class ClientUI {
                 return login();
             }
             case 2 ->{
-                //return register();
-                    try{
-                        register();
-                    }catch(SQLException e){
-                        e.printStackTrace();
-                    }
-
-                return true;
+                return register();
             }
             default -> {
                 return false;
@@ -74,7 +67,7 @@ public class ClientUI {
         return true;
     }
 
-    public boolean register() throws SQLException {
+    public boolean register() {
 
         String nome = InputProtection.readString("\tNome: ", false);
         String email = InputProtection.readString("\tEmail: ", true);
@@ -102,14 +95,15 @@ public class ClientUI {
 
         //Send information to server -> depois disto o processo continua no server
         this.client.createDBHelper("INSERT","utilizador" , userParams, -1 /*,null*/);
-        //this.client.isDBHelperReady = true;
-        /*if(client.waitToReceiveResultRequest().equals("false")){
+
+        if(client.waitToReceiveResultRequest().equals("false")){
             System.out.println("Could not create a new user! Try again!");
             return false;
-        }*/
-        System.out.println("New user created! Welcome!");
-        return true;
+        }
 
+        System.out.println("New user created! Welcome!");
+
+        return true;
     }
 
     public void userMenu(){
@@ -133,6 +127,7 @@ public class ClientUI {
 
         if(!loginRegister()){
             System.out.println("Could not login");
+            loginRegister();
             return;
         }
 
