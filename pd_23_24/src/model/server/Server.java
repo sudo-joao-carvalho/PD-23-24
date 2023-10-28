@@ -237,6 +237,7 @@ public class Server {
                             System.out.println("3");
                         }
 
+                        listDbHelper.add(this.dbHelper);
                     }catch (ClassNotFoundException  e){
                         e.printStackTrace();
                     }
