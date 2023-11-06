@@ -23,4 +23,6 @@ public class Data {
     public boolean insertUser(ArrayList<String> parameters){
         return this.resourceManager.insertUser(parameters);
     }
+
+    public int insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
 }

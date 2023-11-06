@@ -1,9 +1,11 @@
 package model.client;
 
 import model.data.DBHelper;
+import org.sqlite.core.DB;
 import ui.ClientUI;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -37,6 +39,8 @@ public class Client {
 
     public boolean clientConnected = false;
 
+    private boolean admin = false;
+
     public AtomicReference<String> requestResult;
 
     ConnectToServer sTr;
@@ -44,7 +48,6 @@ public class Client {
     public Client(String serverIP, int serverPort) throws IOException{
         this.serverIP = serverIP;
         this.serverPort = serverPort;
-
         //clientInit();
         requestResult = new AtomicReference<>("");
 
@@ -104,6 +107,8 @@ public class Client {
         }
     }
 
+
+
     public void connectToServer(){
         Socket socketSr;
         OutputStream os = null;
@@ -152,67 +157,73 @@ public class Client {
 
         @Override
         public void run() {
-            //while(true){
+            while(true){
                 //if(isDBHelperReady){
-            while (!isDBHelperReady) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
+                while (!isDBHelperReady) {
                     try {
-                        String n = "NEW REQUEST";
-                        os.write(n.getBytes(), 0, n.length());
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
 
-                        /*byte[] bArray = new byte[1024];
-                        int nBytes = is.read(bArray);
-                        String msgReceived = new String(bArray, 0, nBytes);*/
+                try {
+                    String n = "NEW REQUEST";
+                    os.write(n.getBytes(), 0, n.length());
 
-                        oos = new ObjectOutputStream(socketServer.getOutputStream());
+                    /*byte[] bArray = new byte[1024];
+                    int nBytes = is.read(bArray);
+                    String msgReceived = new String(bArray, 0, nBytes);*/
 
-                        oos.writeObject(dbHelper);
-                        isDBHelperReady = false;
-                        
-                        BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
-                        String msgReceived = bufferedReaderIn.readLine();
+                    oos = new ObjectOutputStream(socketServer.getOutputStream());
 
-                        System.out.println(msgReceived.length());
+                    oos.writeObject(dbHelper);
+                    isDBHelperReady = false;
 
-                        System.out.println(msgReceived);
+                    BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
+                    String msgReceived = bufferedReaderIn.readLine();
+
+                    System.out.println(msgReceived.length());
+
+                    System.out.println(msgReceived);
 
 
-                        if(msgReceived.contains("NEW")) {
+                    if(msgReceived.contains("NEW")) {
 
-                            requestResult.set("true");
-                            System.out.println("entrei");
-                            //clientConnected = true;
-                            /*if (ois == null) {
-                                ois = new ObjectInputStream(socketServer.getInputStream());
-                            }
-
-                            if (oos == null) {
-                                oos = new ObjectOutputStream(socketServer.getOutputStream());
-                            }*/
-
-                        }else if(msgReceived.contains("EXISTS")){
-                            requestResult.set("false");
-                            //clientConnected = false;
+                        requestResult.set("true");
+                        System.out.println("entrei");
+                        //clientConnected = true;
+                        /*if (ois == null) {
+                            ois = new ObjectInputStream(socketServer.getInputStream());
                         }
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                //}
+                        if (oos == null) {
+                            oos = new ObjectOutputStream(socketServer.getOutputStream());
+                        }*/
 
-            //}
+                    }else if(msgReceived.contains("EXISTS")){
+                        requestResult.set("false");
+                        //clientConnected = false;
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //}
+            }
 
         }
     }
 
-    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> userParamsToInsert, int id/*, ArrayList<String> userLogin*/){
-        dbHelper = addDBHelper(queryOperation, sqlTable, userParamsToInsert, id /*, userLogin*/);
+    // gets e sets
+    public boolean getIsAdmin() {
+        return admin;
+    }
+
+    // funções de DBHelper
+
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> paramsToInsert, int id/*, ArrayList<String> userLogin*/){
+        dbHelper = addDBHelper(queryOperation, sqlTable, paramsToInsert, id /*, userLogin*/);
     }
 
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> insertParams, int id /*, ArrayList<String> userLogin*/) {
@@ -226,6 +237,11 @@ public class Client {
                 isDBHelperReady = true;
                 return dbHelper;
             }
+            if (table.equals("evento")) {
+                insertEvento(dbHelper, insertParams);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
         return null;
@@ -235,6 +251,13 @@ public class Client {
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("utilizador");
         dbHelper.setInsertParams(userParameters);
+        return true;
+    }
+
+    public boolean insertEvento(DBHelper dbHelper, ArrayList<String> eventParams) {
+        dbHelper.setOperation("INSERT");
+        dbHelper.setTable("evento");
+        dbHelper.setInsertParams(eventParams);
         return true;
     }
 }

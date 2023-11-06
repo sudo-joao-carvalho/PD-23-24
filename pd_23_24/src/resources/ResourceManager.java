@@ -23,6 +23,10 @@ public class ResourceManager {
         return this.dbManager.insertUser(userParameters);
     }
 
+    public int insertEvent(ArrayList<String> params) {
+        return this.dbManager.insertEvent(params);
+    }
+
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente

@@ -68,15 +68,15 @@ public class Server {
 
 
     //TODO adaptar esta class para posteriormente lidar com os queries todos e operaçoes todas
-    class HandlerDB extends Thread{
+    class HandlerDB extends Thread {
 
         @Override
-        public void run(){
+        public void run() {
 
-            if(!data.connectToDB(DBDirectory, serverPort)){
+            if (!data.connectToDB(DBDirectory, serverPort)) {
                 System.out.println("Couldnt connect to database");
                 return;
-            }else
+            } else
                 System.out.println("Successfully connected to database");
 
             /*if(!dbHelper.isRequestAlreadyProcessed())
@@ -124,7 +124,7 @@ public class Server {
 
             System.out.println("4");
 
-            while(handleDB.get()){
+            while (handleDB.get()) {
 
                 try {
                     Thread.sleep(100);
@@ -132,28 +132,55 @@ public class Server {
                     throw new RuntimeException(e);
                 }
 
-                if (listDbHelper.size() > 0 ){
+                if (listDbHelper.size() > 0) {
                     DBHelper dbHelper = listDbHelper.get(0);
 
-                    if(!dbHelper.isRequestAlreadyProcessed())
-                        if(dbHelper.getOperation() != null){
-                            if(!data.insertUser(dbHelper.getInsertParams())){
-                                System.out.println("5");
-                                handleUserExists.set(true);
+                    if (!dbHelper.isRequestAlreadyProcessed())
+                        switch (dbHelper.getOperation()) {
+                            case "INSERT" -> {
+                                switch (dbHelper.getTable()) {
+                                    case "utilizador" -> {
+                                        if (!data.insertUser(dbHelper.getInsertParams())) {
+                                            System.out.println("5");
+                                            handleUserExists.set(true);
 
-                                synchronized (lock) {
-                                    lock.notify();
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        } else {
+                                            System.out.println("4");
+                                            handleUserExists.set(false);
+                                            isDbHelperReady = false;
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }
+                                    }
+                                    case "evento" -> {
+                                        System.out.println("Olá do evento");
+                                        if (data.insertEvent(dbHelper.getInsertParams()) == -1) {
+                                            System.out.println("Erro INSERT EVENT\n");
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }
+                                        else {
+                                            System.out.println("Deu bucela");
+                                        }
+                                    }
+                                    case "Presenca" -> {
+
+                                    }
                                 }
                             }
-                            else{
-                                System.out.println("4");
-                                handleUserExists.set(false);
-                                isDbHelperReady = false;
-                                dbHelper.setIsRequestAlreadyProcessed(true);
+                            case "SELECT" -> {
 
-                                synchronized (lock) {
-                                    lock.notify();
-                                }
+                            }
+                            default -> {
+                                System.out.println("Erro!\n");
                             }
                         }
                 }
@@ -161,7 +188,7 @@ public class Server {
         }
     }
 
-    class HandlerClient extends Thread{
+    class HandlerClient extends Thread {
 
         private Socket clientSocket;
         private OutputStream os;
@@ -171,7 +198,7 @@ public class Server {
         private DBHelper dbHelper;
 
         public HandlerClient(Socket clientSocket/*, AtomicReference<Boolean> handle*/,
-                             OutputStream os, InputStream is){
+                             OutputStream os, InputStream is) {
             this.clientSocket = clientSocket;
             //this.handle = handle;
             this.os = os;
@@ -182,28 +209,29 @@ public class Server {
         }
 
         @Override
-        public void run(){
+        public void run() {
+            while(true) {
                 try {
                     byte[] msg = new byte[1024];
                     int nBytes = is.read(msg);
                     String msgReceived = new String(msg, 0, nBytes);
 
-                    if(msgReceived.equals("NEW REQUEST")){
+                    if (msgReceived.equals("NEW REQUEST")) {
                         //continue;
-                        System.out.println("\nServer received a new request from Client with\n\tIP:" + clientSocket.getInetAddress().getHostAddress()+"\tPort: " + clientSocket.getPort());
+                        System.out.println("\nServer received a new request from Client with\n\tIP:" + clientSocket.getInetAddress().getHostAddress() + "\tPort: " + clientSocket.getPort());
                     }
 
-                    if(oos == null){
+                    if (oos == null) {
                         oos = new ObjectOutputStream(clientSocket.getOutputStream());
                     }
 
 
-                    if(ois == null){
+                    if (ois == null) {
                         ois = new ObjectInputStream(clientSocket.getInputStream());
                     }
 
                     this.dbHelper = null;
-                    try{
+                    try {
                         this.dbHelper = (DBHelper) ois.readObject();
 
                         listDbHelper.add(this.dbHelper);
@@ -221,35 +249,35 @@ public class Server {
 
                         handleDB.set(false);
 
-                        if(handleUserExists.get()){
+                        if (handleUserExists.get()) {
                             String stringToSend = "EXISTS\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                             //oos.write(stringToSend.getBytes(), 0, stringToSend.length());
                             System.out.println("2");
-                        }else{
+                        } else {
                             String stringToSend = "NEW\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                             //oos.write(stringToSend.getBytes(), 0, stringToSend.length());
+
+                            listDbHelper.add(this.dbHelper);
                             System.out.println("3");
                         }
-
-                        listDbHelper.add(this.dbHelper);
-                    }catch (ClassNotFoundException  e){
+                    } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
 
-                }catch (IOException e){
+                } catch (IOException e) {
                     clients.remove(this);
                 }
-
+            }
         }
     }
 
-    class TCPHandler extends Thread{
+    class TCPHandler extends Thread {
         @Override
         public void run() {
             ServerSocket serverSocket = null;
@@ -260,55 +288,55 @@ public class Server {
             }
             Socket socket = null;
 
-            try {
-                socket = serverSocket.accept();
-                InputStream is = socket.getInputStream();
-                OutputStream os = socket.getOutputStream();
+            while (true) {
+                try {
+                    socket = serverSocket.accept();
+                    InputStream is = socket.getInputStream();
+                    OutputStream os = socket.getOutputStream();
 
-                byte[] msg = new byte[1024];
-                int nBytes = is.read(msg);
-                String msgReceived = new String(msg, 0, nBytes);
+                    byte[] msg = new byte[1024];
+                    int nBytes = is.read(msg);
+                    String msgReceived = new String(msg, 0, nBytes);
 
-//                if(msgReceived.equals("SERVER")){ // when server communicates with another server
-//                    System.out.println("\nServer connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + serverPort);
-//                    byte[] buffer = new byte[512];
-//                    int readBytes = 0;
-//                    FileInputStream fi = new FileInputStream(DBDirectory + "/PD-2022-23-TP.db"/*"/PD-2022-23-TP-" + serverPort + ".db"*/);
-//
-//                    do
-//                    {
-//                        readBytes = fi.read(buffer);
-//                        if(readBytes == -1)
-//                            break;
-//                        os.write(buffer, 0, readBytes);
-//                    }while(readBytes > 0);
-//
-//                    fi.close();
-//                    socket.close();
-//                }
+                    //                if(msgReceived.equals("SERVER")){ // when server communicates with another server
+                    //                    System.out.println("\nServer connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + serverPort);
+                    //                    byte[] buffer = new byte[512];
+                    //                    int readBytes = 0;
+                    //                    FileInputStream fi = new FileInputStream(DBDirectory + "/PD-2022-23-TP.db"/*"/PD-2022-23-TP-" + serverPort + ".db"*/);
+                    //
+                    //                    do
+                    //                    {
+                    //                        readBytes = fi.read(buffer);
+                    //                        if(readBytes == -1)
+                    //                            break;
+                    //                        os.write(buffer, 0, readBytes);
+                    //                    }while(readBytes > 0);
+                    //
+                    //                    fi.close();
+                    //                    socket.close();
+                    //                }
 
-                if(msgReceived.equals("CLIENT")){
-                    System.out.println("\nClient connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());// when the server receives a new request from a client
-                    //start a new thread to take care of the new client
+                    if (msgReceived.equals("CLIENT")) {
+                        System.out.println("\nClient connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());// when the server receives a new request from a client
+                        //start a new thread to take care of the new client
 
-                    HandlerClient c = new HandlerClient(socket/*, nHandle*/, os, is);
-                    c.start();
+                        HandlerClient c = new HandlerClient(socket/*, nHandle*/, os, is);
+                        c.start();
 
-                    clients.add(c);
+                        clients.add(c);
+                    }
 
+                } catch (IOException e) {
+                    break;
                 }
 
-            } catch (IOException e) {
-                //break;
             }
-
 
             try {
                 serverSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
 

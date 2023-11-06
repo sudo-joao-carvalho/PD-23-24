@@ -34,9 +34,20 @@ public class ClientUI {
 
     public boolean login(){
 
-        String email, password;
-        System.out.println();
-        System.out.println("LOGIN");
+        String email = InputProtection.readString("\tEmail: ", true);
+        String password = InputProtection.readString("\tPassword: ", true);
+
+
+        ArrayList<String> userParams = new ArrayList<>();
+        userParams.add(email);
+        userParams.add(password);
+
+        if (client.getIsAdmin()) {
+            userParams.add("0"); //autenticado
+            userParams.add("0"); //admin
+
+            this.client.insertEvento(this.client.dbHelper, userParams);
+        }
 
         //do{
             email = InputProtection.readString("\tEmail: ", true);
@@ -63,6 +74,32 @@ public class ClientUI {
             client.setClientID(Integer.parseInt(id[1]));
             return true;*/
         //}while(true);
+
+        return true;
+    }
+
+    public boolean addEvent() {
+        String nome = InputProtection.readString("\tNome: ", false);
+        String local = InputProtection.readString("\tLocal: ", true);
+        String dia = InputProtection.readString("\tDia: ", true);
+        String mes = InputProtection.readString("\tMês: ", true);
+        String ano = InputProtection.readString("\tAno: ", true);
+        String horaInicio = InputProtection.readString("Hora início (apenas hora): ", true);
+        String minutoInicio = InputProtection.readString("Minuto da hora início (apenas minutos): ", true);
+        String horaFim = InputProtection.readString("Hora fim (apenas hora): ", true);
+        String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true);
+
+        ArrayList<String> eventParams = new ArrayList<>();
+        eventParams.add(null);
+        eventParams.add(local);
+        eventParams.add(nome);
+        eventParams.add(dia + '/' + mes + '/' + ano); // para transformar em xx/yy/zz
+        eventParams.add(horaInicio + ':' + minutoInicio);
+        eventParams.add(horaFim + ':' + minutoFim);
+
+        this.client.createDBHelper("INSERT", "evento", eventParams, -1);
+
+        System.out.println("New event created!\n");
 
         return true;
     }
@@ -111,14 +148,18 @@ public class ClientUI {
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "Exit");
 
             switch (input){
-                /*case 1 -> listEvents();
+                case 1 -> {
+                    System.out.println("XOTA"); // LISTAR EVENT
+                }
+                case 2 -> {
+                    addEvent(); // ADD EVENT
+                }
                 case 5 -> {
-                    client.closeClient();
                     return;
-                }*/
+                }
             }
         }
     }
