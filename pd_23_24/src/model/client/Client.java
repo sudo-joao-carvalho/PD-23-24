@@ -34,15 +34,11 @@ public class Client {
     public String serverIP;
     public int serverPort;
     public DBHelper dbHelper;
-
     public boolean isDBHelperReady = false;
-
-    public boolean clientConnected = false;
-
     private boolean admin = false;
-
     public AtomicReference<String> requestResult;
 
+    private String username;
     ConnectToServer sTr;
 
     public Client(String serverIP, int serverPort) throws IOException{
@@ -120,6 +116,7 @@ public class Client {
             try {
                 socketSr = new Socket(serverIP, serverPort);
 
+                socketSr.setSoTimeout(1000);
                 os = socketSr.getOutputStream();
                 is = socketSr.getInputStream();
 
@@ -183,9 +180,9 @@ public class Client {
                     BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
                     String msgReceived = bufferedReaderIn.readLine();
 
-                    System.out.println(msgReceived.length());
+                    //System.out.println(msgReceived.length());
 
-                    System.out.println(msgReceived);
+                    //System.out.println(msgReceived);
 
 
                     if(msgReceived.contains("NEW")) {
@@ -204,11 +201,14 @@ public class Client {
                     }else if(msgReceived.contains("EXISTS")){
                         requestResult.set("false");
                         //clientConnected = false;
-                    } else if (msgReceived.contains("USER EXISTS")) {
+                    }else if(msgReceived.contains("USER FOUND")) {
                         requestResult.set("User exists");
-                    }else if(msgReceived.contains("USER DOESNT EXISTS")){
+                    }else if(msgReceived.contains("USER NOT FOUND")){
                         requestResult.set("User doesnt exist");
-
+                    }else if(msgReceived.contains("EVENT CREATED")){
+                        requestResult.set("Event created");
+                    }else if(msgReceived.contains("EVENT NOT CREATED")){
+                        requestResult.set("Event not created");
                     }
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
@@ -278,6 +278,19 @@ public class Client {
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("utilizador");
         dbHelper.setParams(loginParams);
+        this.username = loginParams.get(0);
         return true;
+    }
+
+    /*public int getClientID() {
+        return clientID;
+    }
+
+    public void setClientID(int clientID) {
+        this.clientID = clientID;
+    }*/
+
+    public String getUsername() {
+        return username;
     }
 }

@@ -55,8 +55,6 @@ public class ClientUI {
 
             String outputFromRequestResult = client.waitToReceiveResultRequest();
 
-            //System.out.println(outputFromRequestResult);
-
             if(outputFromRequestResult.equals("User doesnt exist")){
                 System.out.println(outputFromRequestResult);
                 return false;
@@ -67,9 +65,9 @@ public class ClientUI {
             if(outputFromRequestResult.contains("\nAdmin:1"))
                 admin = 1;
 
-        /*out = out.replaceAll(" ", "");
-        String[] splitted = out.split("\n");
-        String[] id = splitted[0].split(":");*/
+            /*out = out.replaceAll(" ", "");
+            String[] splitted = out.split("\n");
+            String[] id = splitted[0].split(":");*/
 
             //client.setClientID(Integer.parseInt(id[1]));
             //return true;
@@ -110,6 +108,11 @@ public class ClientUI {
         eventParams.add(horaFim + ':' + minutoFim);
 
         this.client.createDBHelper("INSERT", "evento", eventParams, -1);
+
+        if(client.waitToReceiveResultRequest().equals("event not created")){
+            System.out.println("Could not create a new event");
+            return false;
+        }
 
         System.out.println("New event created!\n");
 

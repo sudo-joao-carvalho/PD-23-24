@@ -279,7 +279,7 @@ public class DBManager {
 
         boolean existeRegisto = false;
 
-        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "')";
+        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "') AND lower(password) = lower('" + params.get(1) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
