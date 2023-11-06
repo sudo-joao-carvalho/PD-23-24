@@ -29,6 +29,8 @@ public class ResourceManager {
 
     public boolean verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
 
+    public boolean editProfile(ArrayList<String> params, String email){return this.dbManager.editProfile(params, email);}
+
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente

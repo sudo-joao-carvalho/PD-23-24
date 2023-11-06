@@ -303,6 +303,95 @@ public class DBManager {
         return false;
     }
 
+    public boolean editProfile(ArrayList<String> params, String email){
+
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            return false;
+        }
+
+        if(params.get(0).equalsIgnoreCase("name")){
+            String newName = params.get(1);
+            String sqlQuery = "UPDATE utilizador SET Nome = '" + newName + "' WHERE lower(email) = lower('" + email + "')";
+
+            try{
+                statement.executeUpdate(sqlQuery);
+                //saveQuery(sqlQuery);
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }finally {
+                try{
+                    statement.close();
+                }catch (SQLException e){
+
+                }
+            }
+
+            return true;
+        }else if(params.get(0).equalsIgnoreCase("email")){
+            String newEmail = params.get(1);
+            String sqlQuery = "UPDATE utilizador SET Email = '" + newEmail + "' WHERE lower(email) = lower('" + email + "')";
+
+            try{
+                statement.executeUpdate(sqlQuery);
+                //saveQuery(sqlQuery);
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }finally {
+                try{
+                    statement.close();
+                }catch (SQLException e){
+
+                }
+            }
+
+            return true;
+        }else if(params.get(0).equalsIgnoreCase("password")){
+            String newPassword = params.get(1);
+            String sqlQuery = "UPDATE utilizador SET Password = '" + newPassword + "' WHERE lower(email) = lower('" + email + "')";
+
+            try{
+                statement.executeUpdate(sqlQuery);
+                //saveQuery(sqlQuery);
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }finally {
+                try{
+                    statement.close();
+                }catch (SQLException e){
+
+                }
+            }
+
+            return true;
+        }if(params.get(0).equalsIgnoreCase("nif")){
+            int newNif = Integer.parseInt(params.get(1));
+            String sqlQuery = "UPDATE utilizador SET nif = '" + newNif + "' WHERE lower(email) = lower('" + email + "')";
+
+            try{
+                statement.executeUpdate(sqlQuery);
+                //saveQuery(sqlQuery);
+            }catch (SQLException e){
+                e.printStackTrace();
+                return false;
+            }finally {
+                try{
+                    statement.close();
+                }catch (SQLException e){
+
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
 }
 

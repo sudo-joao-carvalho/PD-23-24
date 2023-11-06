@@ -38,7 +38,8 @@ public class Client {
     private boolean admin = false;
     public AtomicReference<String> requestResult;
 
-    private String username;
+    private String email;
+    private int clientID;
     ConnectToServer sTr;
 
     public Client(String serverIP, int serverPort) throws IOException{
@@ -209,6 +210,10 @@ public class Client {
                         requestResult.set("Event created");
                     }else if(msgReceived.contains("EVENT NOT CREATED")){
                         requestResult.set("Event not created");
+                    }else if(msgReceived.contains("UPDATE DONE")){
+                        requestResult.set("Update done");
+                    }else if(msgReceived.contains("UPDATE NOT DONE")){
+                        requestResult.set("Update failed");
                     }
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
@@ -233,28 +238,42 @@ public class Client {
         dbHelper = addDBHelper(queryOperation, sqlTable, params, id /*, userLogin*/);
     }
 
-    public DBHelper addDBHelper(String operation, String table, ArrayList<String> param, int id /*, ArrayList<String> userLogin*/) {
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, String email){
+        dbHelper = addDBHelper(queryOperation, sqlTable, params, email);
+    }
+
+    public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
             if (table.equals("utilizador")) {
-                //inseridos anteriormente na UI
-                //insertParams.add("0");
-                //insertParams.add("0");
-                insertUser(dbHelper, param);
+                insertUser(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
             }
             if (table.equals("evento")) {
-                insertEvento(dbHelper, param);
+                insertEvento(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
             }
         }
 
         if(operation.equals("SELECT")){
-            verifyLogin(dbHelper, param);
+            verifyLogin(dbHelper, params);
             isDBHelperReady = true;
             return dbHelper;
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, String email) {
+        DBHelper dbHelper = new DBHelper();
+        if (operation.equals("UPDATE")) {
+            if (table.equals("utilizador")) {
+                updateParamUser(dbHelper, params, email);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
         return null;
@@ -278,19 +297,26 @@ public class Client {
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("utilizador");
         dbHelper.setParams(loginParams);
-        this.username = loginParams.get(0);
+        this.email = loginParams.get(0);
         return true;
     }
 
-    /*public int getClientID() {
+    public boolean updateParamUser(DBHelper dbHelper, ArrayList<String> updateParams, String email){ // função para atualizar os detalhes do user (nif, email, nome)
+        dbHelper.setOperation("UPDATE");
+        dbHelper.setTable("utilizador");
+        dbHelper.setParams(updateParams);
+        dbHelper.setEmail(email);
+        return true;
+    }
+    public int getClientID() {
         return clientID;
     }
 
     public void setClientID(int clientID) {
         this.clientID = clientID;
-    }*/
+    }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 }

@@ -146,9 +146,9 @@ public class ClientUI {
         data.insertUser(userParams);*/
 
         //Send information to server -> depois disto o processo continua no server
-        this.client.createDBHelper("INSERT","utilizador" , userParams, -1 /*,null*/);
+        this.client.createDBHelper("INSERT", "utilizador", userParams, -1 /*,null*/);
 
-        if(client.waitToReceiveResultRequest().equals("false")){
+        if (client.waitToReceiveResultRequest().equals("false")) {
             System.out.println("Could not create a new user! Try again!");
             return false;
         }
@@ -158,12 +158,98 @@ public class ClientUI {
         return true;
     }
 
+    public boolean editProfile(){
+
+        int input = InputProtection.chooseOption("Choose an action:",  "Change Name", "Change Email", "Change Password", "Change NIF" , "Exit");
+
+        switch (input){
+            case 1 -> {
+                String name = InputProtection.readString("\tNew name: ", false);
+
+                ArrayList<String> updateParams = new ArrayList<>();
+                updateParams.add("name");
+                updateParams.add(name);
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+
+                String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                if(outputFromRequestResult.equals("Update done")){
+                    System.out.println(outputFromRequestResult);
+                }else if(outputFromRequestResult.equals("Update failed")){
+                    System.out.println(outputFromRequestResult);
+                    return false;
+                }
+
+                return true;
+            }
+            case 2 -> {
+                String email = InputProtection.readString("\tNew email: ", true);
+
+                ArrayList<String> updateParams = new ArrayList<>();
+                updateParams.add("email");
+                updateParams.add(email);
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+
+                String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                if(outputFromRequestResult.equals("Update done")){
+                    System.out.println(outputFromRequestResult);
+                }else if(outputFromRequestResult.equals("Update failed")){
+                    System.out.println(outputFromRequestResult);
+                    return false;
+                }
+
+                return true;
+            }
+            case 3 -> {
+                String password = InputProtection.readString("\tNew password: ", true);
+
+                ArrayList<String> updateParams = new ArrayList<>();
+                updateParams.add("password");
+                updateParams.add(password);
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+
+                String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                if(outputFromRequestResult.equals("Update done")){
+                    System.out.println(outputFromRequestResult);
+
+                }else if(outputFromRequestResult.equals("Update failed")){
+                    System.out.println(outputFromRequestResult);
+                    return false;
+                }
+
+                return true;
+            }
+            case 4 -> {
+                int nif = InputProtection.readInt("\tNew NIF: ");
+
+                ArrayList<String> updateParams = new ArrayList<>();
+                updateParams.add("nif");
+                updateParams.add(Integer.toString(nif));
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+
+                String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                if(outputFromRequestResult.equals("Update done")){
+                    System.out.println(outputFromRequestResult);
+                }else if(outputFromRequestResult.equals("Update failed")){
+                    System.out.println(outputFromRequestResult);
+                    return false;
+                }
+            }
+        }
+
+        return false;
+        //this.client.createDBHelper("UPDATE", ut);
+    }
+
     public void userMenu(){
         while(true){
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "Edit User Profile", "Exit");
 
             switch (input){
                 case 1 -> {
@@ -171,6 +257,9 @@ public class ClientUI {
                 }
                 case 2 -> {
                     addEvent(); // ADD EVENT
+                }
+                case 3 -> {
+                    editProfile();
                 }
                 case 5 -> {
                     return;

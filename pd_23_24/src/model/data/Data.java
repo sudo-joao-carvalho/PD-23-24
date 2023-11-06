@@ -27,4 +27,6 @@ public class Data {
     public int insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
 
     public boolean verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
+
+    public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
 }

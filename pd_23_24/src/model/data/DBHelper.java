@@ -13,10 +13,9 @@ public class DBHelper implements Serializable {
     private String operation;
     private String table;
     private ArrayList<String> params;
-
     private AtomicReference<String> requestResult;
     private boolean logout;
-    private String username;
+    private String email;
 
     private boolean isRequestAlreadyProcessed;
 
@@ -58,4 +57,10 @@ public class DBHelper implements Serializable {
     public void setIsRequestAlreadyProcessed(boolean isRequestAlreadyProcessed) {
         this.isRequestAlreadyProcessed = isRequestAlreadyProcessed;
     }
+
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public String getEmail(){return this.email;}
 }

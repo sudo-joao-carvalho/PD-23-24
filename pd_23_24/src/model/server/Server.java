@@ -175,6 +175,29 @@ public class Server {
                                     default -> System.out.println("default");
                                 }
                             }
+                            case "UPDATE" -> {
+                                switch (dbHelper.getTable()){
+                                    case "utilizador" -> {
+                                        if(data.editProfile(dbHelper.getParams(), dbHelper.getEmail())){
+                                            operationResult.set("update user done");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                            //System.out.println("Usuario ja existe");
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }else{
+                                            operationResult.set("update user fail");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                            //System.out.println("Usuario nao existe");
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             default -> {
                                 System.out.println("Erro!\n");
                             }
@@ -269,12 +292,22 @@ public class Server {
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                         }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
-                            String stringToSend = "EVENT CREATED\n";
+                            String stringToSend = "EVENT NOT CREATED\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                         }else if(operationResult.get().equalsIgnoreCase("insert event done")) {
-                            String stringToSend = "EVENT NOT CREATED\n";
+                            String stringToSend = "EVENT CREATED\n";
+
+                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
+                            printStreamOut.println(stringToSend);
+                        }else if(operationResult.get().equalsIgnoreCase("update user done")) {
+                            String stringToSend = "UPDATE DONE\n";
+
+                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
+                            printStreamOut.println(stringToSend);
+                        }else if(operationResult.get().equalsIgnoreCase("update user fail")) {
+                            String stringToSend = "UPDATE NOT DONE\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
