@@ -41,6 +41,7 @@ public class Server {
     private ArrayList<HandlerClient> clients;
     private AtomicReference<Boolean> handleDB;
     private AtomicReference<Boolean> handleUserExists;
+    private AtomicReference<Boolean> handlerClient;
     public boolean isDbHelperReady = false;
 
     private final Object lock = new Object();
@@ -51,6 +52,7 @@ public class Server {
 
         this.handleDB = new AtomicReference<>(true);
         this.handleUserExists = new AtomicReference<>(false);
+        this.handlerClient = new AtomicReference<>(true);
 
         this.data = new Data(new ResourceManager());
 
@@ -79,47 +81,6 @@ public class Server {
             } else
                 System.out.println("Successfully connected to database");
 
-            /*if(!dbHelper.isRequestAlreadyProcessed())
-                switch (dbHelper.getOperation()){
-                    case "INSERT" -> {
-                        switch (dbHelper.getTable()){
-                            case "UTILIZADOR" -> {
-                                data.insertUser(dbHelper.getInsertParams());
-                            }
-                        }
-
-                    }
-
-                }*/
-            ;
-
-            /*while(!isDbHelperReady)
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-            if (listDbHelper.size() > 0 ){
-                DBHelper dbHelper = listDbHelper.get(0);
-
-                System.out.println("4");
-
-                if(!dbHelper.isRequestAlreadyProcessed())
-                    if(dbHelper.getOperation() != null){
-                        if(!data.insertUser(dbHelper.getInsertParams())){
-                            System.out.println("5");
-                            handleUserExists.set(true);
-                        }
-                        else{
-                            isDbHelperReady = false;
-                            dbHelper.setIsRequestAlreadyProcessed(true);
-                        }
-                    }
-
-
-            }*/
-
             //aqui tenho que fazer handleDB.set(false) no close do servidor
 
             System.out.println("4");
@@ -135,7 +96,9 @@ public class Server {
                 if (listDbHelper.size() > 0) {
                     DBHelper dbHelper = listDbHelper.get(0);
 
-                    if (!dbHelper.isRequestAlreadyProcessed())
+                    if (!dbHelper.isRequestAlreadyProcessed()) {
+                        System.out.println("entrei para processar");
+                        System.out.println(dbHelper.getTable());
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
                                 switch (dbHelper.getTable()) {
@@ -143,6 +106,7 @@ public class Server {
                                         if (!data.insertUser(dbHelper.getInsertParams())) {
                                             System.out.println("5");
                                             handleUserExists.set(true);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
 
                                             synchronized (lock) {
                                                 lock.notify();
@@ -166,8 +130,8 @@ public class Server {
                                             synchronized (lock) {
                                                 lock.notify();
                                             }
-                                        }
-                                        else {
+                                        } else {
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
                                             System.out.println("Deu bucela");
                                         }
                                     }
@@ -183,6 +147,8 @@ public class Server {
                                 System.out.println("Erro!\n");
                             }
                         }
+                        listDbHelper.remove(0);
+                    }
                 }
             }
         }
@@ -210,7 +176,7 @@ public class Server {
 
         @Override
         public void run() {
-            while(true) {
+            while(handlerClient.get()) {
                 try {
                     byte[] msg = new byte[1024];
                     int nBytes = is.read(msg);
@@ -219,25 +185,28 @@ public class Server {
                     if (msgReceived.equals("NEW REQUEST")) {
                         //continue;
                         System.out.println("\nServer received a new request from Client with\n\tIP:" + clientSocket.getInetAddress().getHostAddress() + "\tPort: " + clientSocket.getPort());
+                        dbHelper.setIsRequestAlreadyProcessed(false);
+                        handleDB.set(true);
                     }
 
-                    if (oos == null) {
+                    //if (oos == null) {
                         oos = new ObjectOutputStream(clientSocket.getOutputStream());
-                    }
+                    //}
 
 
-                    if (ois == null) {
+                    //if (ois == null) {
                         ois = new ObjectInputStream(clientSocket.getInputStream());
-                    }
+                    //}
 
-                    this.dbHelper = null;
+                    //this.dbHelper = null;
                     try {
                         this.dbHelper = (DBHelper) ois.readObject();
 
                         listDbHelper.add(this.dbHelper);
                         isDbHelperReady = true;
 
-                        System.out.println("1");
+                        System.out.println(this.dbHelper.getTable());
+                        System.out.println(this.dbHelper.getInsertParams().toString());
 
                         synchronized (lock) {
                             try {
@@ -247,7 +216,7 @@ public class Server {
                             }
                         }
 
-                        handleDB.set(false);
+                        //handleDB.set(false);
 
                         if (handleUserExists.get()) {
                             String stringToSend = "EXISTS\n";
@@ -263,9 +232,10 @@ public class Server {
                             printStreamOut.println(stringToSend);
                             //oos.write(stringToSend.getBytes(), 0, stringToSend.length());
 
-                            listDbHelper.add(this.dbHelper);
+                            //listDbHelper.add(this.dbHelper);
                             System.out.println("3");
                         }
+
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }

@@ -79,8 +79,8 @@ public class ClientUI {
     }
 
     public boolean addEvent() {
-        String nome = InputProtection.readString("\tNome: ", false);
         String local = InputProtection.readString("\tLocal: ", true);
+        String nome = InputProtection.readString("\tNome: ", false);
         String dia = InputProtection.readString("\tDia: ", true);
         String mes = InputProtection.readString("\tMês: ", true);
         String ano = InputProtection.readString("\tAno: ", true);
@@ -90,7 +90,7 @@ public class ClientUI {
         String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true);
 
         ArrayList<String> eventParams = new ArrayList<>();
-        eventParams.add(null);
+        //eventParams.add(null);
         eventParams.add(local);
         eventParams.add(nome);
         eventParams.add(dia + '/' + mes + '/' + ano); // para transformar em xx/yy/zz

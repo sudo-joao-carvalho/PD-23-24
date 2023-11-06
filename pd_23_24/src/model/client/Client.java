@@ -206,6 +206,8 @@ public class Client {
                         //clientConnected = false;
                     }
 
+                    //dbHelper.setIsRequestAlreadyProcessed(false);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

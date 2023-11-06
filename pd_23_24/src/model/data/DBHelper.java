@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DBHelper implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private Integer id;
     private String operation;
     private String table;
