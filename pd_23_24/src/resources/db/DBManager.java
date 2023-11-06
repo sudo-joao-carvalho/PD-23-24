@@ -1,6 +1,7 @@
 package resources.db;
 import java.io.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DBManager {
     // aqui ficam as queries e a lógica toda das queries
@@ -11,9 +12,9 @@ public class DBManager {
     }
 
     public boolean connectToDB(String directory, int port) {
-        if (new File(directory + "/PD-2023-24-TP-" + port + ".db").exists()) {
+        if (new File(directory + "/PD-2023-24-TP.db" /*"/PD-2023-24-TP-" + port + ".db"*/).exists()) {
             try {
-                this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2022-23-TP-" + port + ".db\"");
+                this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP.db"/*"/PD-2022-23-TP-" + port + ".db\""*/);
             } catch(SQLException e) {
                 e.printStackTrace();
                 return false;
@@ -35,7 +36,7 @@ public class DBManager {
 
         FileOutputStream fos;
         try{
-            fos = new FileOutputStream(directory + "/PD-2023-24-TP-" + port + ".db");
+            fos = new FileOutputStream(directory + "/PD-2023-24-TP.db"/*"/PD-2023-24-TP-" + port + ".db"*/);
         }catch (FileNotFoundException e){
             return false;
         }
@@ -62,7 +63,7 @@ public class DBManager {
         }
 
         try {
-            this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP-" + port + ".db");
+            this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP.db"/*"/PD-2023-24-TP-" + port + ".db"*/);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -110,6 +111,65 @@ public class DBManager {
 
         return str.toString();
     }
+
+    public boolean insertUser(ArrayList<String> userParameters){
+
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            return false;
+        }
+
+
+        boolean existeRegistro = false;
+
+        // Verificar se há algum com nome ou utilizador igual
+        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
+        try {
+            ResultSet resultSet = statement.executeQuery(verificar);
+
+            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+            existeRegistro = resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
+            }
+        }
+
+        if (existeRegistro) {
+            // Já existe um registro com nome ou utilizador igual, então retornamos false.
+            return false;
+        }
+
+        int i = 0;
+
+        String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
+                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +
+                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i++) + "')";
+
+        try{
+            statement.executeUpdate(sqlQuery);
+            //saveQuery(sqlQuery);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }finally {
+            try{
+                statement.close();
+            }catch (SQLException e){
+
+            }
+        }
+        //updateVersion();
+        return true;
+    }
+
 
 }
 
