@@ -42,43 +42,55 @@ public class ClientUI {
         userParams.add(email);
         userParams.add(password);
 
-        if (client.getIsAdmin()) {
+        /*if (client.getIsAdmin()) {
             userParams.add("0"); //autenticado
             userParams.add("0"); //admin
 
             this.client.insertEvento(this.client.dbHelper, userParams);
-        }
-
-        //do{
-            email = InputProtection.readString("\tEmail: ", true);
-
-            password = InputProtection.readString("\tPassword: ", true);
-
-            //verifyLogin(email, password); //TODO fazer funcao para verficar na BD se ja existe o user
-
-            //TODO fazer
-            /*String out = client.waitToReceiveResultRequest();
+        }*/
 
 
-            if(out.equals("User doesnt exist!")){
-                System.out.println(out);
+        do{
+            verifyLogin(email, password);
+
+            String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+            //System.out.println(outputFromRequestResult);
+
+            if(outputFromRequestResult.equals("User doesnt exist")){
+                System.out.println(outputFromRequestResult);
                 return false;
+            }else if(outputFromRequestResult.equals("User exists")){
+                System.out.println(outputFromRequestResult);
             }
-            if(out.contains("\nAdmin:1"))
+
+            if(outputFromRequestResult.contains("\nAdmin:1"))
                 admin = 1;
 
-            out = out.replaceAll(" ", "");
-            String[] splitted = out.split("\n");
-            String[] id = splitted[0].split(":");
+        /*out = out.replaceAll(" ", "");
+        String[] splitted = out.split("\n");
+        String[] id = splitted[0].split(":");*/
 
-            client.setClientID(Integer.parseInt(id[1]));
-            return true;*/
-        //}while(true);
+            //client.setClientID(Integer.parseInt(id[1]));
+            //return true;
+            //}while(true);
 
-        return true;
+            return true;
+
+        }while(true);
+
+    }
+
+    public void verifyLogin(String email, String password){
+        ArrayList<String> params= new ArrayList<>();
+        params.add(email);
+        params.add(password);
+        this.client.createDBHelper("SELECT","utilizador" ,params,-1 );
     }
 
     public boolean addEvent() {
+        //TODO verificaçao de inputs
+
         String local = InputProtection.readString("\tLocal: ", true);
         String nome = InputProtection.readString("\tNome: ", false);
         String dia = InputProtection.readString("\tDia: ", true);

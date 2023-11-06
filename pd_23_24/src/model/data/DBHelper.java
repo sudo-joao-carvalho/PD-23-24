@@ -12,7 +12,7 @@ public class DBHelper implements Serializable {
     private Integer id;
     private String operation;
     private String table;
-    private ArrayList<String> insertParams;
+    private ArrayList<String> params;
 
     private AtomicReference<String> requestResult;
     private boolean logout;
@@ -43,12 +43,12 @@ public class DBHelper implements Serializable {
         this.table = table;
     }
 
-    public ArrayList<String> getInsertParams() {
-        return insertParams;
+    public ArrayList<String> getParams() {
+        return params;
     }
 
-    public void setInsertParams(ArrayList<String> insertParams) {
-        this.insertParams = insertParams;
+    public void setParams(ArrayList<String> params) {
+        this.params = params;
     }
 
     public boolean isRequestAlreadyProcessed() {

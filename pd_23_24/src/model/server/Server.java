@@ -42,6 +42,7 @@ public class Server {
     private AtomicReference<Boolean> handleDB;
     private AtomicReference<Boolean> handleUserExists;
     private AtomicReference<Boolean> handlerClient;
+    private AtomicReference<Boolean> handleVerifyLogin;
     public boolean isDbHelperReady = false;
 
     private final Object lock = new Object();
@@ -53,6 +54,7 @@ public class Server {
         this.handleDB = new AtomicReference<>(true);
         this.handleUserExists = new AtomicReference<>(false);
         this.handlerClient = new AtomicReference<>(true);
+        this.handleVerifyLogin = new AtomicReference<>(false);
 
         this.data = new Data(new ResourceManager());
 
@@ -97,13 +99,11 @@ public class Server {
                     DBHelper dbHelper = listDbHelper.get(0);
 
                     if (!dbHelper.isRequestAlreadyProcessed()) {
-                        System.out.println("entrei para processar");
-                        System.out.println(dbHelper.getTable());
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
                                 switch (dbHelper.getTable()) {
                                     case "utilizador" -> {
-                                        if (!data.insertUser(dbHelper.getInsertParams())) {
+                                        if (!data.insertUser(dbHelper.getParams())) {
                                             System.out.println("5");
                                             handleUserExists.set(true);
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -114,7 +114,7 @@ public class Server {
                                         } else {
                                             System.out.println("4");
                                             handleUserExists.set(false);
-                                            isDbHelperReady = false;
+                                            //isDbHelperReady = false;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
 
                                             synchronized (lock) {
@@ -123,16 +123,20 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        System.out.println("Olá do evento");
-                                        if (data.insertEvent(dbHelper.getInsertParams()) == -1) {
+                                        if (data.insertEvent(dbHelper.getParams()) == -1) {
                                             System.out.println("Erro INSERT EVENT\n");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
 
                                             synchronized (lock) {
                                                 lock.notify();
                                             }
                                         } else {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            System.out.println("Deu bucela");
+                                            System.out.println("Evento inserido");
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
                                         }
                                     }
                                     case "Presenca" -> {
@@ -141,7 +145,31 @@ public class Server {
                                 }
                             }
                             case "SELECT" -> {
+                                switch (dbHelper.getTable()){
+                                    case "utilizador" -> {
+                                        if(data.verifyLogin(dbHelper.getParams())){
+                                            handleVerifyLogin.set(true);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                            //System.out.println("Usuario ja existe");
 
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }else{
+                                            handleVerifyLogin.set(false);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                            //System.out.println("Usuario nao existe");
+
+                                            synchronized (lock) {
+                                                lock.notify();
+                                            }
+                                        }
+                                    }
+                                    case "evento" -> {
+                                        System.out.println("SELECT evento");
+                                    }
+                                    default -> System.out.println("default");
+                                }
                             }
                             default -> {
                                 System.out.println("Erro!\n");
@@ -203,10 +231,7 @@ public class Server {
                         this.dbHelper = (DBHelper) ois.readObject();
 
                         listDbHelper.add(this.dbHelper);
-                        isDbHelperReady = true;
-
-                        System.out.println(this.dbHelper.getTable());
-                        System.out.println(this.dbHelper.getInsertParams().toString());
+                        //isDbHelperReady = true;
 
                         synchronized (lock) {
                             try {
@@ -217,6 +242,19 @@ public class Server {
                         }
 
                         //handleDB.set(false);
+
+                        if(handleVerifyLogin.get()){
+                            String stringToSend = "USER EXISTS\n";
+
+                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
+                            printStreamOut.println(stringToSend);
+
+                        }else{
+                            String stringToSend = "USER DOESNT EXIST\n";
+
+                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
+                            printStreamOut.println(stringToSend);
+                        }
 
                         if (handleUserExists.get()) {
                             String stringToSend = "EXISTS\n";

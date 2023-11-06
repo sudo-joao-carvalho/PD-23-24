@@ -220,7 +220,7 @@ public class DBManager {
         }
 
 
-        boolean existeRegistro = false;
+        boolean existeRegisto = false;
 
         // Verificar se há algum com nome ou utilizador igual
         String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
@@ -228,7 +228,7 @@ public class DBManager {
             ResultSet resultSet = statement.executeQuery(verificar);
 
             // Se houver algum registro no ResultSet, definimos existeRegistro como true
-            existeRegistro = resultSet.next();
+            existeRegisto = resultSet.next();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -240,7 +240,7 @@ public class DBManager {
             }
         }
 
-        if (existeRegistro) {
+        if (existeRegisto) {
             // Já existe um registro com nome ou utilizador igual, então retornamos false.
             return false;
         }
@@ -266,6 +266,41 @@ public class DBManager {
         }
         //updateVersion();
         return true;
+    }
+
+    public boolean verifyLogin(ArrayList<String> params){
+
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            return false;
+        }
+
+        boolean existeRegisto = false;
+
+        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "')";
+        try {
+            ResultSet resultSet = statement.executeQuery(verificar);
+
+            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+            existeRegisto = resultSet.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
+            }
+        }
+
+        if(existeRegisto){
+            return true;
+        }
+
+        return false;
     }
 
 

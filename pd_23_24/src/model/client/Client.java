@@ -204,6 +204,11 @@ public class Client {
                     }else if(msgReceived.contains("EXISTS")){
                         requestResult.set("false");
                         //clientConnected = false;
+                    } else if (msgReceived.contains("USER EXISTS")) {
+                        requestResult.set("User exists");
+                    }else if(msgReceived.contains("USER DOESNT EXISTS")){
+                        requestResult.set("User doesnt exist");
+
                     }
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
@@ -224,26 +229,32 @@ public class Client {
 
     // funções de DBHelper
 
-    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> paramsToInsert, int id/*, ArrayList<String> userLogin*/){
-        dbHelper = addDBHelper(queryOperation, sqlTable, paramsToInsert, id /*, userLogin*/);
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, int id/*, ArrayList<String> userLogin*/){
+        dbHelper = addDBHelper(queryOperation, sqlTable, params, id /*, userLogin*/);
     }
 
-    public DBHelper addDBHelper(String operation, String table, ArrayList<String> insertParams, int id /*, ArrayList<String> userLogin*/) {
+    public DBHelper addDBHelper(String operation, String table, ArrayList<String> param, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
             if (table.equals("utilizador")) {
                 //inseridos anteriormente na UI
                 //insertParams.add("0");
                 //insertParams.add("0");
-                insertUser(dbHelper, insertParams);
+                insertUser(dbHelper, param);
                 isDBHelperReady = true;
                 return dbHelper;
             }
             if (table.equals("evento")) {
-                insertEvento(dbHelper, insertParams);
+                insertEvento(dbHelper, param);
                 isDBHelperReady = true;
                 return dbHelper;
             }
+        }
+
+        if(operation.equals("SELECT")){
+            verifyLogin(dbHelper, param);
+            isDBHelperReady = true;
+            return dbHelper;
         }
 
         return null;
@@ -252,14 +263,21 @@ public class Client {
     public boolean insertUser(DBHelper dbHelper, ArrayList<String> userParameters){
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("utilizador");
-        dbHelper.setInsertParams(userParameters);
+        dbHelper.setParams(userParameters);
         return true;
     }
 
     public boolean insertEvento(DBHelper dbHelper, ArrayList<String> eventParams) {
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("evento");
-        dbHelper.setInsertParams(eventParams);
+        dbHelper.setParams(eventParams);
+        return true;
+    }
+
+    public boolean verifyLogin(DBHelper dbHelper, ArrayList<String> loginParams) {
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("utilizador");
+        dbHelper.setParams(loginParams);
         return true;
     }
 }

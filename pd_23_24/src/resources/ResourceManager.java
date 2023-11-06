@@ -27,6 +27,8 @@ public class ResourceManager {
         return this.dbManager.insertEvent(params);
     }
 
+    public boolean verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
+
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente
