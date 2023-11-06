@@ -2,6 +2,7 @@ package resources.db;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class DBManager {
     // aqui ficam as queries e a lógica toda das queries
@@ -104,6 +105,103 @@ public class DBManager {
 
             str.append(id).append("\t").append(username).append("\t").append(nome);
             str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\t\t").append(password).append("\t\t").append(email).append("\t\t").append(nif).append("\n");
+        }
+
+        resultSet.close();
+        statement.close();
+
+        return str.toString();
+    }
+
+    public int insertEvent(ArrayList<String> params) { // precisa de devolver o id do evento criado, não apagar o return disto!
+        Statement statement;
+
+        try {
+            statement = conn.createStatement();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        int i = 0;
+
+        String sqlQuery = "INSERT INTO Evento VALUES (NULL, NULL, '" +
+                params.get(i++) + "' , '" + params.get(i++) + "' , '" +
+                params.get(i++) + "' , '" + params.get(i++) + "' , '" +
+                params.get(i) + "')";
+
+        try {
+            statement.executeUpdate(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+            ResultSet rs = statement.getGeneratedKeys();
+            return rs.getInt(1); // devolve o id do novo evento
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public int insertCodeByAdmin(int eventID) throws SQLException {
+        Statement stmt = null;
+
+        try {
+            stmt = conn.createStatement();
+
+            Random rnd = new Random();
+
+            int minVal = 100000;
+
+            int maxVal = 999999;
+
+            int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
+
+            String sqlQuery = "UPDATE Evento SET Codigo='" + eventCode + "' WHERE Id=" + eventID;
+
+            stmt.executeUpdate(sqlQuery);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
+    }
+
+    // não esquecer de tratar dos filtros da consulta depois
+    public String listAllPresencas(Integer id) throws SQLException {
+        Statement statement = conn.createStatement();
+
+        String sqlQuery = "SELECT Id, IdEvento, IdUtilizador FROM Presenca";
+
+        if (id != -1)
+            sqlQuery += " WHERE Id like '%" + id + "%'";
+
+        ResultSet resultSet = statement.executeQuery(sqlQuery);
+
+        StringBuilder str = new StringBuilder();
+        str.append("ID\tID Evento\tID Utilizador\t\n");
+
+        while(resultSet.next()){
+            int Id = resultSet.getInt("Id");
+            int IdEvento = resultSet.getInt("IdEvento");
+            int IdUtilizador = resultSet.getInt("IdUtilizador");
+
+            str.append(id).append("\t").append(Id).append("\t").append(IdEvento);
+            str.append("\t\t").append(IdUtilizador).append("\t\t").append("\n");
         }
 
         resultSet.close();
