@@ -50,7 +50,6 @@ public class ClientUI {
         }*/
 
 
-        do{
             verifyLogin(email, password);
 
             String outputFromRequestResult = client.waitToReceiveResultRequest();
@@ -80,8 +79,6 @@ public class ClientUI {
             //}while(true);
 
             return true;
-
-        }while(true);
 
     }
 
@@ -253,7 +250,7 @@ public class ClientUI {
 
     public void listPresencas() {
 
-        System.out.println("\nListing all events user is registered in: \n");
+        /*System.out.println("\nListing all events user is registered in: \n");
 
         int choiceMenu = InputProtection.chooseOption(null, "List all events user registered in", "Back to menu");
 
@@ -270,7 +267,7 @@ public class ClientUI {
             default -> {
                 System.out.println("Invalid choice!\n");
             }
-        }
+        }*/
     }
 
     public void userMenu(){
@@ -303,7 +300,7 @@ public class ClientUI {
     public void start(){
 
         if(!loginRegister()){
-            System.out.println("Could not login");
+            //System.out.println("Could not login");
             loginRegister();
             return;
         }

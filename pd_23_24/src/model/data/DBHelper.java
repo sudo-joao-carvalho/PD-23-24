@@ -80,4 +80,12 @@ public class DBHelper implements Serializable {
     public void setIdPresenca(Integer idPresenca) {
         this.idPresenca = idPresenca;
     }
+
+    public AtomicReference<String> getRequestResult() {
+        return requestResult;
+    }
+
+    public void setRequestResult(String requestResult) {
+        this.requestResult.set(requestResult);
+    }
 }

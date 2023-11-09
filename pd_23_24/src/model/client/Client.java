@@ -5,6 +5,7 @@ import ui.ClientUI;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -65,7 +66,7 @@ public class Client {
             try {
                 socketSr = new Socket(serverIP, serverPort);
 
-                socketSr.setSoTimeout(10000);
+                socketSr.setSoTimeout(1000);
                 os = socketSr.getOutputStream();
                 is = socketSr.getInputStream();
 
@@ -113,9 +114,12 @@ public class Client {
                 }
 
                 try {
-                    //requestResult.set(""); //reset requestResult
+                    requestResult.set(""); //reset requestResult
                     String n = "NEW REQUEST";
-                    os.write(n.getBytes(), 0, n.length());
+                    os.write(n.getBytes(StandardCharsets.UTF_8), 0, n.length());
+                    os.flush();
+                    //os.write("Updated successfully!".getBytes(StandardCharsets.UTF_8));
+                    //os.flush();
 
                     /*byte[] bArray = new byte[1024];
                     int nBytes = is.read(bArray);
@@ -126,16 +130,25 @@ public class Client {
                     oos.writeObject(dbHelper);
                     isDBHelperReady = false;
 
-                    BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
-                    String msgReceived = bufferedReaderIn.readLine();
+                    /*BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream(), "UTF-8"));
+                    String msgReceived = bufferedReaderIn.readLine();*/
 
+                    if(ois == null){
+                        ois = new ObjectInputStream(socketServer.getInputStream());
+                    }
+
+                    // Receba a resposta do servidor como um objeto (provavelmente uma String)
+
+                    requestResult.set((String) ois.readObject());
+
+                    System.out.println(requestResult);
 
                     //bufferedReaderIn.reset();
                     //System.out.println(msgReceived.length());
 
                     //System.out.println(msgReceived);
 
-                    if(msgReceived.contains("NEW")) {
+                    /*if(msgReceived.contains("NEW")) {
                         System.out.println(msgReceived);
                         requestResult.set("true");
                     }else if(msgReceived.contains("EXISTS")){
@@ -144,14 +157,14 @@ public class Client {
                         //clientConnected = false;
                     }else if(msgReceived.contains("USER FOUND")) {
                         System.out.println(msgReceived);
-                        requestResult.set("User logged in");
+                        requestResult.set("User logged in");*/
                         /*int startIndex = msgReceived.lastIndexOf(":") + 2;
                         String numberStr = msgReceived.substring(startIndex);
                         int idClient = Integer.parseInt(numberStr);
 
                         dbHelper.setId(idClient);
                         requestResult.set("User exists: " + idClient);*/
-                    }else if(msgReceived.contains("USER NOT FOUND")){
+                    /*}else if(msgReceived.contains("USER NOT FOUND")){
                         System.out.println(msgReceived);
                         requestResult.set("User doesnt exist");
                     }else if(msgReceived.contains("EVENT CREATED")){
@@ -170,12 +183,14 @@ public class Client {
                         System.out.println(msgReceived);
                         requestResult.set(msgReceived);
                         //System.out.println(msgReceived);
-                    }
+                    }*/
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
                 //}
             }
@@ -214,17 +229,17 @@ public class Client {
         }
 
         if(operation.equals("SELECT")){
-            if(table.equals("evento")){
+            /*if(table.equals("evento")){
                 listPresencas(dbHelper, params, id);
                 isDBHelperReady = true;
                 return dbHelper;
-            }
+            }*/
 
-            if (table.equals("utilizador")){
+            //if (table.equals("utilizador")){
                 verifyLogin(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
-            }
+            //}
         }
 
         return null;
@@ -270,6 +285,7 @@ public class Client {
         dbHelper.setOperation("UPDATE");
         dbHelper.setTable("utilizador");
         dbHelper.setParams(updateParams);
+        this.email = email;
         dbHelper.setEmail(email);
         return true;
     }
