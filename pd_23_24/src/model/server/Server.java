@@ -152,11 +152,12 @@ public class Server {
                             case "SELECT" -> {
                                 switch (dbHelper.getTable()){
                                     case "utilizador" -> {
-                                        if(data.verifyLogin(dbHelper.getParams())){
-                                            operationResult.set("select user exist");
+                                        int id = data.verifyLogin(dbHelper.getParams());
+                                        if( id != 0){
+                                            operationResult.set("select user exist: " + id);
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             //System.out.println("Usuario ja existe");
-
+                                            dbHelper.setId(id);
                                             synchronized (lock) {
                                                 lock.notify();
                                             }
@@ -171,10 +172,9 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        System.out.println("SELECT evento");
-                                        System.out.println(dbHelper.getIdPresenca());
-                                        presenceList = data.listAllPresencas(dbHelper.getIdPresenca());
-                                        System.out.println(presenceList);
+                                        //System.out.println("SELECT evento");
+                                        presenceList = data.listPresencas(dbHelper.getIdPresenca(), dbHelper.getId());
+                                        //System.out.println(presenceList);
                                         operationResult.set("select evento done");
                                         dbHelper.setIsRequestAlreadyProcessed(true);
                                         //System.out.println("Usuario ja existe");
@@ -298,7 +298,7 @@ public class Server {
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
-                        }else if(operationResult.get().equalsIgnoreCase("select user exist")){
+                        }else if(operationResult.get().equals("select user exist")){
                             String stringToSend = "USER FOUND\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);

@@ -58,12 +58,18 @@ public class ClientUI {
             if(outputFromRequestResult.equals("User doesnt exist")){
                 System.out.println(outputFromRequestResult);
                 return false;
-            }else if(outputFromRequestResult.equals("User exists")){
+            }else if(outputFromRequestResult.contains("User exists")){
                 System.out.println(outputFromRequestResult);
             }
 
             if(outputFromRequestResult.contains("\nAdmin:1"))
                 admin = 1;
+
+            /*int startIndex = outputFromRequestResult.lastIndexOf(":") + 2;
+            String numberStr = outputFromRequestResult.substring(startIndex);
+            int idClient = Integer.parseInt(numberStr);
+
+            client.setClientID(idClient);*/
 
             /*out = out.replaceAll(" ", "");
             String[] splitted = out.split("\n");

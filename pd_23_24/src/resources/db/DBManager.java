@@ -239,26 +239,26 @@ public class DBManager {
         return true;
     }
 
-    public boolean verifyLogin(ArrayList<String> params){
+    public int verifyLogin(ArrayList<String> params){
 
         Statement statement = null;
         try{
             statement = conn.createStatement();
         }catch (SQLException e){
-            return false;
+            return 0;
         }
 
-        boolean existeRegisto = false;
+        int idRegisto = 0;
 
-        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "') AND lower(password) = lower('" + params.get(1) + "')";
+        String verificar = "SELECT id FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "') AND lower(password) = lower('" + params.get(1) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
             // Se houver algum registro no ResultSet, definimos existeRegistro como true
-            existeRegisto = resultSet.next();
+            idRegisto = resultSet.getInt("id");
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return 0;
         } finally {
             try {
                 statement.close();
@@ -267,14 +267,10 @@ public class DBManager {
             }
         }
 
-        if(existeRegisto){
-            return true;
-        }
-
-        return false;
+        return idRegisto;
     }
 
-    public String listAllPresencas(Integer id) {
+    public String listPresencas(Integer idEvento, Integer idClient) {
         Statement statement = null;
         try{
             statement = conn.createStatement();
@@ -282,15 +278,17 @@ public class DBManager {
             return "";
         }
         String sqlQuery = null;
-        if(id == -1){
-            sqlQuery = "SELECT Evento.Nome, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento " +
-                    "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
-                    "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador";
+        if(idEvento == -1){
+            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
+                    "JOIN presenca ON evento.id = presenca.idEvento " +
+                    "JOIN utilizador ON utilizador.id = Presenca.idUtilizador " +
+                    "WHERE utilizador.id = '" + idClient + "'";
         }else{
-            sqlQuery = "SELECT Evento.Nome, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento " +
-                    "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
-                    "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador" +
-                    "AND Evento.Id = " + id + "";
+            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
+                    "JOIN presenca ON evento.id = presenca.idEvento " +
+                    "JOIN utilizador ON utilizador.id = presenca.idUtilizador " +
+                    "AND evento.id = '" + idEvento + "'" +
+                    "AND utilizador.id = '" + idClient + "'";
         }
 
         //String sqlQuery = "SELECT * FROM Evento";
@@ -312,7 +310,7 @@ public class DBManager {
                 String data = resultSet.getString("Data");
                 String horaInicio = resultSet.getString("HoraInicio");
 
-                str.append(id).append("\t").append(nome).append("\t").append(local);
+                str.append(idEvento).append("\t").append(nome).append("\t").append(local);
                 str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
             }
             //saveQuery(sqlQuery);
@@ -327,8 +325,6 @@ public class DBManager {
 
             }
         }
-
-        System.out.println(str.toString());
 
         return str.toString();
     }

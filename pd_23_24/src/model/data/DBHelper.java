@@ -77,7 +77,7 @@ public class DBHelper implements Serializable {
         return idPresenca;
     }
 
-    public void setIdPresenca(Integer id) {
+    public void setIdPresenca(Integer idPresenca) {
         this.idPresenca = idPresenca;
     }
 }

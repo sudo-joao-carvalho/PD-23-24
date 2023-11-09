@@ -27,11 +27,11 @@ public class Data {
 
     public int insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
 
-    public boolean verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
+    public int verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
 
     public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
 
-    public String listAllPresencas(Integer id) {
-        return this.resourceManager.listAllPresencas(id);
+    public String listPresencas(Integer idEvento, Integer idClient) {
+        return this.resourceManager.listPresencas(idEvento, idClient);
     }
 }

@@ -161,8 +161,11 @@ public class Client {
 
                 try {
                     requestResult.set(""); //reset requestResult
+                    System.out.println("1");
                     String n = "NEW REQUEST";
                     os.write(n.getBytes(), 0, n.length());
+
+                    System.out.println("2");
 
                     /*byte[] bArray = new byte[1024];
                     int nBytes = is.read(bArray);
@@ -172,6 +175,8 @@ public class Client {
 
                     oos.writeObject(dbHelper);
                     isDBHelperReady = false;
+
+                    System.out.println("3");
 
                     BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream()));
                     String msgReceived = bufferedReaderIn.readLine();
@@ -196,8 +201,14 @@ public class Client {
                     }else if(msgReceived.contains("EXISTS")){
                         requestResult.set("false");
                         //clientConnected = false;
-                    }else if(msgReceived.contains("USER FOUND")) {
-                        requestResult.set("User exists");
+                    }else if(msgReceived.equals("USER FOUND")) {
+
+                        /*int startIndex = msgReceived.lastIndexOf(":") + 2;
+                        String numberStr = msgReceived.substring(startIndex);
+                        int idClient = Integer.parseInt(numberStr);
+
+                        dbHelper.setId(idClient);
+                        requestResult.set("User exists: " + idClient);*/
                     }else if(msgReceived.contains("USER NOT FOUND")){
                         requestResult.set("User doesnt exist");
                     }else if(msgReceived.contains("EVENT CREATED")){
@@ -318,6 +329,7 @@ public class Client {
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
         dbHelper.setParams(listParams);
+        //System.out.println(id);
         dbHelper.setIdPresenca(id);
         return "";
     }

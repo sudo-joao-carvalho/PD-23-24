@@ -27,11 +27,11 @@ public class ResourceManager {
         return this.dbManager.insertEvent(params);
     }
 
-    public boolean verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
+    public int verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
 
     public boolean editProfile(ArrayList<String> params, String email){return this.dbManager.editProfile(params, email);}
 
-    public String listAllPresencas(Integer id) { return this.dbManager.listAllPresencas(id); }
+    public String listPresencas(Integer idEvento, Integer idClient) { return this.dbManager.listPresencas(idEvento, idClient); }
 
     // funções de BD (add, remove, consulta)
 
