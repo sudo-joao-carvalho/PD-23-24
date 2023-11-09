@@ -173,9 +173,9 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        //System.out.println("SELECT evento");
+                                        System.out.println("SELECT evento");
                                         presenceList = data.listPresencas(dbHelper.getIdPresenca(), dbHelper.getId());
-                                        //System.out.println(presenceList);
+                                        System.out.println(presenceList);
                                         operationResult.set("select evento done");
                                         dbHelper.setIsRequestAlreadyProcessed(true);
                                         //System.out.println("Usuario ja existe");
@@ -311,7 +311,7 @@ public class Server {
                             printStreamOut.println(stringToSend);
                         }else if(operationResult.get().equalsIgnoreCase("select evento done")) {
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println("PRESENCE LIST\n" + presenceList);
+                            printStreamOut.println("PRESENCE LIST" + presenceList);
                         }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
                             String stringToSend = "EVENT NOT CREATED\n";
 
