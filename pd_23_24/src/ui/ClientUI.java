@@ -58,7 +58,7 @@ public class ClientUI {
             if(outputFromRequestResult.equals("User doesnt exist")){
                 System.out.println(outputFromRequestResult);
                 return false;
-            }else if(outputFromRequestResult.contains("User exists")){
+            }else if(outputFromRequestResult.equals("User exists")){
                 System.out.println(outputFromRequestResult);
             }
 

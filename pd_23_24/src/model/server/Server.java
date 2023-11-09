@@ -153,8 +153,9 @@ public class Server {
                                 switch (dbHelper.getTable()){
                                     case "utilizador" -> {
                                         int id = data.verifyLogin(dbHelper.getParams());
+                                        System.out.println(id);
                                         if( id != 0){
-                                            operationResult.set("select user exist: " + id);
+                                            operationResult.set("select user exist");
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             //System.out.println("Usuario ja existe");
                                             dbHelper.setId(id);
@@ -298,7 +299,7 @@ public class Server {
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
-                        }else if(operationResult.get().equals("select user exist")){
+                        }else if(operationResult.get().equalsIgnoreCase("select user exist")){
                             String stringToSend = "USER FOUND\n";
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);

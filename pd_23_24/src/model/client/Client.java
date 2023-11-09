@@ -201,8 +201,9 @@ public class Client {
                     }else if(msgReceived.contains("EXISTS")){
                         requestResult.set("false");
                         //clientConnected = false;
-                    }else if(msgReceived.equals("USER FOUND")) {
+                    }else if(msgReceived.contains("USER FOUND")) {
 
+                        requestResult.set("User exists");
                         /*int startIndex = msgReceived.lastIndexOf(":") + 2;
                         String numberStr = msgReceived.substring(startIndex);
                         int idClient = Integer.parseInt(numberStr);
