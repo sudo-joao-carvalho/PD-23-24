@@ -58,12 +58,12 @@ public class ClientUI {
             if(outputFromRequestResult.equals("User doesnt exist")){
                 System.out.println(outputFromRequestResult);
                 return false;
-            }else if(outputFromRequestResult.equals("User exists")){
+            }else if(outputFromRequestResult.equals("User logged in")){
                 System.out.println(outputFromRequestResult);
             }
 
-            if(outputFromRequestResult.contains("\nAdmin:1"))
-                admin = 1;
+            /*if(outputFromRequestResult.contains("\nAdmin:1"))
+                admin = 1;*/
 
             /*int startIndex = outputFromRequestResult.lastIndexOf(":") + 2;
             String numberStr = outputFromRequestResult.substring(startIndex);
@@ -92,6 +92,7 @@ public class ClientUI {
         this.client.createDBHelper("SELECT","utilizador" ,params,-1 );
     }
 
+    //ADMIN
     public boolean addEvent() {
         //TODO verificaçao de inputs
 

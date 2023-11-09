@@ -277,17 +277,24 @@ public class DBManager {
         }catch (SQLException e){
             return "";
         }
+
         String sqlQuery = null;
         if(idEvento == -1){
-            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
+            /*sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
                     "JOIN presenca ON evento.id = presenca.idEvento " +
                     "JOIN utilizador ON utilizador.id = Presenca.idUtilizador " +
+                    "WHERE utilizador.id = '" + idClient + "'";*/
+            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio " +
+                    "FROM Evento evento " +
+                    "JOIN Presenca presenca ON evento.id = presenca.idEvento " +
+                    "JOIN Utilizador utilizador ON presenca.idUtilizador = utilizador.id " +
                     "WHERE utilizador.id = '" + idClient + "'";
+            //sqlQuery = "SELECT distinct evento.* FROM evento";
         }else{
             sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
                     "JOIN presenca ON evento.id = presenca.idEvento " +
                     "JOIN utilizador ON utilizador.id = presenca.idUtilizador " +
-                    "AND evento.id = '" + idEvento + "'" +
+                    "WHERE evento.id = '" + idEvento + "'" +
                     "AND utilizador.id = '" + idClient + "'";
         }
 
@@ -313,13 +320,14 @@ public class DBManager {
                 str.append(idEvento).append("\t").append(nome).append("\t").append(local);
                 str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
             }
+
             //saveQuery(sqlQuery);
         }catch (SQLException e){
             e.printStackTrace();
             return "";
         }finally {
             try{
-                resultSet.close();
+                if(resultSet != null) resultSet.close();
                 statement.close();
             }catch (SQLException e){
 
@@ -378,7 +386,7 @@ public class DBManager {
             return true;
         }else if(params.get(0).equalsIgnoreCase("password")){
             String newPassword = params.get(1);
-            String sqlQuery = "UPDATE utilizador SET Password = '" + newPassword + "' WHERE lower(email) = lower('" + email + "')";
+            String sqlQuery = "UPDATE utilizador SET password = '" + newPassword + "' WHERE lower(email) = lower('" + email + "')";
 
             try{
                 statement.executeUpdate(sqlQuery);

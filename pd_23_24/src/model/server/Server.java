@@ -9,8 +9,10 @@ import ui.ServerUI;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -93,7 +95,6 @@ public class Server {
             System.out.println("4");
 
             while (handleDB.get()) {
-
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -278,6 +279,7 @@ public class Server {
                         listDbHelper.add(this.dbHelper);
                         //isDbHelperReady = true;
                         System.out.println("3");
+                        System.out.println(dbHelper.getTable());
                         synchronized (lock) {
                             try {
                                 System.out.println("entrei no lock");
@@ -286,8 +288,6 @@ public class Server {
                                 throw new RuntimeException(e);
                             }
                         }
-
-                        //handleDB.set(false);
 
                         if(operationResult.get().equalsIgnoreCase("insert user fail")){
                             String stringToSend = "EXISTS\n";
@@ -310,8 +310,12 @@ public class Server {
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                         }else if(operationResult.get().equalsIgnoreCase("select evento done")) {
+                            String stringToSend = "PRESENCE LIST " + presenceList + "\n";
+
+                            //System.out.println(stringToSend);
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println("PRESENCE LIST" + presenceList);
+                            printStreamOut.println(stringToSend);
+                            //printStreamOut.println(presenceList);
                         }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
                             String stringToSend = "EVENT NOT CREATED\n";
 
@@ -333,35 +337,6 @@ public class Server {
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
                         }
-
-                        /*if(handleVerifyLogin.get()){
-                            String stringToSend = "USER FOUND\n";
-
-                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println(stringToSend);
-
-                        }else{
-                            String stringToSend = "USER NOT FOUND\n";
-
-                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println(stringToSend);
-                        }
-
-                        if (handleUserExists.get()) {
-                            String stringToSend = "EXISTS\n";
-
-                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println(stringToSend);
-                            //oos.write(stringToSend.getBytes(), 0, stringToSend.length());
-                        } else {
-                            String stringToSend = "NEW\n";
-
-                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
-                            printStreamOut.println(stringToSend);
-                            //oos.write(stringToSend.getBytes(), 0, stringToSend.length());
-
-                            //listDbHelper.add(this.dbHelper);
-                        }*/
 
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
@@ -388,30 +363,15 @@ public class Server {
             while (true) {
                 try {
                     socket = serverSocket.accept();
+                    socket.setSoTimeout(10000);
                     InputStream is = socket.getInputStream();
                     OutputStream os = socket.getOutputStream();
 
                     byte[] msg = new byte[1024];
                     int nBytes = is.read(msg);
-                    String msgReceived = new String(msg, 0, nBytes);
+                    String msgReceived = new String(msg, 0, nBytes, StandardCharsets.UTF_8);
 
-                    //                if(msgReceived.equals("SERVER")){ // when server communicates with another server
-                    //                    System.out.println("\nServer connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + serverPort);
-                    //                    byte[] buffer = new byte[512];
-                    //                    int readBytes = 0;
-                    //                    FileInputStream fi = new FileInputStream(DBDirectory + "/PD-2022-23-TP.db"/*"/PD-2022-23-TP-" + serverPort + ".db"*/);
-                    //
-                    //                    do
-                    //                    {
-                    //                        readBytes = fi.read(buffer);
-                    //                        if(readBytes == -1)
-                    //                            break;
-                    //                        os.write(buffer, 0, readBytes);
-                    //                    }while(readBytes > 0);
-                    //
-                    //                    fi.close();
-                    //                    socket.close();
-                    //                }
+                    Arrays.fill(msg, (byte) 0);
 
                     if (msgReceived.equals("CLIENT")) {
                         System.out.println("\nClient connected with\n\tIP: " + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());// when the server receives a new request from a client
