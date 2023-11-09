@@ -244,12 +244,34 @@ public class ClientUI {
         //this.client.createDBHelper("UPDATE", ut);
     }
 
+    public void listPresencas() {
+
+        System.out.println("\nListing all events user is registered in: \n");
+
+        int choiceMenu = InputProtection.chooseOption(null, "List all events user registered in", "Back to menu");
+
+        switch (choiceMenu) {
+            case 1 -> {
+                int id = InputProtection.readInt("Event ID (-1 for all events): ");
+
+                this.client.createDBHelper("SELECT", "Presenca", null, id);
+                System.out.println(client.waitToReceiveResultRequest());
+            }
+            case 2 -> {
+                return;
+            }
+            default -> {
+                System.out.println("Invalid choice!\n");
+            }
+        }
+    }
+
     public void userMenu(){
         while(true){
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "Edit User Profile", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "List All Presences" ,"Edit User Profile", "Exit");
 
             switch (input){
                 case 1 -> {
@@ -259,6 +281,9 @@ public class ClientUI {
                     addEvent(); // ADD EVENT
                 }
                 case 3 -> {
+                    listPresencas();
+                }
+                case 4 -> {
                     editProfile();
                 }
                 case 5 -> {

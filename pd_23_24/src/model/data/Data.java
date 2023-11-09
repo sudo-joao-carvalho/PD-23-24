@@ -2,6 +2,7 @@ package model.data;
 
 import resources.ResourceManager;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Data {
@@ -29,4 +30,6 @@ public class Data {
     public boolean verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
 
     public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
+
+    public String listAllPresencas(Integer id) throws SQLException { return this.resourceManager.listAllPresencas(id); }
 }

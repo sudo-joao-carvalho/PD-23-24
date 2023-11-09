@@ -308,6 +308,13 @@ public class Client {
         dbHelper.setEmail(email);
         return true;
     }
+
+    public String listAllPresencas(DBHelper dbHelper, ArrayList<String> listParams){ // função para atualizar os detalhes do user (nif, email, nome)
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("Presenca");
+        dbHelper.setParams(listParams);
+        return "";
+    }
     public int getClientID() {
         return clientID;
     }

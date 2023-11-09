@@ -181,35 +181,6 @@ public class DBManager {
         return 0;
     }
 
-    // não esquecer de tratar dos filtros da consulta depois
-    public String listAllPresencas(Integer id) throws SQLException {
-        Statement statement = conn.createStatement();
-
-        String sqlQuery = "SELECT Id, IdEvento, IdUtilizador FROM Presenca";
-
-        if (id != -1)
-            sqlQuery += " WHERE Id like '%" + id + "%'";
-
-        ResultSet resultSet = statement.executeQuery(sqlQuery);
-
-        StringBuilder str = new StringBuilder();
-        str.append("ID\tID Evento\tID Utilizador\t\n");
-
-        while(resultSet.next()){
-            int Id = resultSet.getInt("Id");
-            int IdEvento = resultSet.getInt("IdEvento");
-            int IdUtilizador = resultSet.getInt("IdUtilizador");
-
-            str.append(id).append("\t").append(Id).append("\t").append(IdEvento);
-            str.append("\t\t").append(IdUtilizador).append("\t\t").append("\n");
-        }
-
-        resultSet.close();
-        statement.close();
-
-        return str.toString();
-    }
-
     public boolean insertUser(ArrayList<String> userParameters){
 
         Statement statement = null;
@@ -303,6 +274,37 @@ public class DBManager {
         return false;
     }
 
+    public String listAllPresencas(Integer id) throws SQLException {
+        Statement statement = conn.createStatement();
+
+        String sqlQuery = "SELECT Nome, Local, Data, HoraInicio FROM Evento " +
+                "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
+                "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador";
+
+        if (id != -1)
+            sqlQuery += " WHERE Id like '%" + id + "%'"; // esta linha pode dar problema
+
+        ResultSet resultSet = statement.executeQuery(sqlQuery);
+
+        StringBuilder str = new StringBuilder();
+        str.append("ID\tID Evento\tID Utilizador\t\n");
+
+        while(resultSet.next()){
+            String nome = resultSet.getString("Nome");
+            String local = resultSet.getString("Local");
+            String data = resultSet.getString("Data");
+            String horaInicio = resultSet.getString("HoraInicio");
+
+            str.append(id).append("\t").append(nome).append("\t").append(local);
+            str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
+        }
+
+        resultSet.close();
+        statement.close();
+
+        return str.toString();
+    }
+
     public boolean editProfile(ArrayList<String> params, String email){
 
         Statement statement = null;
@@ -392,6 +394,7 @@ public class DBManager {
 
         return false;
     }
+
 
 }
 

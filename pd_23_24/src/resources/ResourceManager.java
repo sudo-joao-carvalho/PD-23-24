@@ -31,6 +31,8 @@ public class ResourceManager {
 
     public boolean editProfile(ArrayList<String> params, String email){return this.dbManager.editProfile(params, email);}
 
+    public String listAllPresencas(Integer id) throws SQLException { return this.dbManager.listAllPresencas(id); }
+
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente
