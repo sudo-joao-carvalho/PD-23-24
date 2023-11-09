@@ -31,5 +31,7 @@ public class Data {
 
     public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
 
-    public String listAllPresencas(Integer id) throws SQLException { return this.resourceManager.listAllPresencas(id); }
+    public String listAllPresencas(Integer id) {
+        return this.resourceManager.listAllPresencas(id);
+    }
 }

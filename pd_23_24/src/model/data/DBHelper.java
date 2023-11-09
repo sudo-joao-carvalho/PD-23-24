@@ -16,6 +16,7 @@ public class DBHelper implements Serializable {
     private AtomicReference<String> requestResult;
     private boolean logout;
     private String email;
+    private Integer idPresenca;
 
     private boolean isRequestAlreadyProcessed;
 
@@ -63,4 +64,20 @@ public class DBHelper implements Serializable {
     }
 
     public String getEmail(){return this.email;}
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getIdPresenca() {
+        return idPresenca;
+    }
+
+    public void setIdPresenca(Integer id) {
+        this.idPresenca = idPresenca;
+    }
 }

@@ -46,6 +46,7 @@ public class Server {
 
     private AtomicReference<String> operationResult;
     public boolean isDbHelperReady = false;
+    private String presenceList;
 
     private final Object lock = new Object();
 
@@ -143,7 +144,7 @@ public class Server {
                                             }
                                         }
                                     }
-                                    case "Presenca" -> {
+                                    case "presenca" -> {
 
                                     }
                                 }
@@ -171,6 +172,20 @@ public class Server {
                                     }
                                     case "evento" -> {
                                         System.out.println("SELECT evento");
+                                        System.out.println(dbHelper.getIdPresenca());
+                                        presenceList = data.listAllPresencas(dbHelper.getIdPresenca());
+                                        System.out.println(presenceList);
+                                        operationResult.set("select evento done");
+                                        dbHelper.setIsRequestAlreadyProcessed(true);
+                                        //System.out.println("Usuario ja existe");
+
+                                        synchronized (lock) {
+                                            lock.notify();
+                                        }
+                                    }
+                                    case "presenca" -> {
+
+
                                     }
                                     default -> System.out.println("default");
                                 }
@@ -256,13 +271,15 @@ public class Server {
 
                     //this.dbHelper = null;
                     try {
+                        System.out.println("1");
                         this.dbHelper = (DBHelper) ois.readObject();
-
+                        System.out.println("2");
                         listDbHelper.add(this.dbHelper);
                         //isDbHelperReady = true;
-
+                        System.out.println("3");
                         synchronized (lock) {
                             try {
+                                System.out.println("entrei no lock");
                                 lock.wait(); // Aguarda notificação
                             } catch (InterruptedException e) {
                                 throw new RuntimeException(e);
@@ -291,6 +308,9 @@ public class Server {
 
                             PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
                             printStreamOut.println(stringToSend);
+                        }else if(operationResult.get().equalsIgnoreCase("select evento done")) {
+                            PrintStream printStreamOut = new PrintStream(clientSocket.getOutputStream(), true);
+                            printStreamOut.println("PRESENCE LIST\n" + presenceList);
                         }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
                             String stringToSend = "EVENT NOT CREATED\n";
 

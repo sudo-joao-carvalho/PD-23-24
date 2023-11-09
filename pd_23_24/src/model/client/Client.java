@@ -1,17 +1,11 @@
 package model.client;
 
 import model.data.DBHelper;
-import org.sqlite.core.DB;
 import ui.ClientUI;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Client {
@@ -166,6 +160,7 @@ public class Client {
                 }
 
                 try {
+                    requestResult.set(""); //reset requestResult
                     String n = "NEW REQUEST";
                     os.write(n.getBytes(), 0, n.length());
 
@@ -189,7 +184,6 @@ public class Client {
                     if(msgReceived.contains("NEW")) {
 
                         requestResult.set("true");
-                        System.out.println("entrei");
                         //clientConnected = true;
                         /*if (ois == null) {
                             ois = new ObjectInputStream(socketServer.getInputStream());
@@ -214,6 +208,9 @@ public class Client {
                         requestResult.set("Update done");
                     }else if(msgReceived.contains("UPDATE NOT DONE")){
                         requestResult.set("Update failed");
+                    }else if(msgReceived.contains("PRESENCE LIST")){
+                        requestResult.set(msgReceived);
+                        System.out.println(msgReceived);
                     }
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
@@ -258,9 +255,17 @@ public class Client {
         }
 
         if(operation.equals("SELECT")){
-            verifyLogin(dbHelper, params);
-            isDBHelperReady = true;
-            return dbHelper;
+            if(table.equals("evento")){
+                listAllPresencas(dbHelper, params, id);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+
+            if (table.equals("utilizador")){
+                verifyLogin(dbHelper, params);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
         return null;
@@ -309,10 +314,11 @@ public class Client {
         return true;
     }
 
-    public String listAllPresencas(DBHelper dbHelper, ArrayList<String> listParams){ // função para atualizar os detalhes do user (nif, email, nome)
+    public String listAllPresencas(DBHelper dbHelper, ArrayList<String> listParams, int id){ // função para atualizar os detalhes do user (nif, email, nome)
         dbHelper.setOperation("SELECT");
-        dbHelper.setTable("Presenca");
+        dbHelper.setTable("evento");
         dbHelper.setParams(listParams);
+        dbHelper.setIdPresenca(id);
         return "";
     }
     public int getClientID() {

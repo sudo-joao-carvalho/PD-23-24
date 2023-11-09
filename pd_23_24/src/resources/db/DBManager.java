@@ -274,33 +274,61 @@ public class DBManager {
         return false;
     }
 
-    public String listAllPresencas(Integer id) throws SQLException {
-        Statement statement = conn.createStatement();
-
-        String sqlQuery = "SELECT Nome, Local, Data, HoraInicio FROM Evento " +
-                "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
-                "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador";
-
-        if (id != -1)
-            sqlQuery += " WHERE Id like '%" + id + "%'"; // esta linha pode dar problema
-
-        ResultSet resultSet = statement.executeQuery(sqlQuery);
-
-        StringBuilder str = new StringBuilder();
-        str.append("ID\tID Evento\tID Utilizador\t\n");
-
-        while(resultSet.next()){
-            String nome = resultSet.getString("Nome");
-            String local = resultSet.getString("Local");
-            String data = resultSet.getString("Data");
-            String horaInicio = resultSet.getString("HoraInicio");
-
-            str.append(id).append("\t").append(nome).append("\t").append(local);
-            str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
+    public String listAllPresencas(Integer id) {
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            return "";
+        }
+        String sqlQuery = null;
+        if(id == -1){
+            sqlQuery = "SELECT Evento.Nome, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento " +
+                    "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
+                    "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador";
+        }else{
+            sqlQuery = "SELECT Evento.Nome, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento " +
+                    "JOIN Presenca ON Evento.Id = Presenca.IdEvento " +
+                    "JOIN Utilizador ON Utilizador.Id = Presenca.IdUtilizador" +
+                    "AND Evento.Id = " + id + "";
         }
 
-        resultSet.close();
-        statement.close();
+        //String sqlQuery = "SELECT * FROM Evento";
+
+        //if (id != -1)
+            //sqlQuery += " WHERE Utilizador.Id LIKE " + id; // esta linha pode dar problema
+
+
+        ResultSet resultSet = null;
+        StringBuilder str = new StringBuilder();
+        try{
+             resultSet = statement.executeQuery(sqlQuery);
+
+            str.append("ID\tID Evento\tID Utilizador\t\n");
+
+            while(resultSet.next()){
+                String nome = resultSet.getString("Nome");
+                String local = resultSet.getString("Local");
+                String data = resultSet.getString("Data");
+                String horaInicio = resultSet.getString("HoraInicio");
+
+                str.append(id).append("\t").append(nome).append("\t").append(local);
+                str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
+            }
+            //saveQuery(sqlQuery);
+        }catch (SQLException e){
+            e.printStackTrace();
+            return "";
+        }finally {
+            try{
+                resultSet.close();
+                statement.close();
+            }catch (SQLException e){
+
+            }
+        }
+
+        System.out.println(str.toString());
 
         return str.toString();
     }

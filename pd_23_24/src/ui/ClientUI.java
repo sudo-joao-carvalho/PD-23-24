@@ -254,7 +254,7 @@ public class ClientUI {
             case 1 -> {
                 int id = InputProtection.readInt("Event ID (-1 for all events): ");
 
-                this.client.createDBHelper("SELECT", "Presenca", null, id);
+                this.client.createDBHelper("SELECT", "evento", null, id);
                 System.out.println(client.waitToReceiveResultRequest());
             }
             case 2 -> {
