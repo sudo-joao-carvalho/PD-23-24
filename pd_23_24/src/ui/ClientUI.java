@@ -254,14 +254,20 @@ public class ClientUI {
     public void listPresencas() {
 
         System.out.println("\nListing all events user is registered in: \n");
+        System.out.println("\nListing: \n");
 
         int choiceMenu = InputProtection.chooseOption(null, "List all events user registered in", "Back to menu");
+
+        ArrayList<String> insertValues = new ArrayList<>();
 
         switch (choiceMenu) {
             case 1 -> {
                 int id = InputProtection.readInt("Event ID (-1 for all events): ");
+                insertValues.clear();
+                insertValues.add(Integer.toString(id));
+                insertValues.add("1");
+                this.client.createDBHelper("SELECT", "evento", insertValues, id);
 
-                this.client.createDBHelper("SELECT", "evento", null, id);
                 System.out.println(client.waitToReceiveResultRequest());
             }
             case 2 -> {

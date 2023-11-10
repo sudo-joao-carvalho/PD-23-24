@@ -216,6 +216,8 @@ public class Client {
         if(operation.equals("SELECT")){
             if(table.equals("evento")){
                 listPresencas(dbHelper, params, id);
+                listPresencas(dbHelper, id);
+
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -274,11 +276,11 @@ public class Client {
         return true;
     }
 
-    public String listPresencas(DBHelper dbHelper, ArrayList<String> listParams, int id){ // função para atualizar os detalhes do user (nif, email, nome)
+    public String listPresencas(DBHelper dbHelper, Integer idEvento){ // função para atualizar os detalhes do user (nif, email, nome)
+        dbHelper.setId(idEvento == -1 ? null : idEvento); // se for igual a -1 então null, senão busca o evento com idEvento
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
-        dbHelper.setParams(listParams);
-        dbHelper.setIdPresenca(id);
+        //dbHelper.setParams(listParams);
         return "";
     }
     public int getClientID() {

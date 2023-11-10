@@ -254,7 +254,6 @@ public class DBManager {
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            // Se houver algum registro no ResultSet, definimos existeRegistro como true
             idRegisto = resultSet.getInt("id");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -263,7 +262,7 @@ public class DBManager {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // Lidar com a exceção, se necessário.
+                e.printStackTrace();
             }
         }
 
@@ -279,29 +278,26 @@ public class DBManager {
         }
 
         String sqlQuery = null;
+
         if(idEvento == -1){
             /*sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
                     "JOIN presenca ON evento.id = presenca.idEvento " +
                     "JOIN utilizador ON utilizador.id = Presenca.idUtilizador " +
                     "WHERE utilizador.id = '" + idClient + "'";*/
-            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio " +
+            sqlQuery = "SELECT evento.Nome, evento.Local, evento.Data, evento.HoraInicio " +
                     "FROM Evento evento " +
-                    "JOIN Presenca presenca ON evento.id = presenca.idEvento " +
-                    "JOIN Utilizador utilizador ON presenca.idUtilizador = utilizador.id " +
-                    "WHERE utilizador.id = '" + idClient + "'";
-            //sqlQuery = "SELECT distinct evento.* FROM evento";
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON presenca.IdUtilizador = utilizador.Id " +
+                    "WHERE utilizador.Id=" + idClient;
+
+            //sqlQuery = "SELECT * FROM Evento";
         }else{
-            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
-                    "JOIN presenca ON evento.id = presenca.idEvento " +
-                    "JOIN utilizador ON utilizador.id = presenca.idUtilizador " +
-                    "WHERE evento.id = '" + idEvento + "'" +
-                    "AND utilizador.id = '" + idClient + "'";
+            sqlQuery = "SELECT distinct evento.Nome, evento.Local, evento.Data, evento.HoraInicio FROM evento " +
+                    "JOIN presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                    "WHERE evento.Id=" + idEvento +
+                    " AND utilizador.Id=" + idClient;
         }
-
-        //String sqlQuery = "SELECT * FROM Evento";
-
-        //if (id != -1)
-            //sqlQuery += " WHERE Utilizador.Id LIKE " + id; // esta linha pode dar problema
 
 
         ResultSet resultSet = null;

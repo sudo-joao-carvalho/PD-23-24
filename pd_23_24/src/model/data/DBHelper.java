@@ -14,9 +14,11 @@ public class DBHelper implements Serializable {
     private String table;
     private ArrayList<String> params;
     private AtomicReference<String> requestResult;
+
+    private ArrayList<String> verifyEmail;
     private boolean logout;
     private String email;
-    private Integer idPresenca;
+    //private Integer idPresenca;
 
     private boolean isRequestAlreadyProcessed;
 
@@ -33,6 +35,14 @@ public class DBHelper implements Serializable {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public void setVerifyUsername(ArrayList<String> verifyEmail) {
+        this.verifyEmail = verifyEmail;
+    }
+
+    public ArrayList<String> getVerifyEmail() {
+        return verifyEmail;
     }
 
     public String getTable() {
@@ -73,11 +83,22 @@ public class DBHelper implements Serializable {
         this.id = id;
     }
 
-    public Integer getIdPresenca() {
-        return idPresenca;
+    //public Integer getIdPresenca() {
+        //return idPresenca;
+    //}
+
+    /*public void setIdPresenca(Integer idPresenca) {
+        this.idPresenca = idPresenca;
+<<<<<<< Updated upstream
+=======
+    }*/
+
+    public AtomicReference<String> getRequestResult() {
+        return requestResult;
     }
 
-    public void setIdPresenca(Integer idPresenca) {
-        this.idPresenca = idPresenca;
+    public void setRequestResult(String requestResult) {
+        this.requestResult.set(requestResult);
+>>>>>>> Stashed changes
     }
 }
