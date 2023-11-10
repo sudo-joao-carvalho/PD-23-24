@@ -66,14 +66,14 @@ public class Client {
             try {
                 socketSr = new Socket(serverIP, serverPort);
 
-                socketSr.setSoTimeout(1000);
+                socketSr.setSoTimeout(10000);
                 os = socketSr.getOutputStream();
                 is = socketSr.getInputStream();
 
                 String client = "CLIENT";
                 os.write(client.getBytes(), 0, client.length());
 
-                this.sTr = new ConnectToServer(socketSr, os, is);
+                this.sTr = new ConnectToServer(socketSr);
                 sTr.start();
                 return;
             } catch (IOException e) {
@@ -89,21 +89,25 @@ public class Client {
         private Socket socketServer;
         private OutputStream os;
         private InputStream is;
+
         private ObjectOutputStream oos;
         private ObjectInputStream ois;
 
         private boolean clientConnected;
 
-        public ConnectToServer(Socket socketServer, OutputStream os, InputStream is){
+        public ConnectToServer(Socket socketServer) throws IOException {
             this.socketServer = socketServer;
-            this.is = is;
-            this.os = os;
+            this.is = socketServer.getInputStream();
+            this.os = socketServer.getOutputStream();
             this.oos = null;
             this.ois = null;
         }
 
         @Override
         public void run() {
+            BufferedReader bufferedReaderIn = null;
+            bufferedReaderIn = new BufferedReader(new InputStreamReader(is));
+
             while(true){
                 while (!isDBHelperReady) {
                     try {
@@ -130,67 +134,64 @@ public class Client {
                     oos.writeObject(dbHelper);
                     isDBHelperReady = false;
 
-                    /*BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(socketServer.getInputStream(), "UTF-8"));
-                    String msgReceived = bufferedReaderIn.readLine();*/
+                    String msgReceived = bufferedReaderIn.readLine();
 
-                    if(ois == null){
+                    /*if(ois == null){
                         ois = new ObjectInputStream(socketServer.getInputStream());
-                    }
+                    }*/
 
                     // Receba a resposta do servidor como um objeto (provavelmente uma String)
 
-                    requestResult.set((String) ois.readObject());
+                    /*requestResult.set((String) ois.readObject());
 
-                    System.out.println(requestResult);
+                    System.out.println(requestResult);*/
 
                     //bufferedReaderIn.reset();
                     //System.out.println(msgReceived.length());
 
                     //System.out.println(msgReceived);
 
-                    /*if(msgReceived.contains("NEW")) {
-                        System.out.println(msgReceived);
+                    if(msgReceived.contains("NEW")) {
+
                         requestResult.set("true");
                     }else if(msgReceived.contains("EXISTS")){
-                        System.out.println(msgReceived);
+
                         requestResult.set("false");
                         //clientConnected = false;
                     }else if(msgReceived.contains("USER FOUND")) {
-                        System.out.println(msgReceived);
-                        requestResult.set("User logged in");*/
+
+                        requestResult.set("User logged in");
                         /*int startIndex = msgReceived.lastIndexOf(":") + 2;
                         String numberStr = msgReceived.substring(startIndex);
                         int idClient = Integer.parseInt(numberStr);
 
                         dbHelper.setId(idClient);
                         requestResult.set("User exists: " + idClient);*/
-                    /*}else if(msgReceived.contains("USER NOT FOUND")){
-                        System.out.println(msgReceived);
+                    }else if(msgReceived.contains("USER NOT FOUND")){
+
                         requestResult.set("User doesnt exist");
                     }else if(msgReceived.contains("EVENT CREATED")){
-                        System.out.println(msgReceived);
+
                         requestResult.set("Event created");
                     }else if(msgReceived.contains("EVENT NOT CREATED")){
-                        System.out.println(msgReceived);
+
                         requestResult.set("Event not created");
                     }else if(msgReceived.contains("UPDATE DONE")){
-                        System.out.println(msgReceived);
+
                         requestResult.set("Update done");
                     }else if(msgReceived.contains("UPDATE NOT DONE")){
-                        System.out.println(msgReceived);
+
                         requestResult.set("Update failed");
                     }else if(msgReceived.contains("PRESENCE LIST")){
-                        System.out.println(msgReceived);
+
                         requestResult.set(msgReceived);
                         //System.out.println(msgReceived);
-                    }*/
+                    }
 
                     //dbHelper.setIsRequestAlreadyProcessed(false);
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
                 }
                 //}
             }

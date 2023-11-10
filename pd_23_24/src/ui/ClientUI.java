@@ -86,7 +86,7 @@ public class ClientUI {
         ArrayList<String> params= new ArrayList<>();
         params.add(email);
         params.add(password);
-        this.client.createDBHelper("SELECT","utilizador" ,params,-1 );
+        this.client.createDBHelper("SELECT","utilizador" ,params,-1);
     }
 
     //ADMIN
