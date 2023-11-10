@@ -181,28 +181,30 @@ public class DBManager {
         return 0;
     }
 
-    public boolean insertUser(ArrayList<String> userParameters){
+    public int insertUser(ArrayList<String> userParameters){
 
         Statement statement = null;
         try{
             statement = conn.createStatement();
         }catch (SQLException e){
-            return false;
+            return 0;
         }
 
 
         boolean existeRegisto = false;
+        int idRegisto = 0;
 
         // Verificar se há algum com nome ou utilizador igual
         String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+            // Se houver algum registro no ResultSe"t, definimos existeRegistro como true
             existeRegisto = resultSet.next();
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return 0;
         } finally {
             try {
                 statement.close();
@@ -213,7 +215,7 @@ public class DBManager {
 
         if (existeRegisto) {
             // Já existe um registro com nome ou utilizador igual, então retornamos false.
-            return false;
+            return 0;
         }
 
         int i = 0;
@@ -227,7 +229,7 @@ public class DBManager {
             //saveQuery(sqlQuery);
         }catch (SQLException e){
             e.printStackTrace();
-            return false;
+            return 0;
         }finally {
             try{
                 statement.close();
@@ -235,8 +237,25 @@ public class DBManager {
 
             }
         }
+
+        String getId = "SELECT id FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
+        try {
+            ResultSet resultSet = statement.executeQuery(getId);
+
+            // Se houver algum registro no ResultSe"t, definimos existeRegistro como true
+            idRegisto = resultSet.getInt("id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
+            }
+        }
         //updateVersion();
-        return true;
+        return idRegisto;
     }
 
     public int verifyLogin(ArrayList<String> params){
@@ -271,6 +290,7 @@ public class DBManager {
     }
 
     public String listPresencas(Integer idEvento, Integer idClient) {
+
         Statement statement = null;
         try{
             statement = conn.createStatement();
@@ -279,37 +299,34 @@ public class DBManager {
         }
 
         String sqlQuery = null;
+
         if(idEvento == -1){
             /*sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
                     "JOIN presenca ON evento.id = presenca.idEvento " +
                     "JOIN utilizador ON utilizador.id = Presenca.idUtilizador " +
                     "WHERE utilizador.id = '" + idClient + "'";*/
-            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio " +
+            sqlQuery = "SELECT evento.Nome, evento.Local, evento.Data, evento.HoraInicio " +
                     "FROM Evento evento " +
-                    "JOIN Presenca presenca ON evento.id = presenca.idEvento " +
-                    "JOIN Utilizador utilizador ON presenca.idUtilizador = utilizador.id " +
-                    "WHERE utilizador.id = '" + idClient + "'";
-            //sqlQuery = "SELECT distinct evento.* FROM evento";
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON presenca.IdUtilizador = utilizador.Id " +
+                    "WHERE utilizador.Id=" + idClient;
+
+            //sqlQuery = "SELECT * FROM Evento";
         }else{
-            sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
-                    "JOIN presenca ON evento.id = presenca.idEvento " +
-                    "JOIN utilizador ON utilizador.id = presenca.idUtilizador " +
-                    "WHERE evento.id = '" + idEvento + "'" +
-                    "AND utilizador.id = '" + idClient + "'";
+            sqlQuery = "SELECT distinct evento.Nome, evento.Local, evento.Data, evento.HoraInicio FROM evento " +
+                    "JOIN presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                    "WHERE evento.Id=" + idEvento +
+                    " AND utilizador.Id=" + idClient;
         }
-
-        //String sqlQuery = "SELECT * FROM Evento";
-
-        //if (id != -1)
-            //sqlQuery += " WHERE Utilizador.Id LIKE " + id; // esta linha pode dar problema
 
 
         ResultSet resultSet = null;
         StringBuilder str = new StringBuilder();
         try{
-             resultSet = statement.executeQuery(sqlQuery);
+            resultSet = statement.executeQuery(sqlQuery);
 
-            str.append("ID\tID Evento\tID Utilizador\t\n");
+            str.append("ID\tID Evento\tID Utilizador\t");
 
             while(resultSet.next()){
                 String nome = resultSet.getString("Nome");

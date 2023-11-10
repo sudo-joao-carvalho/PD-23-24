@@ -19,7 +19,7 @@ public class ResourceManager {
         return this.dbManager.listAllUsers(userId);
     }*/
 
-    public boolean insertUser(ArrayList<String> userParameters){
+    public int insertUser(ArrayList<String> userParameters){
         return this.dbManager.insertUser(userParameters);
     }
 

@@ -250,38 +250,13 @@ public class Server {
                     String msgReceived = new String(msg, 0, nBytes);
 
                     if (msgReceived.equals("NEW REQUEST")) {
-                        //continue;
                         System.out.println("\nServer received a new request from Client with\n\tIP:" + clientSocket.getInetAddress().getHostAddress() + "\tPort: " + clientSocket.getPort());
                         dbHelper.setIsRequestAlreadyProcessed(false);
                         handleDB.set(true);
-                        operationResult.set("");
+                        //operationResult.set("");
                     }
 
-                    //if (oos == null) {
-                        //oos = new ObjectOutputStream(clientSocket.getOutputStream());
-                    //}
-
-
-                    //if (ois == null) {
-                        ois = new ObjectInputStream(clientSocket.getInputStream());
-                    //}
-
-                    //this.dbHelper = null;
-                    /*try {
-                        this.dbHelper = (DBHelper) ois.readObject();
-                        listDbHelper.add(this.dbHelper);
-                        //isDbHelperReady = true;
-                        synchronized (lock) {
-                            try {
-                                lock.wait(); // Aguarda notificação
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }*/
+                    ois = new ObjectInputStream(clientSocket.getInputStream());
 
                     this.dbHelper = (DBHelper) ois.readObject();
                     listDbHelper.add(this.dbHelper);
@@ -295,89 +270,59 @@ public class Server {
                     //aqui tenho que fazer handleDB.set(false) no close do servidor
 
                     //while (handleDB.get()) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
-                        if (listDbHelper.size() > 0) {
-                            DBHelper dbHelper = listDbHelper.get(0);
-                            if (!dbHelper.isRequestAlreadyProcessed()) {
-                                switch (dbHelper.getOperation()) {
-                                    case "INSERT" -> {
-                                        switch (dbHelper.getTable()) {
-                                            case "utilizador" -> {
-                                                if (!data.insertUser(dbHelper.getParams())) {
-                                                    operationResult.set("insert user fail");
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                } else {
-                                                    operationResult.set("insert user done");
-                                                    //isDbHelperReady = false;
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                }
+                    if (listDbHelper.size() > 0) {
+                        DBHelper dbHelper = listDbHelper.get(0);
+                        if (!dbHelper.isRequestAlreadyProcessed()) {
+                            switch (dbHelper.getOperation()) {
+                                case "INSERT" -> {
+                                    switch (dbHelper.getTable()) {
+                                        case "utilizador" -> {
+                                            int id = data.insertUser(dbHelper.getParams());
+                                            if (id == 0) { // id quando é 0 falha
+                                                operationResult.set("insert user fail");
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            } else {
+                                                operationResult.set("insert user done: " + id);
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
                                             }
-                                            case "evento" -> {
-                                                if (data.insertEvent(dbHelper.getParams()) == -1) {
-                                                    operationResult.set("insert event fail");
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                } else {
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    operationResult.set("insert event done");
-
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                }
-                                            }
-                                            case "presenca" -> {
+                                        }
+                                        case "evento" -> {
+                                            if (data.insertEvent(dbHelper.getParams()) == -1) {
+                                                operationResult.set("insert event fail");
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            } else {
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                operationResult.set("insert event done");
 
                                             }
                                         }
-                                    }
-                                    case "SELECT" -> {
-                                        switch (dbHelper.getTable()){
-                                            case "utilizador" -> {
-                                                int id = data.verifyLogin(dbHelper.getParams());
-                                                if(id != 0){
-                                                    operationResult.set("select user exist");
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    dbHelper.setId(id);
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                }else{
-                                                    operationResult.set("select user doesnt exist");
-                                                    dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    //System.out.println("Usuario nao existe");
+                                        case "presenca" -> {
 
-                                                    /*synchronized (lock) {
-                                                        lock.notify();
-                                                    }*/
-                                                }
+                                        }
+                                    }
+                                }
+                                case "SELECT" -> {
+                                    switch (dbHelper.getTable()){
+                                        case "utilizador" -> {
+                                            int id = data.verifyLogin(dbHelper.getParams());
+                                            if(id != 0){
+                                                operationResult.set("select user exist: " + id);
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            }else{
+                                                operationResult.set("select user doesnt exist");
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
                                             }
-                                    case "evento" -> {
-                                            //System.out.println("SELECT evento");
-                                            presenceList = data.listPresencas(dbHelper.getIdPresenca(), dbHelper.getId());
-                                            //System.out.println(presenceList);
+                                        }
+                                        case "evento" -> {
+                                            presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
                                             operationResult.set("select evento done");
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-
-                                            /*synchronized (lock) {
-                                                lock.notify();
-                                            }*/
                                         }
                                         case "presenca" -> {
 
@@ -392,19 +337,10 @@ public class Server {
                                             if(data.editProfile(dbHelper.getParams(), dbHelper.getEmail())){
                                                 operationResult.set("update user done");
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                //System.out.println("Usuario ja existe");
-
-                                                /*synchronized (lock) {
-                                                    lock.notify();
-                                                }*/
                                             }else{
                                                 operationResult.set("update user fail");
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                //System.out.println("Usuario nao existe");
 
-                                                /*synchronized (lock) {
-                                                    lock.notify();
-                                                }*/
                                             }
                                         }
                                     }
@@ -415,38 +351,47 @@ public class Server {
                             }
                             listDbHelper.remove(0);
                         }
-                    //}
-                }
+                        //}
+                    }
 
-                if(operationResult.get().equalsIgnoreCase("insert user fail")){
-                        String stringToSend = "EXISTS\n";
+                    if(operationResult.get().equalsIgnoreCase("insert user fail")){
+                        String stringToSend = "EXISTS";
                         pso.println(stringToSend);
-                    }else if(operationResult.get().equalsIgnoreCase("insert user done")){
-                        String stringToSend = "NEW\n";
+                    }else if(operationResult.get().contains("insert user done")){
+                        int startIndex = operationResult.get().lastIndexOf(":") + 2;
+                        String numberStr = operationResult.get().substring(startIndex);
+                        int idClient = Integer.parseInt(numberStr);
+
+                        String stringToSend = idClient + "NEW";
                         pso.println(stringToSend);
-                    }else if(operationResult.get().equalsIgnoreCase("select user exist")){
-                        String stringToSend = "USER FOUND\n";
+                    }else if(operationResult.get().contains("select user exist: ")){
+                        System.out.println("entrei select user exist");
+                        int startIndex = operationResult.get().lastIndexOf(":") + 2;
+                        String numberStr = operationResult.get().substring(startIndex);
+                        int idClient = Integer.parseInt(numberStr);
+
+                        String stringToSend = idClient + "USR FND";
                         pso.println(stringToSend);
                     }else if(operationResult.get().equalsIgnoreCase("select user doesnt exist")){
-                        String stringToSend = "USER NOT FOUND\n";
+                        String stringToSend = "USER NOT FOUND";
 
                         pso.println(stringToSend);
                     }else if(operationResult.get().equalsIgnoreCase("select evento done")) {
-                        String stringToSend = "PRESENCE LIST " + presenceList + "\n";
-                            //System.out.println(stringToSend);
+                        String stringToSend = "PRESENCE LIST " + presenceList;
+                        //System.out.println(stringToSend);
                         pso.println(stringToSend);
-                            //printStreamOut.println(presenceList);
-                        }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
-                        String stringToSend = "EVENT NOT CREATED\n";
+                        //printStreamOut.println(presenceList);
+                    }else if(operationResult.get().equalsIgnoreCase("insert event fail")) {
+                        String stringToSend = "EVENT NOT CREATED";
                         pso.println(stringToSend);
                     }else if(operationResult.get().equalsIgnoreCase("insert event done")) {
-                        String stringToSend = "EVENT CREATED\n";
+                        String stringToSend = "EVENT CREATED";
                         pso.println(stringToSend);
                     }else if(operationResult.get().equalsIgnoreCase("update user done")) {
-                        String stringToSend = "UPDATE DONE\n";
+                        String stringToSend = "UPDATE DONE";
                         pso.println(stringToSend);
                     }else if(operationResult.get().equalsIgnoreCase("update user fail")) {
-                        String stringToSend = "UPDATE NOT DONE\n";
+                        String stringToSend = "UPDATE NOT DONE";
                         pso.println(stringToSend);
                     }
 

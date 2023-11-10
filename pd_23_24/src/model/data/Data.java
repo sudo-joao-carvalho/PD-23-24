@@ -21,7 +21,7 @@ public class Data {
         this.resourceManager.getVersion();
     }*/
 
-    public boolean insertUser(ArrayList<String> parameters){
+    public int insertUser(ArrayList<String> parameters){
         return this.resourceManager.insertUser(parameters);
     }
 

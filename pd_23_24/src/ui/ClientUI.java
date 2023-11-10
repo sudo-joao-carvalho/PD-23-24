@@ -54,29 +54,22 @@ public class ClientUI {
 
             String outputFromRequestResult = client.waitToReceiveResultRequest();
 
-            if(outputFromRequestResult.equals("User doesnt exist")){
+            StringBuilder idS = new StringBuilder();
+
+            for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
+                idS.append(outputFromRequestResult.charAt(i));
+            }
+
+            int id = Integer.parseInt(idS.toString());
+
+            this.client.setClientID(id);
+
+            if(outputFromRequestResult.contains("User doesnt exist")){
                 System.out.println(outputFromRequestResult);
                 return false;
             }else if(outputFromRequestResult.equals("User logged in")){
                 System.out.println(outputFromRequestResult);
             }
-
-            /*if(outputFromRequestResult.contains("\nAdmin:1"))
-                admin = 1;*/
-
-            /*int startIndex = outputFromRequestResult.lastIndexOf(":") + 2;
-            String numberStr = outputFromRequestResult.substring(startIndex);
-            int idClient = Integer.parseInt(numberStr);
-
-            client.setClientID(idClient);*/
-
-            /*out = out.replaceAll(" ", "");
-            String[] splitted = out.split("\n");
-            String[] id = splitted[0].split(":");*/
-
-            //client.setClientID(Integer.parseInt(id[1]));
-            //return true;
-            //}while(true);
 
             return true;
 
@@ -139,26 +132,22 @@ public class ClientUI {
         userParams.add("0"); //autenticado
         userParams.add("0"); //admin
 
-        //teste
-        /*ResourceManager resourceManager = new ResourceManager();
-        Data data = new Data(resourceManager);
-
-        //mock add
-        userParams.add("0");
-        userParams.add("0");
-
-        data.insertUser(userParams);*/
-
         //Send information to server -> depois disto o processo continua no server
         this.client.createDBHelper("INSERT", "utilizador", userParams, -1 /*,null*/);
 
-        if (client.waitToReceiveResultRequest().equals("false")) {
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+        StringBuilder idS = new StringBuilder();
+        for(int i = 0; outputFromRequestResult.charAt(i) != 't'; i++){
+            idS.append(outputFromRequestResult.charAt(i));
+        }
+        int id = Integer.parseInt(idS.toString());
+        this.client.setClientID(id);
+        if (outputFromRequestResult.equals("false")) {
             System.out.println("Could not create a new user! Try again!");
             return false;
         }
-
         System.out.println("New user created! Welcome!");
-
         return true;
     }
 
@@ -250,15 +239,16 @@ public class ClientUI {
 
     public void listPresencas() {
 
-        /*System.out.println("\nListing all events user is registered in: \n");
+        System.out.println("\nListing all events user is registered in: \n");
+        System.out.println("\nListing: \n");
 
         int choiceMenu = InputProtection.chooseOption(null, "List all events user registered in", "Back to menu");
 
         switch (choiceMenu) {
             case 1 -> {
-                int id = InputProtection.readInt("Event ID (-1 for all events): ");
+                int idEvento = InputProtection.readInt("Event ID (-1 for all events): ");
+                this.client.createDBHelper("SELECT", "evento", idEvento, this.client.getClientID());
 
-                this.client.createDBHelper("SELECT", "evento", null, id);
                 System.out.println(client.waitToReceiveResultRequest());
             }
             case 2 -> {
@@ -267,7 +257,7 @@ public class ClientUI {
             default -> {
                 System.out.println("Invalid choice!\n");
             }
-        }*/
+        }
     }
 
     public void userMenu(){

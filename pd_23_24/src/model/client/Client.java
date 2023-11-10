@@ -53,8 +53,6 @@ public class Client {
         }
     }
 
-
-
     public void connectToServer(){
         Socket socketSr;
         OutputStream os = null;
@@ -105,8 +103,7 @@ public class Client {
 
         @Override
         public void run() {
-            BufferedReader bufferedReaderIn = null;
-            bufferedReaderIn = new BufferedReader(new InputStreamReader(is));
+            BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(is));
 
             while(true){
                 while (!isDBHelperReady) {
@@ -118,16 +115,10 @@ public class Client {
                 }
 
                 try {
-                    requestResult.set(""); //reset requestResult
+                    //requestResult.set(""); //reset requestResult
                     String n = "NEW REQUEST";
                     os.write(n.getBytes(StandardCharsets.UTF_8), 0, n.length());
                     os.flush();
-                    //os.write("Updated successfully!".getBytes(StandardCharsets.UTF_8));
-                    //os.flush();
-
-                    /*byte[] bArray = new byte[1024];
-                    int nBytes = is.read(bArray);
-                    String msgReceived = new String(bArray, 0, nBytes);*/
 
                     oos = new ObjectOutputStream(socketServer.getOutputStream());
 
@@ -136,59 +127,48 @@ public class Client {
 
                     String msgReceived = bufferedReaderIn.readLine();
 
-                    /*if(ois == null){
-                        ois = new ObjectInputStream(socketServer.getInputStream());
-                    }*/
-
-                    // Receba a resposta do servidor como um objeto (provavelmente uma String)
-
-                    /*requestResult.set((String) ois.readObject());
-
-                    System.out.println(requestResult);*/
-
-                    //bufferedReaderIn.reset();
-                    //System.out.println(msgReceived.length());
-
-                    //System.out.println(msgReceived);
-
                     if(msgReceived.contains("NEW")) {
+                        StringBuilder idS = new StringBuilder();
 
-                        requestResult.set("true");
+                        for(int i = 0; msgReceived.charAt(i) != 'N'; i++){
+                            idS.append(msgReceived.charAt(i));
+                        }
+
+                        int id = Integer.parseInt(idS.toString());
+
+                        requestResult.set(id + "true");
                     }else if(msgReceived.contains("EXISTS")){
-
                         requestResult.set("false");
-                        //clientConnected = false;
-                    }else if(msgReceived.contains("USER FOUND")) {
+                    }else if(msgReceived.contains("USR FND")) {
+                        String idS = "";
 
-                        requestResult.set("User logged in");
-                        /*int startIndex = msgReceived.lastIndexOf(":") + 2;
-                        String numberStr = msgReceived.substring(startIndex);
-                        int idClient = Integer.parseInt(numberStr);
+                        for(int i = 0; msgReceived.charAt(i) != 'U'; i++){
+                            idS += msgReceived.charAt(i);
+                        }
 
-                        dbHelper.setId(idClient);
-                        requestResult.set("User exists: " + idClient);*/
-                    }else if(msgReceived.contains("USER NOT FOUND")){
+                        int id = Integer.parseInt(idS);
+
+                        requestResult.set(id + "User logged in");
+
+                    }else if(msgReceived.equals("USER NOT FOUND")){
 
                         requestResult.set("User doesnt exist");
-                    }else if(msgReceived.contains("EVENT CREATED")){
+                    }else if(msgReceived.equals("EVENT CREATED")){
 
                         requestResult.set("Event created");
-                    }else if(msgReceived.contains("EVENT NOT CREATED")){
+                    }else if(msgReceived.equals("EVENT NOT CREATED")){
 
                         requestResult.set("Event not created");
-                    }else if(msgReceived.contains("UPDATE DONE")){
+                    }else if(msgReceived.equals("UPDATE DONE")){
 
                         requestResult.set("Update done");
-                    }else if(msgReceived.contains("UPDATE NOT DONE")){
+                    }else if(msgReceived.equals("UPDATE NOT DONE")){
 
                         requestResult.set("Update failed");
-                    }else if(msgReceived.contains("PRESENCE LIST")){
+                    }else if(msgReceived.equals("PRESENCE LIST")){
 
                         requestResult.set(msgReceived);
-                        //System.out.println(msgReceived);
                     }
-
-                    //dbHelper.setIsRequestAlreadyProcessed(false);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -214,6 +194,10 @@ public class Client {
         dbHelper = addDBHelper(queryOperation, sqlTable, params, email);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int idUser){
+        dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, idUser);
+    }
+
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
@@ -230,17 +214,25 @@ public class Client {
         }
 
         if(operation.equals("SELECT")){
-            /*if(table.equals("evento")){
-                listPresencas(dbHelper, params, id);
-                isDBHelperReady = true;
-                return dbHelper;
-            }*/
-
-            //if (table.equals("utilizador")){
+            if (table.equals("utilizador")){
                 verifyLogin(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
-            //}
+            }
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                listPresencas(dbHelper, idEvento, idUser);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+
         }
 
         return null;
@@ -291,13 +283,15 @@ public class Client {
         return true;
     }
 
-    public String listPresencas(DBHelper dbHelper, ArrayList<String> listParams, int id){ // função para atualizar os detalhes do user (nif, email, nome)
+    public String listPresencas(DBHelper dbHelper, Integer idEvento, Integer idUser){ // função para atualizar os detalhes do user (nif, email, nome)
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
-        dbHelper.setParams(listParams);
-        dbHelper.setIdPresenca(id);
+        dbHelper.setIdEvento(idEvento);
+        dbHelper.setId(idUser);
+        //dbHelper.setParams(listParams);
         return "";
     }
+
     public int getClientID() {
         return clientID;
     }
