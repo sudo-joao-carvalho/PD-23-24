@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Client {
@@ -36,6 +37,7 @@ public class Client {
     private String email;
     private int clientID;
     ConnectToServer sTr;
+
 
     public Client(String serverIP, int serverPort) throws IOException{
         this.serverIP = serverIP;
@@ -92,6 +94,8 @@ public class Client {
         private ObjectInputStream ois;
 
         private boolean clientConnected;
+
+        private Semaphore resultSemaphore = new Semaphore(0);
 
         public ConnectToServer(Socket socketServer) throws IOException {
             this.socketServer = socketServer;

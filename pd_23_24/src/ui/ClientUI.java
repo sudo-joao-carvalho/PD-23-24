@@ -50,28 +50,28 @@ public class ClientUI {
         }*/
 
 
-            verifyLogin(email, password);
+        verifyLogin(email, password);
 
-            String outputFromRequestResult = client.waitToReceiveResultRequest();
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
 
-            StringBuilder idS = new StringBuilder();
+        StringBuilder idS = new StringBuilder();
 
-            for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
-                idS.append(outputFromRequestResult.charAt(i));
-            }
+        for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
+            idS.append(outputFromRequestResult.charAt(i));
+        }
 
-            int id = Integer.parseInt(idS.toString());
+        int id = Integer.parseInt(idS.toString());
 
-            this.client.setClientID(id);
+        this.client.setClientID(id);
 
-            if(outputFromRequestResult.contains("User doesnt exist")){
-                System.out.println(outputFromRequestResult);
-                return false;
-            }else if(outputFromRequestResult.equals("User logged in")){
-                System.out.println(outputFromRequestResult);
-            }
+        if(outputFromRequestResult.contains("User doesnt exist")){
+            System.out.println(outputFromRequestResult);
+            return false;
+        }else if(outputFromRequestResult.equals("User logged in")){
+            System.out.println(outputFromRequestResult);
+        }
 
-            return true;
+        return true;
 
     }
 
