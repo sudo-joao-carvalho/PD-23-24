@@ -316,7 +316,7 @@ import java.util.concurrent.atomic.AtomicReference;
 //}
 
 public class Server {
-    public static final int TIMEOUT = 10; // seconds
+    //public static final int TIMEOUT = 20; // seconds
 
     public static void main(String[] args) {
         /*if (args.length != 1) {
@@ -368,7 +368,7 @@ public class Server {
                 while (true) {
                     try {
                         Socket toClientSocket = serverSocket.accept();
-                        toClientSocket.setSoTimeout(TIMEOUT * 1000);
+                        //toClientSocket.setSoTimeout(TIMEOUT * 1000);
 
                         InputStream is = toClientSocket.getInputStream();
                         OutputStream os = toClientSocket.getOutputStream();
