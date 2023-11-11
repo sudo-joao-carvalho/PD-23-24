@@ -166,6 +166,7 @@ public class ClientUI {
                 String outputFromRequestResult = client.waitToReceiveResultRequest();
 
                 if(outputFromRequestResult.equals("Update done")){
+                    //System.out.println("cheguei");
                     System.out.println(outputFromRequestResult);
                 }else if(outputFromRequestResult.equals("Update failed")){
                     System.out.println(outputFromRequestResult);

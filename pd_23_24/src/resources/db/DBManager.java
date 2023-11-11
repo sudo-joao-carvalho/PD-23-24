@@ -335,7 +335,7 @@ public class DBManager {
                 String horaInicio = resultSet.getString("HoraInicio");
 
                 str.append(idEvento).append("\t").append(nome).append("\t").append(local);
-                str.append("\t\t").append(data).append(horaInicio).append("\t\t").append("\n");
+                str.append("\t\t").append(data).append(horaInicio).append("\t\t");
             }
 
             //saveQuery(sqlQuery);

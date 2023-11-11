@@ -181,9 +181,12 @@ public class Client {
                         }
 
                         hasNewRequest.set(false);
+                        Thread.sleep(100);
 
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                 }
                 /*while (!isDBHelperReady) {
