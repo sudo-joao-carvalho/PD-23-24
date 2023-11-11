@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class ClientUI {
 
     private final Client client;
-    private int admin = 0;
+    private boolean isAdmin = false;
     public ClientUI(Client client){
         this.client = client;
     }
@@ -287,16 +287,16 @@ public class ClientUI {
         }
     }
 
-    public void start(){
+    //public void start(){
 
-        while(true){
+        /*while(true){
             //System.out.println("Could not login");
             if(loginRegister())
                 switch (admin){
                     case 0 -> userMenu();
                     //case 1 -> adminMenu();
                 }
-        }
+        }*/
 
        /* if(!loginRegister()){
             //System.out.println("Could not login");
@@ -308,5 +308,77 @@ public class ClientUI {
             case 0 -> userMenu();
             //case 1 -> adminMenu();
         }*/
+    //}
+
+    private void deleteEvent() {
+
+    }
+
+    public void adminUI() {
+        System.out.println("\nWelcome back admin.\n");
+
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            System.out.println("\n------------ ADMIN MENU ------------");
+
+            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check event attendance", "Get CSV file with event attendance", "Check events that user has attendance in", "Insert attendance", "Logout");
+
+            switch(choice) {
+                case 1 -> {
+                    addEvent();
+                }
+
+                case 2 -> {
+                    //editEventData();
+                }
+
+                case 3 -> {
+                    deleteEvent();
+                }
+
+                case 4 -> {
+                    // checkCreatedEvents();
+                }
+
+                case 5 -> {
+                    // addCodeToEvent();
+                }
+
+                case 6 -> {
+                    //listPresencasFromUserEmail();
+                }
+
+                case 7 -> {
+                    //getCSVFileFromUser();
+                }
+
+                case 8 -> {
+                    ///deleteAttendance();
+                }
+
+                case 9 -> {
+                    //insertAttendance();
+                }
+            }
+        }
+    }
+
+    public void start() {
+
+        while (true) {
+            //System.out.println("Could not login");
+            if (loginRegister())
+                if (!isAdmin) {
+                    userMenu();
+                } else if (isAdmin) {
+                    adminUI();
+                    //case 1 -> adminMenu();
+                }
+        }
     }
 }

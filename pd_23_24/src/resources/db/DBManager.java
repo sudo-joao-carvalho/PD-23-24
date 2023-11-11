@@ -2,6 +2,8 @@ package resources.db;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class DBManager {
@@ -442,6 +444,155 @@ public class DBManager {
         }
 
         return false;
+    }
+
+    public boolean insertUserInEvent(ArrayList<String> params) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM utilizador WHERE email='" + params.get(0) + "'), (SELECT id FROM EVENTO WHERE nome='" + params.get(1) + "'))";
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean deleteEvent(int eventId) throws SQLException {
+
+        if (getTotalAttendanceForEventAsInt(eventId) == 0) {
+            return false;
+        }
+
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "DELETE FROM evento WHERE id=" + eventId;
+
+            statement.executeQuery(sqlQuery);
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public int getTotalAttendanceForEventAsInt(int eventId) throws SQLException {
+
+        if (eventId <= 0) {
+            throw new IndexOutOfBoundsException("Invalid Id!");
+        }
+
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Count(*) AS totalPresencas FROM presenca WHERE Presenca.IdEvento=" + eventId;
+
+            ResultSet rs = statement.executeQuery(sqlQuery);
+
+            return rs.getInt("totalPresencas");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return 0;
+    }
+
+    public boolean editEventData(Integer eventId, HashMap<String, String> params) throws SQLException {
+
+        if (getTotalAttendanceForEventAsInt(eventId) != 0) { // se o evento já tiver uma presença ou mais, então gg
+            return false;
+        }
+
+        Statement statement = null;
+
+        String sqlQuery = "";
+
+        try {
+            statement = conn.createStatement();
+
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                switch (entry.getKey().toLowerCase()) {
+                    case "codigo" -> {
+                        // verificar depois qunado o evento está a correr e assim, o código mais recente é que prevalece tb
+                        //Random rnd = new Random();
+
+                        //int minVal = 100000;
+
+                        //int maxVal = 999999;
+
+                        //int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
+
+                        // tirei porque não sei se o código é random ou é o admin que mete
+
+                        // depois não esquecer do tempo em minutos da validade do código
+
+                        sqlQuery = "UPDATE evento SET codigo='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+
+                    case "nome" -> {
+                        sqlQuery = "UPDATE evento SET nome='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "local" -> {
+                        sqlQuery = "UPDATE evento SET local='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "data" -> {
+                        sqlQuery = "UPDATE evento SET data='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "horainicio" -> {
+                        sqlQuery = "UPDATE evento SET horainicio='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+
+                    case "horafim" -> {
+                        sqlQuery = "UPDATE evento SET horafim='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                }
+                statement.executeUpdate(sqlQuery);
+            }
+        } catch (SQLException e){
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return true;
     }
 
 
