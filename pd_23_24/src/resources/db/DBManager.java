@@ -90,7 +90,7 @@ public class DBManager {
         ResultSet resultSet = statement.executeQuery(sqlQuery);
 
         StringBuilder str = new StringBuilder();
-        str.append("ID\tUsername\tNome\tAdministrador\tAutenticado\tPassword\tEmail\t\t\t\t\tNIF\t\n");
+        str.append("ID\tUsername\tNome\tAdministrador\tAutenticado\tPassword\tEmail\t\t\t\t\tNIF\t");
 
         while(resultSet.next()){
             int Id = resultSet.getInt("Id");
@@ -104,7 +104,7 @@ public class DBManager {
 
 
             str.append(id).append("\t").append(username).append("\t").append(nome);
-            str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\t\t").append(password).append("\t\t").append(email).append("\t\t").append(nif).append("\n");
+            str.append("\t\t").append(administrador).append("\t\t").append(autenticado).append("\t\t").append(password).append("\t\t").append(email).append("\t\t").append(nif);
         }
 
         resultSet.close();
