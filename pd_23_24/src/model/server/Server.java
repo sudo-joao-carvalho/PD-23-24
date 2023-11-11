@@ -340,6 +340,7 @@ public class Server {
     private int serverPort;
     TcpHandler tcpHandler;
     private AtomicReference<String> operationResult;
+    private AtomicReference<Boolean> handlerClient;
 
 
     private String presenceList;
@@ -354,6 +355,7 @@ public class Server {
         tcpHandler.start();
 
         operationResult = new AtomicReference<>("");
+        handlerClient = new AtomicReference<>(true);
     }
 
     class TcpHandler extends Thread{
@@ -438,7 +440,7 @@ public class Server {
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());){
                 System.out.println("Client " + socket.getInetAddress() + ":" + socket.getPort());
 
-                while (true) {
+                while (handlerClient.get()) {
 
                 /*String msgReceived = os
 
@@ -449,7 +451,7 @@ public class Server {
                         //operationResult.set("");
                 }*/
 
-                    dbHelper.setIsRequestAlreadyProcessed(false);
+                    //dbHelper.setIsRequestAlreadyProcessed(false);
                     operationResult.set("");
 
                     if ((this.dbHelper = (DBHelper) objectInputStream.readObject()) != null) {
@@ -457,7 +459,7 @@ public class Server {
                     }
 
 
-                    if (!dbHelper.isRequestAlreadyProcessed()) {
+                    while (!dbHelper.isRequestAlreadyProcessed()) {
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
                                 switch (dbHelper.getTable()) {
