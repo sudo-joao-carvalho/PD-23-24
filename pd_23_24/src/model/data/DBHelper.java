@@ -66,7 +66,7 @@ public class DBHelper implements Serializable {
 
     public String getEmail(){return this.email;}
 
-    public void setVerifyUsername(ArrayList<String> verifyEmail) {
+    public void setVerifyEmail(ArrayList<String> verifyEmail) {
         this.verifyEmail = verifyEmail;
     }
 

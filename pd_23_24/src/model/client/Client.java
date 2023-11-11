@@ -33,8 +33,11 @@ public class Client {
     public boolean isDBHelperReady = false;
     private boolean admin = false;
     public AtomicReference<String> requestResult;
+    public AtomicReference<Boolean> srHandle;
+    public AtomicReference<Boolean> hasNewRequest;
 
     private String email;
+    private String password;
     private int clientID;
     ConnectToServer sTr;
 
@@ -43,6 +46,9 @@ public class Client {
         this.serverIP = serverIP;
         this.serverPort = serverPort;
         requestResult = new AtomicReference<>("");
+
+        srHandle = new AtomicReference<>(true);
+        hasNewRequest = new AtomicReference<>(false);
 
         connectToServer(); //pelo TCP
     }
@@ -95,88 +101,100 @@ public class Client {
 
         private boolean clientConnected;
 
-        private Semaphore resultSemaphore = new Semaphore(0);
-
         public ConnectToServer(Socket socketServer) throws IOException {
             this.socketServer = socketServer;
             this.is = socketServer.getInputStream();
             this.os = socketServer.getOutputStream();
             this.oos = null;
-            this.ois = null;
+            this.ois = null;;
         }
 
         @Override
         public void run() {
             BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(is));
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(os);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-            while(true){
-                while (!isDBHelperReady) {
+
+            while(srHandle.get()){
+                if(hasNewRequest.get()){
+                    requestResult.set(""); //reset requestResult
+                    try {
+                    /*String n = "NEW REQUEST";
+                    os.write(n.getBytes(StandardCharsets.UTF_8), 0, n.length());
+                    os.flush();*/
+
+                        //oos = new ObjectOutputStream(socketServer.getOutputStream());
+
+                        oos.writeObject(dbHelper);
+
+                        isDBHelperReady = false;
+
+                        String msgReceived = bufferedReaderIn.readLine();
+                        System.out.println(msgReceived);
+
+                        if(msgReceived.contains("NEW")) {
+                            StringBuilder idS = new StringBuilder();
+
+                            for(int i = 0; msgReceived.charAt(i) != 'N'; i++){
+                                idS.append(msgReceived.charAt(i));
+                            }
+
+                            int id = Integer.parseInt(idS.toString());
+
+                            requestResult.set(id + "true");
+                        }else if(msgReceived.contains("EXISTS")){
+                            requestResult.set("false");
+                        }else if(msgReceived.contains("USR FND")) {
+                            StringBuilder idS = new StringBuilder();
+
+                            for(int i = 0; msgReceived.charAt(i) != 'U'; i++){
+                                idS.append(msgReceived.charAt(i));
+                            }
+
+                            int id = Integer.parseInt(idS.toString());
+
+                            requestResult.set(id + "User logged in");
+
+                        }else if(msgReceived.equals("USER NOT FOUND")){
+
+                            requestResult.set("User doesnt exist");
+                        }else if(msgReceived.equals("EVENT CREATED")){
+
+                            requestResult.set("Event created");
+                        }else if(msgReceived.equals("EVENT NOT CREATED")){
+
+                            requestResult.set("Event not created");
+                        }else if(msgReceived.equals("UPDATE DONE")){
+
+                            requestResult.set("Update done");
+                        }else if(msgReceived.equals("UPDATE NOT DONE")){
+
+                            requestResult.set("Update failed");
+                        }else if(msgReceived.equals("PRESENCE LIST")){
+
+                            requestResult.set(msgReceived);
+                        }
+
+                        hasNewRequest.set(false);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                /*while (!isDBHelperReady) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                }
+                }*/
 
-                try {
-                    //requestResult.set(""); //reset requestResult
-                    String n = "NEW REQUEST";
-                    os.write(n.getBytes(StandardCharsets.UTF_8), 0, n.length());
-                    os.flush();
 
-                    oos = new ObjectOutputStream(socketServer.getOutputStream());
-
-                    oos.writeObject(dbHelper);
-                    isDBHelperReady = false;
-
-                    String msgReceived = bufferedReaderIn.readLine();
-
-                    if(msgReceived.contains("NEW")) {
-                        StringBuilder idS = new StringBuilder();
-
-                        for(int i = 0; msgReceived.charAt(i) != 'N'; i++){
-                            idS.append(msgReceived.charAt(i));
-                        }
-
-                        int id = Integer.parseInt(idS.toString());
-
-                        requestResult.set(id + "true");
-                    }else if(msgReceived.contains("EXISTS")){
-                        requestResult.set("false");
-                    }else if(msgReceived.contains("USR FND")) {
-                        String idS = "";
-
-                        for(int i = 0; msgReceived.charAt(i) != 'U'; i++){
-                            idS += msgReceived.charAt(i);
-                        }
-
-                        int id = Integer.parseInt(idS);
-
-                        requestResult.set(id + "User logged in");
-
-                    }else if(msgReceived.equals("USER NOT FOUND")){
-
-                        requestResult.set("User doesnt exist");
-                    }else if(msgReceived.equals("EVENT CREATED")){
-
-                        requestResult.set("Event created");
-                    }else if(msgReceived.equals("EVENT NOT CREATED")){
-
-                        requestResult.set("Event not created");
-                    }else if(msgReceived.equals("UPDATE DONE")){
-
-                        requestResult.set("Update done");
-                    }else if(msgReceived.equals("UPDATE NOT DONE")){
-
-                        requestResult.set("Update failed");
-                    }else if(msgReceived.equals("PRESENCE LIST")){
-
-                        requestResult.set(msgReceived);
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 //}
             }
 
@@ -192,14 +210,17 @@ public class Client {
 
     public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, int id/*, ArrayList<String> userLogin*/){
         dbHelper = addDBHelper(queryOperation, sqlTable, params, id /*, userLogin*/);
+        hasNewRequest.set(true);
     }
 
     public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, String email){
         dbHelper = addDBHelper(queryOperation, sqlTable, params, email);
+        hasNewRequest.set(true);
     }
 
     public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int idUser){
         dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, idUser);
+        hasNewRequest.set(true);
     }
 
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id /*, ArrayList<String> userLogin*/) {
@@ -260,6 +281,7 @@ public class Client {
         dbHelper.setTable("utilizador");
         dbHelper.setParams(userParameters);
         this.email = userParameters.get(1);
+
         return true;
     }
 
@@ -274,7 +296,9 @@ public class Client {
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("utilizador");
         dbHelper.setParams(loginParams);
+
         this.email = loginParams.get(0);
+        this.password = loginParams.get(1);
         return true;
     }
 

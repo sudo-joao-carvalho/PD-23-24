@@ -49,25 +49,24 @@ public class ClientUI {
             this.client.insertEvento(this.client.dbHelper, userParams);
         }*/
 
-
         verifyLogin(email, password);
 
         String outputFromRequestResult = client.waitToReceiveResultRequest();
 
-        StringBuilder idS = new StringBuilder();
-
-        for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
-            idS.append(outputFromRequestResult.charAt(i));
-        }
-
-        int id = Integer.parseInt(idS.toString());
-
-        this.client.setClientID(id);
-
-        if(outputFromRequestResult.contains("User doesnt exist")){
+        if(outputFromRequestResult.equals("User doesnt exist")){
             System.out.println(outputFromRequestResult);
             return false;
-        }else if(outputFromRequestResult.equals("User logged in")){
+        }else if(outputFromRequestResult.contains("User logged in")){
+            StringBuilder idS = new StringBuilder();
+
+            for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
+                idS.append(outputFromRequestResult.charAt(i));
+            }
+
+            int id = Integer.parseInt(idS.toString());
+
+            this.client.setClientID(id);
+
             System.out.println(outputFromRequestResult);
         }
 
@@ -289,7 +288,16 @@ public class ClientUI {
 
     public void start(){
 
-        if(!loginRegister()){
+        while(true){
+            //System.out.println("Could not login");
+            if(loginRegister())
+                switch (admin){
+                    case 0 -> userMenu();
+                    //case 1 -> adminMenu();
+                }
+        }
+
+       /* if(!loginRegister()){
             //System.out.println("Could not login");
             loginRegister();
             return;
@@ -298,6 +306,6 @@ public class ClientUI {
         switch (admin){
             case 0 -> userMenu();
             //case 1 -> adminMenu();
-        }
+        }*/
     }
 }

@@ -19,7 +19,7 @@ public class ServerUI {
 
     public void start() {
 
-        System.out.println("Server running");
+        //System.out.println("Server running");
 
         while (true) {
 
