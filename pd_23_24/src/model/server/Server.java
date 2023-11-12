@@ -436,8 +436,9 @@ public class Server {
                 throw new RuntimeException(e);
             }*/
 
-            try(PrintStream pso = new PrintStream(socket.getOutputStream(), true);
-                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());){
+            try(/*PrintStream pso = new PrintStream(socket.getOutputStream(), true);*/
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());){
                 System.out.println("Client " + socket.getInetAddress() + ":" + socket.getPort());
 
                 while (handlerClient.get()) {
@@ -454,11 +455,12 @@ public class Server {
                     //dbHelper.setIsRequestAlreadyProcessed(false);
                     operationResult.set("");
 
-                    if ((this.dbHelper = (DBHelper) objectInputStream.readObject()) != null) {
+                    if ((this.dbHelper = (DBHelper) ois.readObject()) != null) {
                         System.out.println("\nServer received a new request from Client with\n\tIP:" + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());
                     }
 
 
+                    String requestResult = "";
                     while (!dbHelper.isRequestAlreadyProcessed()) {
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
@@ -466,20 +468,28 @@ public class Server {
                                     case "utilizador" -> {
                                         int id = data.insertUser(dbHelper.getParams());
                                         if (id == 0) {  //id quando é 0 falha
-                                            operationResult.set("insert user fail");
+                                            requestResult = "false";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("insert user fail");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         } else {
-                                            operationResult.set("insert user done: " + id);
+                                            requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("insert user done: " + id);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         }
                                     }
                                     case "evento" -> {
                                         if (data.insertEvent(dbHelper.getParams()) == -1) {
-                                            operationResult.set("insert event fail");
+                                            requestResult = "Event not created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("insert event fail");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         } else {
+                                            requestResult = "Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            operationResult.set("insert event done");
+                                            /*dbHelper.setIsRequestAlreadyProcessed(true);
+                                            operationResult.set("insert event done");*/
 
                                         }
                                     }
@@ -493,17 +503,23 @@ public class Server {
                                     case "utilizador" -> {
                                         int id = data.verifyLogin(dbHelper.getParams());
                                         if (id != 0) {
-                                            operationResult.set("select user exist: " + id);
+                                            requestResult = id + "User logged in";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("select user exist: " + id);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         } else {
-                                            operationResult.set("select user doesnt exist");
+                                            requestResult = "User doesnt exist";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("select user doesnt exist");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         }
                                     }
                                     case "evento" -> {
-                                        presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
-                                        operationResult.set("select evento done");
+                                        requestResult = "PRESENCE LIST " + presenceList;
                                         dbHelper.setIsRequestAlreadyProcessed(true);
+                                        /*presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
+                                        operationResult.set("select evento done");
+                                        dbHelper.setIsRequestAlreadyProcessed(true);*/
                                     }
                                     case "presenca" -> {
 
@@ -516,11 +532,15 @@ public class Server {
                                 switch (dbHelper.getTable()) {
                                     case "utilizador" -> {
                                         if (data.editProfile(dbHelper.getParams(), dbHelper.getEmail())) {
-                                            operationResult.set("update user done");
+                                            requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("update user done");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
                                         } else {
-                                            operationResult.set("update user fail");
+                                            requestResult = "Update failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            /*operationResult.set("update user fail");
+                                            dbHelper.setIsRequestAlreadyProcessed(true);*/
 
                                         }
                                     }
@@ -532,7 +552,17 @@ public class Server {
                         }
                     }
 
-                    if (operationResult.get().equalsIgnoreCase("insert user fail")) {
+                    dbHelper.setRequestResult(requestResult);
+
+                    while(true){
+                        if(!this.dbHelper.getRequestResult().equals("")){
+                            oos.writeObject(this.dbHelper.getRequestResult());
+                            this.dbHelper.setRequestResult("");
+                            break;
+                        }
+                    }
+
+                    /*if (operationResult.get().equalsIgnoreCase("insert user fail")) {
                         String stringToSend = "EXISTS";
                         pso.println(stringToSend);
                         pso.flush();
@@ -577,7 +607,7 @@ public class Server {
                         String stringToSend = "UPDATE NOT DONE";
                         pso.println(stringToSend);
                         pso.flush();
-                    }
+                    }*/
 
 
                 /*Calendar calendar = GregorianCalendar.getInstance();

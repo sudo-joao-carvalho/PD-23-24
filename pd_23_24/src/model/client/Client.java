@@ -111,10 +111,17 @@ public class Client {
 
         @Override
         public void run() {
-            BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(is));
+            /*BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(is));*/
             ObjectOutputStream oos = null;
             try {
                 oos = new ObjectOutputStream(os);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            ObjectInputStream ois = null;
+            try{
+                ois = new ObjectInputStream(is);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -134,7 +141,26 @@ public class Client {
 
                         isDBHelperReady = false;
 
-                        String msgReceived = bufferedReaderIn.readLine();
+                        //receber a mensagem
+                        //requestResult.set((String) ois.readObject());
+
+                        try {
+                            Object receivedObject = ois.readObject();
+
+                            if (receivedObject instanceof AtomicReference) {
+                                AtomicReference<String> atomicReference = (AtomicReference<String>) receivedObject;
+                                String result = atomicReference.get();
+                                // Agora você pode usar a variável 'result'
+                                requestResult.set(result);
+                            }
+                        } catch (IOException | ClassNotFoundException e) {
+                            // Trate as exceções aqui, se necessário
+                            e.printStackTrace(); // ou qualquer outra lógica de tratamento desejada
+                        }
+
+                        //System.out.println(requestResult.get());
+
+                        /*String msgReceived = bufferedReaderIn.readLine();
                         System.out.println(msgReceived);
 
                         if(msgReceived.contains("NEW")) {
@@ -178,15 +204,12 @@ public class Client {
                         }else if(msgReceived.equals("PRESENCE LIST")){
 
                             requestResult.set(msgReceived);
-                        }
+                        }*/
 
                         hasNewRequest.set(false);
-                        Thread.sleep(100);
 
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
                     }
                 }
                 /*while (!isDBHelperReady) {
