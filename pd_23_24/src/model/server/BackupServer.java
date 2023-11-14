@@ -112,9 +112,10 @@ public class BackupServer { // perguntar ao prof para ver se é mm assim
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
-            System.out.println("Número inválido de argumentos recebido. Sintaxe: java dbDirectory\n");
+            System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory-\n");
             return;
         }
+
 
         BackupServer backupServer = new BackupServer();
 

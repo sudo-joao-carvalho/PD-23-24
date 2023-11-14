@@ -170,6 +170,12 @@ public class Server {
         @Override
         public void run() {
 
+            /*if (!data.connectToDB(dbDirectory, serverPort)) {
+                System.out.println("Couldnt connect to database");
+                return;
+            } else
+                System.out.println("Successfully connected to database");*/
+
             try(ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());){
                 System.out.println("Client " + socket.getInetAddress() + ":" + socket.getPort());
