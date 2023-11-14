@@ -66,9 +66,6 @@ public class Client {
         OutputStream os = null;
         InputStream is = null;
 
-        //parse information about the servers
-        //for (String sv : servers){
-            //String[] s = sv.split("-");
             try {
                 socketSr = new Socket(serverIP, serverPort);
 
@@ -83,8 +80,6 @@ public class Client {
                 sTr.start();
                 return;
             } catch (IOException e) {
-                //indexSV.set(indexSV.get()+1 > servers.size()-1? 0 : indexSV.get()+1);
-                //continue;
             }
         //}
     }
@@ -131,18 +126,10 @@ public class Client {
                 if(hasNewRequest.get()){
                     requestResult.set(""); //reset requestResult
                     try {
-                    /*String n = "NEW REQUEST";
-                    os.write(n.getBytes(StandardCharsets.UTF_8), 0, n.length());
-                    os.flush();*/
-
-                        //oos = new ObjectOutputStream(socketServer.getOutputStream());
 
                         oos.writeObject(dbHelper);
 
                         isDBHelperReady = false;
-
-                        //receber a mensagem
-                        //requestResult.set((String) ois.readObject());
 
                         try {
                             Object receivedObject = ois.readObject();
@@ -158,70 +145,12 @@ public class Client {
                             e.printStackTrace(); // ou qualquer outra lógica de tratamento desejada
                         }
 
-                        //System.out.println(requestResult.get());
-
-                        /*String msgReceived = bufferedReaderIn.readLine();
-                        System.out.println(msgReceived);
-
-                        if(msgReceived.contains("NEW")) {
-                            StringBuilder idS = new StringBuilder();
-
-                            for(int i = 0; msgReceived.charAt(i) != 'N'; i++){
-                                idS.append(msgReceived.charAt(i));
-                            }
-
-                            int id = Integer.parseInt(idS.toString());
-
-                            requestResult.set(id + "true");
-                        }else if(msgReceived.contains("EXISTS")){
-                            requestResult.set("false");
-                        }else if(msgReceived.contains("USR FND")) {
-                            StringBuilder idS = new StringBuilder();
-
-                            for(int i = 0; msgReceived.charAt(i) != 'U'; i++){
-                                idS.append(msgReceived.charAt(i));
-                            }
-
-                            int id = Integer.parseInt(idS.toString());
-
-                            requestResult.set(id + "User logged in");
-
-                        }else if(msgReceived.equals("USER NOT FOUND")){
-
-                            requestResult.set("User doesnt exist");
-                        }else if(msgReceived.equals("EVENT CREATED")){
-
-                            requestResult.set("Event created");
-                        }else if(msgReceived.equals("EVENT NOT CREATED")){
-
-                            requestResult.set("Event not created");
-                        }else if(msgReceived.equals("UPDATE DONE")){
-
-                            requestResult.set("Update done");
-                        }else if(msgReceived.equals("UPDATE NOT DONE")){
-
-                            requestResult.set("Update failed");
-                        }else if(msgReceived.equals("PRESENCE LIST")){
-
-                            requestResult.set(msgReceived);
-                        }*/
-
                         hasNewRequest.set(false);
 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                /*while (!isDBHelperReady) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }*/
-
-
-                //}
             }
 
         }
