@@ -240,7 +240,31 @@ public class Client {
                 verifyLogin(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
+<<<<<<< Updated upstream
             //}
+=======
+            }
+        }
+
+        if (operation.equals("DELETE")) {
+            if (table.equals("evento")) {
+
+            }
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                listPresencas(dbHelper, idEvento, idUser);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+
+>>>>>>> Stashed changes
         }
 
         return null;
@@ -298,6 +322,14 @@ public class Client {
         dbHelper.setIdPresenca(id);
         return "";
     }
+<<<<<<< Updated upstream
+=======
+
+    /*public boolean deleteEvent(DBHelper dbHelper) {
+
+    }*/
+
+>>>>>>> Stashed changes
     public int getClientID() {
         return clientID;
     }

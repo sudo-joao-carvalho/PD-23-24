@@ -4,6 +4,7 @@ import resources.ResourceManager;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Data {
 
@@ -33,5 +34,17 @@ public class Data {
 
     public String listPresencas(Integer idEvento, Integer idClient) {
         return this.resourceManager.listPresencas(idEvento, idClient);
+    }
+
+    public boolean editEventData(int eventId, HashMap<String, String> params) throws SQLException {
+        return this.resourceManager.editEventData(eventId, params);
+    }
+
+    public boolean insertUserInEvent(ArrayList<String> params) {
+        return this.resourceManager.insertUserInEvent(params);
+    }
+
+    public boolean deleteEvent(int eventId) throws SQLException {
+        return this.resourceManager.deleteEvent(eventId);
     }
 }

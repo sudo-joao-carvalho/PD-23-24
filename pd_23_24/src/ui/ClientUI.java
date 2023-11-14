@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class ClientUI {
 
     private final Client client;
-    private int admin = 0;
+    private boolean isAdmin = false;
     public ClientUI(Client client){
         this.client = client;
     }
@@ -279,7 +279,7 @@ public class ClientUI {
 
             switch (input){
                 case 1 -> {
-                    System.out.println("XOTA"); // LISTAR EVENT
+                    System.out.println("Print1"); // LISTAR EVENT
                 }
                 case 2 -> {
                     addEvent(); // ADD EVENT
@@ -297,9 +297,82 @@ public class ClientUI {
         }
     }
 
+    private void deleteEvent() {
+
+    }
+
+    public void adminUI() {
+        System.out.println("\nWelcome back admin.\n");
+
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            System.out.println("\n------------ ADMIN MENU ------------");
+
+            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check event attendance", "Get CSV file with event attendance", "Check events that user has attendance in", "Insert attendance", "Logout");
+
+            switch(choice) {
+                case 1 -> {
+                    addEvent();
+                }
+
+                case 2 -> {
+                    //editEventData();
+                }
+
+                case 3 -> {
+                    deleteEvent();
+                }
+
+                case 4 -> {
+                   // checkCreatedEvents();
+                }
+
+                case 5 -> {
+                   // addCodeToEvent();
+                }
+
+                case 6 -> {
+                    //listPresencasFromUserEmail();
+                }
+
+                case 7 -> {
+                    //getCSVFileFromUser();
+                }
+
+                case 8 -> {
+                    ///deleteAttendance();
+                }
+
+                case 9 -> {
+                    //insertAttendance();
+                }
+            }
+        }
+    }
+
     public void start(){
 
+<<<<<<< Updated upstream
         if(!loginRegister()){
+=======
+        while(true){
+            //System.out.println("Could not login");
+            if(loginRegister())
+                if (!isAdmin) {
+                    userMenu();
+                } else if (isAdmin) {
+                    adminUI();
+                    //case 1 -> adminMenu();
+                }
+        }
+
+       /* if(!loginRegister()){
+>>>>>>> Stashed changes
             //System.out.println("Could not login");
             loginRegister();
             return;
