@@ -45,7 +45,12 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
 
                         hb = (HeartBeat) obj;
 
-                        System.out.println("Recebi heartbeat: " + hb.getMsg());
+                        //System.out.println("Recebi heartbeat: " + hb.getMsg())
+
+                        System.out.println();
+                        System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + ") ");
+                        System.out.println(hb.getMsg());
+
                         /*if (msg.getMsg().toUpperCase().contains(LIST.toUpperCase())) {
 
                             try (ByteArrayOutputStream buff = new ByteArrayOutputStream();
@@ -115,7 +120,6 @@ public class BackupServer { // perguntar ao prof para ver se é mm assim
             System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory-\n");
             return;
         }
-
 
         BackupServer backupServer = new BackupServer();
 

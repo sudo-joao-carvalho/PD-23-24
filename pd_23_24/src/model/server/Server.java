@@ -19,12 +19,13 @@ class SendHeartBeat extends Thread{
     private static final int HBTIMER = 5;
     private HeartBeat hearbeat;
     private MulticastSocket mcastSocket;
-    private boolean isRunning;
+    private AtomicReference<Boolean> isRunning;
 
     public SendHeartBeat(HeartBeat hearbeat, MulticastSocket mcastSocket){
         this.hearbeat = hearbeat;
         this.mcastSocket = mcastSocket;
-        this.isRunning = true;
+
+        this.isRunning = new AtomicReference<>(true);
     }
 
     @Override
@@ -32,11 +33,11 @@ class SendHeartBeat extends Thread{
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);) {
 
-            while(isRunning){
+            while(isRunning.get()){
                 try{
                     Thread.sleep(HBTIMER * 1000);
                 } catch (InterruptedException e) {
-                    this.isRunning = false;
+                    this.isRunning.set(false);
                     throw new RuntimeException(e);
                 }
 
@@ -48,7 +49,7 @@ class SendHeartBeat extends Thread{
             }
 
         } catch (IOException e) {
-            if (this.isRunning) {
+            if (this.isRunning.get()) {
                 e.printStackTrace();
             }
             if (!mcastSocket.isClosed()) {
