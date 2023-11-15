@@ -21,7 +21,6 @@ public class DBHelper implements Serializable {
     private String email;
     private Integer idEvento;
     private ArrayList<String> verifyEmail;
-
     private boolean isRequestAlreadyProcessed;
 
 

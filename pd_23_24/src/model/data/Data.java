@@ -36,7 +36,7 @@ public class Data {
         return this.resourceManager.listPresencas(idEvento, idClient);
     }
 
-    public boolean editEventData(int eventId, HashMap<String, String> params) throws SQLException {
+    public boolean editEventData(int eventId, ArrayList<String> params) throws SQLException {
         return this.resourceManager.editEventData(eventId, params);
     }
 

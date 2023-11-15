@@ -7,6 +7,7 @@ import ui.util.InputProtection;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ClientUI {
 
@@ -125,6 +126,127 @@ public class ClientUI {
         }
         System.out.println("New user created! Welcome!");
         return true;
+    }
+
+    private void editEventData() {
+        int choice = InputProtection.chooseOption(null, "Update Event Data", "Back to menu");
+
+        if (choice == 1) {
+            int eventId = InputProtection.readInt("Event ID: ");
+
+            ArrayList<String> params = new ArrayList<>();
+
+
+            int choice2 = InputProtection.chooseOption("Edit Menu: ", "Edit Event Name", "Edit Event Location", "Edit Event Date", "Edit Event Beginning Time", "Edit Event End Time", "Back to menu");
+
+            switch (choice2) {
+                case 1 -> {
+                    String name = InputProtection.readString("New Event Name: ", false);
+                    params.add("nome");
+                    params.add(name);
+                    this.client.createDBHelper("UPDATE", "evento", params, eventId);
+
+                    String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                    if(outputFromRequestResult.equals("Update done")){
+                        System.out.println(outputFromRequestResult  + ": Name");
+                    }else if(outputFromRequestResult.equals("Update failed")){
+                        System.out.println(outputFromRequestResult);
+                    }
+                }
+
+                case 2 -> {
+                    String location = InputProtection.readString("New Event Location: ", false);
+                    params.add("local");
+                    params.add(location);
+                    this.client.createDBHelper("UPDATE", "evento", params, eventId);
+
+                    String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                    if(outputFromRequestResult.equals("Update done")){
+                        System.out.println(outputFromRequestResult  + ": Location");
+                    }else if(outputFromRequestResult.equals("Update failed")){
+                        System.out.println(outputFromRequestResult);
+                    }
+                }
+
+                case 3 -> {
+                    String date = InputProtection.readString("New Event Date (use this format dd/mm/yyyy): ", true); // fazer validação de mês não ser maior que 12, dia não ser maior que 31, ano não ser muito pequeno ou muito grande
+
+                    if (!date.contains("/")) {
+                        System.out.println("Wrong date format.\n");
+                        break;
+                    }
+
+                    params.add("data");
+                    params.add(date);
+
+                    this.client.createDBHelper("UPDATE", "evento", params, eventId);
+
+                    String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                    if(outputFromRequestResult.equals("Update done")){
+                        System.out.println(outputFromRequestResult  + ": Date");
+                    }else if(outputFromRequestResult.equals("Update failed")){
+                        System.out.println(outputFromRequestResult);
+                    }
+                }
+
+                case 4 -> {
+                    String beginningHour = InputProtection.readString("New Event Beginning Time (use this format hh:mm): ", true); // fazer validação de mês não ser maior que 12, dia não ser maior que 31, ano não ser muito pequeno ou muito grande
+
+                    if (!beginningHour.contains(":")) {
+                        System.out.println("Wrong date format.\n");
+                        break;
+                    }
+
+                    params.add("horainicio");
+                    params.add(beginningHour);
+
+                    this.client.createDBHelper("UPDATE", "evento", params, eventId);
+
+                    String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                    if(outputFromRequestResult.equals("Update done")){
+                        System.out.println(outputFromRequestResult  + ": Hora Inicio");
+                    }else if(outputFromRequestResult.equals("Update failed")){
+                        System.out.println(outputFromRequestResult);
+                    }
+                }
+
+                case 5 -> {
+                    String endingHour = InputProtection.readString("New Event Ending Time (use this format hh:mm): ", true); // fazer validação de mês não ser maior que 12, dia não ser maior que 31, ano não ser muito pequeno ou muito grande
+
+                    if (!endingHour.contains(":")) {
+                        System.out.println("Wrong date format.\n");
+                        break;
+                    }
+
+                    params.add("horafim");
+                    params.add(endingHour);
+
+                    this.client.createDBHelper("UPDATE", "evento", params, eventId);
+
+                    String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+                    if(outputFromRequestResult.equals("Update done")){
+                        System.out.println(outputFromRequestResult + ": Hora Fim");
+                    }else if(outputFromRequestResult.equals("Update failed")){
+                        System.out.println(outputFromRequestResult);
+                    }
+                }
+                case 6 -> {
+                    return;
+                }
+
+                default -> {
+                    System.out.println("Invalid choice.\n");
+                }
+            }
+
+            params.clear();
+
+        }
     }
 
     public boolean editProfile(){
@@ -292,9 +414,6 @@ public class ClientUI {
         return true;
     }
 
-    private void editEventData(){
-        //not on server yet
-    }
 
     private void deleteEvent() {
         System.out.println();

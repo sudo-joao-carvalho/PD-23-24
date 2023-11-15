@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -196,6 +197,14 @@ public class Client {
             }
         }
 
+
+        if(operation.equals("UPDATE")){
+            if(table.equals("evento")){
+                editEventData(dbHelper, params, id);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
         return null;
     }
 
@@ -297,6 +306,15 @@ public class Client {
         dbHelper.setTable("evento");
         dbHelper.setIdEvento(idEvento);
         dbHelper.setColumn("codigo");
+        return true;
+    }
+
+    public boolean editEventData(DBHelper dbHelper, ArrayList<String> params, Integer idEvento){
+        dbHelper.setOperation("UPDATE");
+        dbHelper.setTable("evento");
+        dbHelper.setParams(params);
+        dbHelper.setIdEvento(idEvento);
+        dbHelper.setColumn(params.get(0));
         return true;
     }
 

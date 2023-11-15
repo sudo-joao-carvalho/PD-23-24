@@ -150,13 +150,13 @@ public class Server {
                         }
 
                     } catch (Exception e) {
-                        System.out.println("a");
-                        System.out.println("Error: " + e);
+                        throw new SocketTimeoutException("Too long to send request to server! Disconnecting...\n");
+                        //System.out.println("Error: " + e);
                     }
                 }
             } catch (Exception e) {
-                System.out.println("b");
-                System.out.println("Error: " + e);
+                //throw new Exception("Failed to create socket!\n");
+                //System.out.println("Error: " + e);
             }
         }
     }
@@ -262,12 +262,22 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        if(dbHelper.getColumn().equals("codigo")){
-                                            int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
-                                            requestResult = Integer.toString(codigo);
-                                            dbHelper.setIsRequestAlreadyProcessed(true);
-                                        }else{
-                                            //data.updateEventData( dbHelper.getIdEvento(), HashMap???? );
+                                        switch (dbHelper.getColumn()) {
+                                            case "codigo" -> {
+                                                int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
+                                                requestResult = Integer.toString(codigo);
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            }
+                                            case "nome", "local", "data", "horainicio", "horafim" -> {
+                                                System.out.println(dbHelper.getParams());
+                                                if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
+                                                    requestResult = "Update done";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                }else{
+                                                    requestResult = "Update failed";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                }
+                                            }
                                         }
                                     }
                                 }

@@ -42,7 +42,7 @@ public class ResourceManager {
         return this.dbManager.deleteEvent(eventId);
     }
 
-    public boolean editEventData(int eventId, HashMap<String, String> params) throws SQLException {
+    public boolean editEventData(int eventId, ArrayList<String> params) throws SQLException {
         return this.dbManager.editEventData(eventId, params);
     }
 

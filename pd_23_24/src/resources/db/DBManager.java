@@ -520,7 +520,7 @@ public class DBManager {
         return 0;
     }
 
-    public boolean editEventData(Integer eventId, HashMap<String, String> params) throws SQLException {
+    public boolean editEventData(Integer eventId, ArrayList<String> params) throws SQLException {
 
         if (getTotalAttendanceForEventAsInt(eventId) != 0) { // se o evento já tiver uma presença ou mais, então gg
             return false;
@@ -533,44 +533,43 @@ public class DBManager {
         try {
             statement = conn.createStatement();
 
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                switch (entry.getKey().toLowerCase()) {
-                    case "codigo" -> {
-                        // verificar depois qunado o evento está a correr e assim, o código mais recente é que prevalece tb
-                        //Random rnd = new Random();
+            switch (params.get(0)) {
+                /*case "codigo" -> { //nao faz sentido ter aqui pq so se pode editar estes parametros se nao existir qualquer presenca no evento mas so se pode gerar o codigo quando o evento ja esta a decorrer
+                    // verificar depois qunado o evento está a correr e assim, o código mais recente é que prevalece tb
+                    //Random rnd = new Random();
 
-                        //int minVal = 100000;
+                    //int minVal = 100000;
 
-                        //int maxVal = 999999;
+                    //int maxVal = 999999;
 
-                        //int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
+                    //int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
 
-                        // tirei porque não sei se o código é random ou é o admin que mete
+                    // tirei porque não sei se o código é random ou é o admin que mete
 
-                        // depois não esquecer do tempo em minutos da validade do código
+                    // depois não esquecer do tempo em minutos da validade do código
 
-                        sqlQuery = "UPDATE evento SET codigo='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
+                    sqlQuery = "UPDATE evento SET codigo='" + entry.getValue() + "' WHERE id=" + eventId;
+                }*/
 
-                    case "nome" -> {
-                        sqlQuery = "UPDATE evento SET nome='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
-                    case "local" -> {
-                        sqlQuery = "UPDATE evento SET local='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
-                    case "data" -> {
-                        sqlQuery = "UPDATE evento SET data='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
-                    case "horainicio" -> {
-                        sqlQuery = "UPDATE evento SET horainicio='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
-
-                    case "horafim" -> {
-                        sqlQuery = "UPDATE evento SET horafim='" + entry.getValue() + "' WHERE id=" + eventId;
-                    }
+                case "nome" -> {
+                    sqlQuery = "UPDATE evento SET nome='" + params.get(1) + "' WHERE id=" + eventId;
                 }
-                statement.executeUpdate(sqlQuery);
+                case "local" -> {
+                    sqlQuery = "UPDATE evento SET local='" + params.get(1) + "' WHERE id=" + eventId;
+                }
+                case "data" -> {
+                    sqlQuery = "UPDATE evento SET data='" + params.get(1) + "' WHERE id=" + eventId;
+                }
+                case "horainicio" -> {
+                    sqlQuery = "UPDATE evento SET horainicio='" + params.get(1) + "' WHERE id=" + eventId;
+                }
+
+                case "horafim" -> {
+                    sqlQuery = "UPDATE evento SET horafim='" + params.get(1) + "' WHERE id=" + eventId;
+                }
             }
+            statement.executeUpdate(sqlQuery);
+
         } catch (SQLException e){
             return false;
         } finally {
