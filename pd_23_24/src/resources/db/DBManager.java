@@ -457,7 +457,6 @@ public class DBManager {
             String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM utilizador WHERE email='" + params.get(0) + "'), (SELECT id FROM EVENTO WHERE nome='" + params.get(1) + "'))";
 
             statement.executeQuery(sqlQuery);
-            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -470,6 +469,8 @@ public class DBManager {
                 e.printStackTrace();
             }
         }
+
+        return true;
     }
 
     public boolean deleteEvent(int eventId) throws SQLException {

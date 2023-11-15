@@ -73,7 +73,10 @@ public class ClientUI {
             String numberStr = outputFromRequestResult.substring(startIndex);
             int isAdmin = Integer.parseInt(numberStr);
 
-            if(isAdmin == 1) this.isAdmin = true;
+            if(isAdmin == 1){
+                this.isAdmin = true;
+                this.client.setIsAdmin(true);
+            }
 
             System.out.println(outputFromRequestResult);
         }

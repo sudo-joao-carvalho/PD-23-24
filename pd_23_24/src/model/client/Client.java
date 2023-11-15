@@ -156,11 +156,6 @@ public class Client {
         }
     }
 
-    // gets e sets
-    public boolean getIsAdmin() {
-        return admin;
-    }
-
     // funções de DBHelper
 
     public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, int id/*, ArrayList<String> userLogin*/){
@@ -315,5 +310,14 @@ public class Client {
 
     public String getEmail() {
         return email;
+    }
+
+    // gets e sets
+    public boolean getIsAdmin() {
+        return admin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.admin = isAdmin;
     }
 }
