@@ -10,8 +10,13 @@ public class DBManager {
     // aqui ficam as queries e a lógica toda das queries
     private Connection conn;
 
+    private boolean isFirstTime;
+
     public DBManager() throws SQLException {
+        this.isFirstTime = true;
         this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
+
+        updateDBVersion();
     }
 
     public boolean connectToDB(String directory, int port) {
@@ -115,14 +120,14 @@ public class DBManager {
         return str.toString();
     }
 
-    public int insertEvent(ArrayList<String> params) { // precisa de devolver o id do evento criado, não apagar o return disto!
+    public boolean insertEvent(ArrayList<String> params) { // (? ver depois) precisa de devolver o id do evento criado, não apagar o return disto!
         Statement statement;
 
         try {
             statement = conn.createStatement();
         } catch (SQLException e) {
             e.printStackTrace();
-            return -1;
+            return false;
         }
 
         int i = 0;
@@ -133,12 +138,13 @@ public class DBManager {
                 params.get(i) + "')";
 
         try {
-            statement.executeUpdate(sqlQuery, Statement.RETURN_GENERATED_KEYS);
-            ResultSet rs = statement.getGeneratedKeys();
-            return rs.getInt(1); // devolve o id do novo evento
+            statement.executeUpdate(sqlQuery);
+
+            updateDBVersion();
+            return true; // já não devolve o id do novo evento
         } catch (SQLException e) {
             e.printStackTrace();
-            return -1;
+            return false;
         } finally {
             try {
                 if (statement != null) {
@@ -148,39 +154,6 @@ public class DBManager {
                 e.printStackTrace();
             }
         }
-    }
-
-    public int insertCodeByAdmin(int eventID) throws SQLException {
-        Statement stmt = null;
-
-        try {
-            stmt = conn.createStatement();
-
-            Random rnd = new Random();
-
-            int minVal = 100000;
-
-            int maxVal = 999999;
-
-            int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
-
-            String sqlQuery = "UPDATE Evento SET Codigo='" + eventCode + "' WHERE Id=" + eventID;
-
-            stmt.executeUpdate(sqlQuery);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return 0;
     }
 
     public int insertUser(ArrayList<String> userParameters){
@@ -256,7 +229,8 @@ public class DBManager {
                 // Lidar com a exceção, se necessário.
             }
         }
-        //updateVersion();
+
+        updateDBVersion();
         return idRegisto;
     }
 
@@ -385,6 +359,7 @@ public class DBManager {
                 }
             }
 
+            updateDBVersion();
             return true;
         }else if(params.get(0).equalsIgnoreCase("email")){
             String newEmail = params.get(1);
@@ -404,6 +379,7 @@ public class DBManager {
                 }
             }
 
+            updateDBVersion();
             return true;
         }else if(params.get(0).equalsIgnoreCase("password")){
             String newPassword = params.get(1);
@@ -423,6 +399,7 @@ public class DBManager {
                 }
             }
 
+            updateDBVersion();
             return true;
         }if(params.get(0).equalsIgnoreCase("nif")){
             int newNif = Integer.parseInt(params.get(1));
@@ -442,6 +419,7 @@ public class DBManager {
                 }
             }
 
+            updateDBVersion();
             return true;
         }
 
@@ -470,6 +448,7 @@ public class DBManager {
             }
         }
 
+        updateDBVersion();
         return true;
     }
 
@@ -510,6 +489,7 @@ public class DBManager {
 
         }
 
+        updateDBVersion();
         return true;
     }
 
@@ -603,6 +583,7 @@ public class DBManager {
             }
         }
 
+        updateDBVersion();
         return true;
     }
 
@@ -636,6 +617,7 @@ public class DBManager {
                 // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
                 return 0;
             }else{
+                updateDBVersion();
                 return eventCode;
             }
 
@@ -652,6 +634,74 @@ public class DBManager {
             }
         }
 
+    }
+
+    public int getDBVersion() {
+
+        int versionNumber = 0;
+
+        try {
+            Statement statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Versao FROM Versao";
+
+            versionNumber = statement.executeQuery(sqlQuery).getInt("Versao");
+
+            return versionNumber;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean updateDBVersion() {
+        Statement statement = null;
+
+        if (this.isFirstTime) {
+            try {
+                statement = conn.createStatement();
+
+                String sqlQuery = "INSERT INTO Versao VALUES (NULL, '" + 0 + "')";
+
+                statement.executeUpdate(sqlQuery);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                try {
+                    if (statement != null) {
+                        statement.close();
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            this.isFirstTime = false;
+
+            return true;
+        }
+
+        int versionNumber = getDBVersion();
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "UPDATE Versao SET Versao='" + ++versionNumber + "'WHERE id=" + 1;
+
+            statement.executeUpdate(sqlQuery);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
 }

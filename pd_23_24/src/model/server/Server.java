@@ -208,7 +208,7 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        if (data.insertEvent(dbHelper.getParams()) == -1) {
+                                        if (!data.insertEvent(dbHelper.getParams())) {
                                             requestResult = "Event not created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         } else {

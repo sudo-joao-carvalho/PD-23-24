@@ -3,6 +3,7 @@ package model.server;
 import model.server.hb.HeartBeat;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.*;
@@ -118,6 +119,28 @@ public class BackupServer { // perguntar ao prof para ver se é mm assim
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory-\n");
+            return;
+        }
+
+        File localDir = new File(args[0].trim());
+
+        if (!localDir.exists()) {
+            System.out.println("\nCan't write in non existent directory.\n");
+            return;
+        }
+
+        if (!localDir.isDirectory()) {
+            System.out.println("\nDesired path isn't directory.\n");
+            return;
+        }
+
+        if (localDir.list().length != 0) {
+            System.out.println("Directory already contains files. Shutting down.\n");
+            return;
+        }
+
+        if (!localDir.canWrite()) {
+            System.out.println("\nNo WRITE permissions to directory!\n");
             return;
         }
 

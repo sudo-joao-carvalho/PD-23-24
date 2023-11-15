@@ -24,7 +24,7 @@ public class ResourceManager {
         return this.dbManager.insertUser(userParameters);
     }
 
-    public int insertEvent(ArrayList<String> params) {
+    public boolean insertEvent(ArrayList<String> params) {
         return this.dbManager.insertEvent(params);
     }
 

@@ -26,7 +26,7 @@ public class Data {
         return this.resourceManager.insertUser(parameters);
     }
 
-    public int insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
+    public boolean insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
 
     public int[] verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
 
