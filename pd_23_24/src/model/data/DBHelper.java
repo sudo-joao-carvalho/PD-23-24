@@ -14,6 +14,7 @@ public class DBHelper implements Serializable {
     private Integer id;
     private String operation;
     private String table;
+    private String column;
     private ArrayList<String> params;
     private AtomicReference<String> requestResult;
     private boolean logout;
@@ -27,6 +28,8 @@ public class DBHelper implements Serializable {
     public DBHelper(){
         this.requestResult = new AtomicReference<>("");
         this.isRequestAlreadyProcessed = false;
+
+        this.column = "";
     }
 
 
@@ -98,5 +101,13 @@ public class DBHelper implements Serializable {
 
     public void setRequestResult(String requestResult) {
         this.requestResult.set(requestResult);
+    }
+
+    public String getColumn() {
+        return column;
+    }
+
+    public void setColumn(String column) {
+        this.column = column;
     }
 }

@@ -28,7 +28,7 @@ public class Data {
 
     public int insertEvent(ArrayList<String> params) { return this.resourceManager.insertEvent(params); }
 
-    public int verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
+    public int[] verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
 
     public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
 
@@ -46,5 +46,9 @@ public class Data {
 
     public boolean deleteEvent(int eventId) throws SQLException {
         return this.resourceManager.deleteEvent(eventId);
+    }
+
+    public int addCodeToEvent(Integer eventId) {
+        return this.resourceManager.addCodeToEvent(eventId);
     }
 }

@@ -212,7 +212,22 @@ public class Client {
                 isDBHelperReady = true;
                 return dbHelper;
             }
+        }
 
+        if(operation.equals("DELETE")){
+            if(table.equals("evento")){
+                deleteEvento(dbHelper, idEvento, idUser);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        if(operation.equals("UPDATE")){
+            if(table.equals("evento")){
+                addCodeToEvent(dbHelper, idEvento, idUser);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
         return null;
@@ -273,6 +288,21 @@ public class Client {
         dbHelper.setId(idUser);
         //dbHelper.setParams(listParams);
         return "";
+    }
+
+    public boolean deleteEvento(DBHelper dbHelper, Integer idEvento, Integer idClient){
+        dbHelper.setOperation("DELETE");
+        dbHelper.setTable("evento");
+        dbHelper.setIdEvento(idEvento);
+        return true;
+    }
+
+    public boolean addCodeToEvent(DBHelper dbHelper, Integer idEvento, Integer idClient){
+        dbHelper.setOperation("UPDATE");
+        dbHelper.setTable("evento");
+        dbHelper.setIdEvento(idEvento);
+        dbHelper.setColumn("codigo");
+        return true;
     }
 
     public int getClientID() {

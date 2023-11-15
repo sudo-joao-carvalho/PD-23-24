@@ -127,7 +127,7 @@ public class DBManager {
 
         int i = 0;
 
-        String sqlQuery = "INSERT INTO Evento VALUES (NULL, NULL, '" +
+        String sqlQuery = "INSERT INTO Evento VALUES (NULL, 0, '" +
                 params.get(i++) + "' , '" + params.get(i++) + "' , '" +
                 params.get(i++) + "' , '" + params.get(i++) + "' , '" +
                 params.get(i) + "')";
@@ -260,26 +260,28 @@ public class DBManager {
         return idRegisto;
     }
 
-    public int verifyLogin(ArrayList<String> params){
+    public int[] verifyLogin(ArrayList<String> params){
 
         Statement statement = null;
         try{
             statement = conn.createStatement();
         }catch (SQLException e){
-            return 0;
+            return null;
         }
 
         int idRegisto = 0;
+        int isAdmin = 0;
 
-        String verificar = "SELECT id FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "') AND lower(password) = lower('" + params.get(1) + "')";
+        String verificar = "SELECT id, admin FROM utilizador WHERE lower(email) = lower('" + params.get(0) + "') AND lower(password) = lower('" + params.get(1) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
             // Se houver algum registro no ResultSet, definimos existeRegistro como true
             idRegisto = resultSet.getInt("id");
+            isAdmin = resultSet.getInt("admin");
         } catch (SQLException e) {
             e.printStackTrace();
-            return 0;
+            return null;
         } finally {
             try {
                 statement.close();
@@ -288,7 +290,7 @@ public class DBManager {
             }
         }
 
-        return idRegisto;
+        return new int[]{idRegisto, isAdmin};
     }
 
     public String listPresencas(Integer idEvento, Integer idClient) {
@@ -454,6 +456,7 @@ public class DBManager {
 
             String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM utilizador WHERE email='" + params.get(0) + "'), (SELECT id FROM EVENTO WHERE nome='" + params.get(1) + "'))";
 
+            statement.executeQuery(sqlQuery);
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -471,7 +474,7 @@ public class DBManager {
 
     public boolean deleteEvent(int eventId) throws SQLException {
 
-        if (getTotalAttendanceForEventAsInt(eventId) == 0) {
+        if (getTotalAttendanceForEventAsInt(eventId) >= 1) { //so pode ser eliminado se n tiver nenhuma presenca
             return false;
         }
 
@@ -482,9 +485,14 @@ public class DBManager {
 
             String sqlQuery = "DELETE FROM evento WHERE id=" + eventId;
 
-            statement.executeQuery(sqlQuery);
+            //statement.executeQuery(sqlQuery); estava a lancar excecao
 
-            return true;
+            int rowsAffected = statement.executeUpdate(sqlQuery);
+
+            if (rowsAffected == 0) {
+                // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
+                return false;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -500,6 +508,8 @@ public class DBManager {
             }
 
         }
+
+        return true;
     }
 
     public int getTotalAttendanceForEventAsInt(int eventId) throws SQLException {
@@ -595,6 +605,53 @@ public class DBManager {
         return true;
     }
 
+    public int addCodeToEvent(Integer eventId){ //TODO so se pode mudar codigo quando o evento ja esta a decorrer
+
+        Statement statement = null;
+        try{
+            statement = conn.createStatement();
+        }catch (SQLException e){
+            System.out.println("1");
+            return 0;
+        }
+
+        Random random = new Random();
+        int eventCode = random.nextInt(900000) + 100000;
+        System.out.println(eventCode);
+
+        //String sqlQuery = "INSERT INTO evento VALUES (SELECT codigo FROM evento WHERE id = '" + eventId + "'")";
+
+        //String sqlQuery = "INSERT INTO evento (codigo) SELECT codigo FROM evento WHERE id = " + eventId;
+
+        String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "' WHERE id = " + eventId;
+
+        try {
+            //ResultSet resultSet = statement.executeQuery(verificar);
+
+            int rowsAffected = statement.executeUpdate(sqlQuery);
+
+            if (rowsAffected == 0) {
+                System.out.println("2");
+                // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
+                return 0;
+            }else{
+                return eventCode;
+            }
+
+            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+        } catch (SQLException e) {
+            System.out.println("3");
+            e.printStackTrace();
+            return 0;
+        } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
+            }
+        }
+
+    }
 
 }
 

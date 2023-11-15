@@ -60,7 +60,7 @@ class SendHeartBeat extends Thread{
 }
 
 public class Server {
-    public static final int TIMEOUT = 10; // seconds
+    public static final int TIMEOUT = 20; // seconds TODO alterar para 10
 
     public static void main(String[] args) {
 
@@ -130,6 +130,8 @@ public class Server {
                 while (true) {
                     try {
                         Socket toClientSocket = serverSocket.accept();
+
+                        //TODO fazer uma verificacao aqui para so fazer isto antes do utilizador estar logado ou algo do genero, pq senao se a pessoa nao escrever nada em 10 segundos da broken pipe pq o socket da timeout
                         toClientSocket.setSoTimeout(TIMEOUT * 1000);
 
                         InputStream is = toClientSocket.getInputStream();
@@ -223,9 +225,12 @@ public class Server {
                             case "SELECT" -> {
                                 switch (dbHelper.getTable()) {
                                     case "utilizador" -> {
-                                        int id = data.verifyLogin(dbHelper.getParams());
+                                        int[] result = data.verifyLogin(dbHelper.getParams());
+                                        int id = result[0];
+                                        int isAdmin = result[1];
+
                                         if (id != 0) {
-                                            requestResult = id + "User logged in";
+                                            requestResult = id + "User logged in: " + isAdmin;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         } else {
                                             requestResult = "User doesnt exist";
@@ -233,6 +238,7 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
+                                        presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
                                         requestResult = "PRESENCE LIST " + presenceList;
                                         dbHelper.setIsRequestAlreadyProcessed(true);
                                     }
@@ -253,6 +259,28 @@ public class Server {
                                             requestResult = "Update failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
 
+                                        }
+                                    }
+                                    case "evento" -> {
+                                        if(dbHelper.getColumn().equals("codigo")){
+                                            int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
+                                            requestResult = Integer.toString(codigo);
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }else{
+                                            //data.updateEventData( dbHelper.getIdEvento(), HashMap???? );
+                                        }
+                                    }
+                                }
+                            }
+                            case "DELETE" -> {
+                                switch (dbHelper.getTable()){
+                                    case "evento" -> {
+                                        if(data.deleteEvent(dbHelper.getIdEvento())){
+                                            requestResult = "Delete evento done";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }else{
+                                            requestResult = "Delete evento failed";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
                                         }
                                     }
                                 }
@@ -278,6 +306,8 @@ public class Server {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
 

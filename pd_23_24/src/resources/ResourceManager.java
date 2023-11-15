@@ -28,7 +28,7 @@ public class ResourceManager {
         return this.dbManager.insertEvent(params);
     }
 
-    public int verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
+    public int[] verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
 
     public boolean editProfile(ArrayList<String> params, String email){return this.dbManager.editProfile(params, email);}
 
@@ -44,6 +44,10 @@ public class ResourceManager {
 
     public boolean editEventData(int eventId, HashMap<String, String> params) throws SQLException {
         return this.dbManager.editEventData(eventId, params);
+    }
+
+    public int addCodeToEvent(Integer eventId) {
+        return this.dbManager.addCodeToEvent(eventId);
     }
     // funções de BD (add, remove, consulta)
 

@@ -57,6 +57,7 @@ public class ClientUI {
             System.out.println(outputFromRequestResult);
             return false;
         }else if(outputFromRequestResult.contains("User logged in")){
+            //get id
             StringBuilder idS = new StringBuilder();
 
             for(int i = 0; outputFromRequestResult.charAt(i) != 'U'; i++){
@@ -64,8 +65,15 @@ public class ClientUI {
             }
 
             int id = Integer.parseInt(idS.toString());
-
             this.client.setClientID(id);
+
+
+            //get isAdmin
+            int startIndex = outputFromRequestResult.lastIndexOf(":") + 2;
+            String numberStr = outputFromRequestResult.substring(startIndex);
+            int isAdmin = Integer.parseInt(numberStr);
+
+            if(isAdmin == 1) this.isAdmin = true;
 
             System.out.println(outputFromRequestResult);
         }
@@ -79,40 +87,6 @@ public class ClientUI {
         params.add(email);
         params.add(password);
         this.client.createDBHelper("SELECT","utilizador" ,params,-1);
-    }
-
-    //ADMIN
-    public boolean addEvent() {
-        //TODO verificaçao de inputs
-
-        String local = InputProtection.readString("\tLocal: ", true);
-        String nome = InputProtection.readString("\tNome: ", false);
-        String dia = InputProtection.readString("\tDia: ", true);
-        String mes = InputProtection.readString("\tMês: ", true);
-        String ano = InputProtection.readString("\tAno: ", true);
-        String horaInicio = InputProtection.readString("Hora início (apenas hora): ", true);
-        String minutoInicio = InputProtection.readString("Minuto da hora início (apenas minutos): ", true);
-        String horaFim = InputProtection.readString("Hora fim (apenas hora): ", true);
-        String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true);
-
-        ArrayList<String> eventParams = new ArrayList<>();
-        //eventParams.add(null);
-        eventParams.add(local);
-        eventParams.add(nome);
-        eventParams.add(dia + '/' + mes + '/' + ano); // para transformar em xx/yy/zz
-        eventParams.add(horaInicio + ':' + minutoInicio);
-        eventParams.add(horaFim + ':' + minutoFim);
-
-        this.client.createDBHelper("INSERT", "evento", eventParams, -1);
-
-        if(client.waitToReceiveResultRequest().equals("event not created")){
-            System.out.println("Could not create a new event");
-            return false;
-        }
-
-        System.out.println("New event created!\n");
-
-        return true;
     }
 
     public boolean register() {
@@ -239,9 +213,6 @@ public class ClientUI {
 
     public void listPresencas() {
 
-        System.out.println("\nListing all events user is registered in: \n");
-        System.out.println("\nListing: \n");
-
         int choiceMenu = InputProtection.chooseOption(null, "List all events user registered in", "Back to menu");
 
         switch (choiceMenu) {
@@ -265,52 +236,110 @@ public class ClientUI {
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "List events", "Insert Event", "List All Presences" ,"Edit User Profile", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "List events", "List All Presences" ,"Edit User Profile", "Exit");
 
             switch (input){
                 case 1 -> {
                     System.out.println("XOTA"); // LISTAR EVENT
                 }
                 case 2 -> {
-                    addEvent(); // ADD EVENT
-                }
-                case 3 -> {
                     listPresencas();
                 }
-                case 4 -> {
+                case 3 -> {
                     editProfile();
                 }
-                case 5 -> {
+                case 4 -> {
                     return;
                 }
             }
         }
     }
 
-    //public void start(){
+    //ADMIN
+    public boolean addEvent() {
+        //TODO verificaçao de inputs
 
-        /*while(true){
-            //System.out.println("Could not login");
-            if(loginRegister())
-                switch (admin){
-                    case 0 -> userMenu();
-                    //case 1 -> adminMenu();
-                }
-        }*/
+        String local = InputProtection.readString("\tLocal: ", true);
+        String nome = InputProtection.readString("\tNome: ", false);
+        String dia = InputProtection.readString("\tDia: ", true);
+        String mes = InputProtection.readString("\tMês: ", true);
+        String ano = InputProtection.readString("\tAno: ", true);
+        String horaInicio = InputProtection.readString("Hora início (apenas hora): ", true);
+        String minutoInicio = InputProtection.readString("Minuto da hora início (apenas minutos): ", true);
+        String horaFim = InputProtection.readString("Hora fim (apenas hora): ", true);
+        String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true);
 
-       /* if(!loginRegister()){
-            //System.out.println("Could not login");
-            loginRegister();
-            return;
+        ArrayList<String> eventParams = new ArrayList<>();
+        //eventParams.add(null);
+        eventParams.add(local);
+        eventParams.add(nome);
+        eventParams.add(dia + '/' + mes + '/' + ano); // para transformar em xx/yy/zz
+        eventParams.add(horaInicio + ':' + minutoInicio);
+        eventParams.add(horaFim + ':' + minutoFim);
+
+        this.client.createDBHelper("INSERT", "evento", eventParams, -1);
+
+        if(client.waitToReceiveResultRequest().equals("event not created")){
+            System.out.println("Could not create a new event");
+            return false;
         }
 
-        switch (admin){
-            case 0 -> userMenu();
-            //case 1 -> adminMenu();
-        }*/
-    //}
+        System.out.println("New event created!\n");
+
+        return true;
+    }
+
+    private void editEventData(){
+        //not on server yet
+    }
 
     private void deleteEvent() {
+        System.out.println();
+        int idEvento = InputProtection.readInt("Insert the event ID that you want to delete: ");
+        this.client.createDBHelper("DELETE", "evento", idEvento, -1);
+
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+
+        if(outputFromRequestResult.equals("Delete evento done")){
+            System.out.println("Event deleted successfully");
+        }else if(outputFromRequestResult.equals("Delete evento failed")){
+            System.out.println("Could not delete the event");
+        }
+    }
+
+    private void checkCreatedEvents(){
+
+    }
+
+    private void addCodeToEvent(){
+        int eventID = InputProtection.readInt("Event Id: ");
+        System.out.println("Randomizing code and inserting it into DataBase...");
+
+        this.client.createDBHelper("UPDATE", "evento", eventID, -1);
+
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+        int eventCode = Integer.parseInt(outputFromRequestResult);
+
+        if(eventCode != 0){
+            System.out.println("Code " + eventCode + " inserted successfully");
+        }else{
+            System.out.println("Couldnt insert the generated code");
+        }
+    }
+
+    private void listPresencasFromUserEmail(){
+
+    }
+
+    private void getCSVFileFromUser(){
+
+    }
+
+    private void deleteAttendance(){
+
+    }
+
+    private void insertAttendance(){
 
     }
 
@@ -334,7 +363,7 @@ public class ClientUI {
                 }
 
                 case 2 -> {
-                    //editEventData();
+                    editEventData();
                 }
 
                 case 3 -> {
@@ -342,27 +371,27 @@ public class ClientUI {
                 }
 
                 case 4 -> {
-                    // checkCreatedEvents();
+                    checkCreatedEvents();
                 }
 
                 case 5 -> {
-                    // addCodeToEvent();
+                    addCodeToEvent();
                 }
 
                 case 6 -> {
-                    //listPresencasFromUserEmail();
+                    listPresencasFromUserEmail();
                 }
 
                 case 7 -> {
-                    //getCSVFileFromUser();
+                    getCSVFileFromUser();
                 }
 
                 case 8 -> {
-                    ///deleteAttendance();
+                    deleteAttendance();
                 }
 
                 case 9 -> {
-                    //insertAttendance();
+                    insertAttendance();
                 }
             }
         }
