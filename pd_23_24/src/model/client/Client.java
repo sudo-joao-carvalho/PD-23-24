@@ -139,6 +139,7 @@ public class Client {
                                 AtomicReference<String> atomicReference = (AtomicReference<String>) receivedObject;
                                 String result = atomicReference.get();
                                 // Agora você pode usar a variável 'result'
+
                                 requestResult.set(result);
                             }
                         } catch (IOException | ClassNotFoundException e) {
@@ -164,8 +165,8 @@ public class Client {
         hasNewRequest.set(true);
     }
 
-    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, String email){
-        dbHelper = addDBHelper(queryOperation, sqlTable, params, email);
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, String email, int userID){
+        dbHelper = addDBHelper(queryOperation, sqlTable, params, email, userID);
         hasNewRequest.set(true);
     }
 
@@ -243,11 +244,11 @@ public class Client {
         return null;
     }
 
-    public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, String email) {
+    public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, String email, int userID) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("UPDATE")) {
             if (table.equals("utilizador")) {
-                updateParamUser(dbHelper, params, email);
+                updateParamUser(dbHelper, params, email, userID);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -282,12 +283,13 @@ public class Client {
         return true;
     }
 
-    public boolean updateParamUser(DBHelper dbHelper, ArrayList<String> updateParams, String email){ // função para atualizar os detalhes do user (nif, email, nome)
+    public boolean updateParamUser(DBHelper dbHelper, ArrayList<String> updateParams, String email, int userID){ // função para atualizar os detalhes do user (nif, email, nome)
         dbHelper.setOperation("UPDATE");
         dbHelper.setTable("utilizador");
         dbHelper.setParams(updateParams);
         this.email = email;
         dbHelper.setEmail(email);
+        dbHelper.setId(userID);
         return true;
     }
 

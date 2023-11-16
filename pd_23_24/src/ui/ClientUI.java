@@ -260,7 +260,7 @@ public class ClientUI {
                 ArrayList<String> updateParams = new ArrayList<>();
                 updateParams.add("name");
                 updateParams.add(name);
-                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail(), this.client.getClientID());
 
                 String outputFromRequestResult = client.waitToReceiveResultRequest();
 
@@ -280,7 +280,7 @@ public class ClientUI {
                 ArrayList<String> updateParams = new ArrayList<>();
                 updateParams.add("email");
                 updateParams.add(email);
-                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail(), this.client.getClientID());
 
                 String outputFromRequestResult = client.waitToReceiveResultRequest();
 
@@ -299,7 +299,7 @@ public class ClientUI {
                 ArrayList<String> updateParams = new ArrayList<>();
                 updateParams.add("password");
                 updateParams.add(password);
-                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail(), this.client.getClientID());
 
                 String outputFromRequestResult = client.waitToReceiveResultRequest();
 
@@ -319,7 +319,7 @@ public class ClientUI {
                 ArrayList<String> updateParams = new ArrayList<>();
                 updateParams.add("nif");
                 updateParams.add(Integer.toString(nif));
-                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail());
+                this.client.createDBHelper("UPDATE", "utilizador", updateParams, this.client.getEmail(), this.client.getClientID());
 
                 String outputFromRequestResult = client.waitToReceiveResultRequest();
 

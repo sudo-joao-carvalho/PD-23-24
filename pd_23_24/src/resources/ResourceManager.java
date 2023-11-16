@@ -30,7 +30,7 @@ public class ResourceManager {
 
     public int[] verifyLogin(ArrayList<String> params){return this.dbManager.verifyLogin(params);}
 
-    public boolean editProfile(ArrayList<String> params, String email){return this.dbManager.editProfile(params, email);}
+    public boolean editProfile(ArrayList<String> params, Integer idUser){return this.dbManager.editProfile(params, idUser);}
 
     public String listPresencas(Integer idEvento, Integer idClient) { return this.dbManager.listPresencas(idEvento, idClient); }
 

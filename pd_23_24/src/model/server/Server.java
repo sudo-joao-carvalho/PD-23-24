@@ -257,7 +257,7 @@ public class Server {
                             case "UPDATE" -> {
                                 switch (dbHelper.getTable()) {
                                     case "utilizador" -> {
-                                        if (data.editProfile(dbHelper.getParams(), dbHelper.getEmail())) {
+                                        if (data.editProfile(dbHelper.getParams(), dbHelper.getId())) {
                                             requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         } else {

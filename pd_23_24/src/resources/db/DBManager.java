@@ -332,7 +332,7 @@ public class DBManager {
         return str.toString();
     }
 
-    public boolean editProfile(ArrayList<String> params, String email){
+    public boolean editProfile(ArrayList<String> params, Integer id){
 
         Statement statement = null;
         try{
@@ -343,7 +343,7 @@ public class DBManager {
 
         if(params.get(0).equalsIgnoreCase("name")){
             String newName = params.get(1);
-            String sqlQuery = "UPDATE utilizador SET Nome = '" + newName + "' WHERE lower(email) = lower('" + email + "')";
+            String sqlQuery = "UPDATE utilizador SET Nome = '" + newName + "' WHERE id = '" + id + "'";
 
             try{
                 statement.executeUpdate(sqlQuery);
@@ -363,7 +363,7 @@ public class DBManager {
             return true;
         }else if(params.get(0).equalsIgnoreCase("email")){
             String newEmail = params.get(1);
-            String sqlQuery = "UPDATE utilizador SET Email = '" + newEmail + "' WHERE lower(email) = lower('" + email + "')";
+            String sqlQuery = "UPDATE utilizador SET Email = '" + newEmail + "' WHERE id = '" + id + "'";
 
             try{
                 statement.executeUpdate(sqlQuery);
@@ -383,7 +383,7 @@ public class DBManager {
             return true;
         }else if(params.get(0).equalsIgnoreCase("password")){
             String newPassword = params.get(1);
-            String sqlQuery = "UPDATE utilizador SET password = '" + newPassword + "' WHERE lower(email) = lower('" + email + "')";
+            String sqlQuery = "UPDATE utilizador SET password = '" + newPassword + "' WHERE id = '" + id + "'";
 
             try{
                 statement.executeUpdate(sqlQuery);
@@ -403,7 +403,7 @@ public class DBManager {
             return true;
         }if(params.get(0).equalsIgnoreCase("nif")){
             int newNif = Integer.parseInt(params.get(1));
-            String sqlQuery = "UPDATE utilizador SET nif = '" + newNif + "' WHERE lower(email) = lower('" + email + "')";
+            String sqlQuery = "UPDATE utilizador SET nif = '" + newNif + "' WHERE id = '" + id + "'";
 
             try{
                 statement.executeUpdate(sqlQuery);

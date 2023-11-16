@@ -30,7 +30,7 @@ public class Data {
 
     public int[] verifyLogin(ArrayList<String> params){ return this.resourceManager.verifyLogin(params); }
 
-    public boolean editProfile(ArrayList<String> params, String email){ return this.resourceManager.editProfile(params, email); }
+    public boolean editProfile(ArrayList<String> params, Integer idUser){ return this.resourceManager.editProfile(params, idUser); }
 
     public String listPresencas(Integer idEvento, Integer idClient) {
         return this.resourceManager.listPresencas(idEvento, idClient);
