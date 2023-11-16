@@ -21,19 +21,39 @@ class SendHeartBeat extends Thread{
     private MulticastSocket mcastSocket;
     private AtomicReference<Boolean> isRunning;
 
+    public AtomicReference<Boolean> dbUpdated;
+
     public SendHeartBeat(HeartBeat hearbeat, MulticastSocket mcastSocket){
         this.hearbeat = hearbeat;
         this.mcastSocket = mcastSocket;
 
         this.isRunning = new AtomicReference<>(true);
+        this.dbUpdated = new AtomicReference<>(false);
     }
 
     @Override
     public void run(){
         try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);) {
+            ObjectOutputStream oos = new ObjectOutputStream(baos)) {
 
             while(isRunning.get()){
+                if(dbUpdated.get()){ //mandar hearbeat quando a versao da base de dados e updated
+                    try{
+                        Thread.sleep(HBTIMER * 1000);
+                    } catch (InterruptedException e) {
+                        this.isRunning.set(false);
+                        throw new RuntimeException(e);
+                    }
+
+                    oos.writeObject(hearbeat);
+                    byte[] buffer = baos.toByteArray();
+                    DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
+                            InetAddress.getByName("230.44.44.44"), 4444);
+                    mcastSocket.send(dp);
+
+                    continue;
+                }
+
                 try{
                     Thread.sleep(HBTIMER * 1000);
                 } catch (InterruptedException e) {
@@ -90,6 +110,7 @@ public class Server {
     // multicast
 
     private HeartBeat heartBeat;
+
     SendHeartBeat sendHeartBeat;
 
     private String presenceList;
@@ -204,6 +225,7 @@ public class Server {
                                         } else {
                                             requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            sendHeartBeat.dbUpdated.set(true);
                                         }
                                     }
                                     case "evento" -> {
@@ -213,7 +235,7 @@ public class Server {
                                         } else {
                                             requestResult = "Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-
+                                            sendHeartBeat.dbUpdated.set(true);
                                         }
                                     }
                                     case "presenca" -> {
@@ -223,6 +245,7 @@ public class Server {
                                         }else{
                                             requestResult = "User successfully inserted in the event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            sendHeartBeat.dbUpdated.set(true);
                                         }
                                     }
                                 }
@@ -265,6 +288,7 @@ public class Server {
                                         if (data.editProfile(dbHelper.getParams(), dbHelper.getId())) {
                                             requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            sendHeartBeat.dbUpdated.set(true);
                                         } else {
                                             requestResult = "Update failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -277,12 +301,14 @@ public class Server {
                                                 int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
                                                 requestResult = Integer.toString(codigo);
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
+                                                sendHeartBeat.dbUpdated.set(true);
                                             }
                                             case "nome", "local", "data", "horainicio", "horafim" -> {
                                                 System.out.println(dbHelper.getParams());
                                                 if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
                                                     requestResult = "Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
+                                                    sendHeartBeat.dbUpdated.set(true);
                                                 }else{
                                                     requestResult = "Update failed";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
@@ -298,6 +324,7 @@ public class Server {
                                         if(data.deleteEvent(dbHelper.getIdEvento())){
                                             requestResult = "Delete evento done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            sendHeartBeat.dbUpdated.set(true);
                                         }else{
                                             requestResult = "Delete evento failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -307,6 +334,7 @@ public class Server {
                                         if(data.deleteUserFromEvent(dbHelper.getParams())){
                                             requestResult = "User deleted from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            sendHeartBeat.dbUpdated.set(true);
                                         }else{
                                             requestResult = "Couldnt delete user from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -329,6 +357,8 @@ public class Server {
                             break;
                         }
                     }
+
+                    sendHeartBeat.dbUpdated.set(false);
 
                 }
 

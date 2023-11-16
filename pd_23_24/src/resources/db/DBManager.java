@@ -14,7 +14,7 @@ public class DBManager {
     public DBManager() throws SQLException {
         this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
 
-        updateDBVersion();
+        insertVersionDB();
     }
 
     public boolean connectToDB(String directory, int port) {
@@ -799,10 +799,6 @@ public class DBManager {
         Statement statement = null;
 
         int versionNumber = getDBVersion();
-
-        if (insertVersionDB()) {
-            return true;
-        }
 
         try {
             statement = conn.createStatement();

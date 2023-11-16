@@ -25,7 +25,7 @@ public class HeartBeat implements Serializable {
         /*this.dbVersion = dbVersion;
         this.nConnections = nConnections;*/
         this.dbDirectory = dbDirectory;
-        this.msg = "Amo buceta";
+        this.msg = "Estou bibo";
     }
 
     public String getMsg() {
