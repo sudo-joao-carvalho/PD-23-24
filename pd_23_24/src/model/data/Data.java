@@ -18,10 +18,7 @@ public class Data {
         return this.resourceManager.connectToDB(DBDirectory, port);
     }
 
-    /*public int getVersion() {
-        this.resourceManager.getVersion();
-    }*/
-
+    //login
     public int insertUser(ArrayList<String> parameters){
         return this.resourceManager.insertUser(parameters);
     }
@@ -54,5 +51,9 @@ public class Data {
 
     public String listPresencasFromUserEmail(String userEmail){
         return this.resourceManager.listPresencasFromUserEmail(userEmail);
+    }
+
+    public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException {
+        return this.resourceManager.deleteUserFromEvent(params);
     }
 }

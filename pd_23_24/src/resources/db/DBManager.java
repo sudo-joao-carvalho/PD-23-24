@@ -10,10 +10,8 @@ public class DBManager {
     // aqui ficam as queries e a lógica toda das queries
     private Connection conn;
 
-    private boolean isFirstTime;
 
     public DBManager() throws SQLException {
-        this.isFirstTime = true;
         this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
 
         updateDBVersion();
@@ -432,9 +430,66 @@ public class DBManager {
         try {
             statement = conn.createStatement();
 
-            String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM utilizador WHERE email='" + params.get(0) + "'), (SELECT id FROM EVENTO WHERE nome='" + params.get(1) + "'))";
+            String checkQuery = "SELECT Count(*) FROM Evento WHERE lower(Nome)='" + params.get(1).toLowerCase() + "'";
 
-            statement.executeQuery(sqlQuery);
+            int count = statement.executeQuery(checkQuery).getInt(1);
+
+            if (count == 0) {
+                System.out.println("1");
+                return false;
+            }
+
+            String checkUserQuery = "SELECT Count(*) FROM Utilizador WHERE lower(Email)='" + params.get(0).toLowerCase() + "'";
+
+            int countUsers = statement.executeQuery(checkUserQuery).getInt(1);
+
+            if (countUsers == 0) {
+                System.out.println("2");
+                return false;
+            }
+
+            String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM Evento WHERE lower(nome)='" + params.get(1).toLowerCase() + "'), (SELECT id FROM utilizador WHERE lower(email)='" + params.get(0).toLowerCase() + "'))";
+
+            /*String sqlQuery = "INSERT INTO presenca " +
+                    "SELECT NULL, e.id, u.id " +
+                    "FROM Evento e, utilizador u " +
+                    "WHERE e.nome = '" + params.get(1) + "' " +
+                    "AND u.email = '" + params.get(0) + "' " +
+                    "AND NOT EXISTS ( " +
+                    "  SELECT 1 FROM presenca p " +
+                    "  WHERE p.idEvento = e.id " +
+                    "  AND p.idUtilizador = u.id " +
+                    ")";*/
+
+            statement.executeUpdate(sqlQuery);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        updateDBVersion();
+        return true;
+    }
+
+    public boolean deleteUserFromEvent(ArrayList<String> params) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "DELETE FROM presenca " +
+                    "WHERE idEvento IN (SELECT id FROM Evento WHERE nome = '" + params.get(1) + "') " +
+                    "AND idUtilizador IN (SELECT id FROM utilizador WHERE email = '" + params.get(0) + "')";
+
+            statement.executeUpdate(sqlQuery);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -641,7 +696,6 @@ public class DBManager {
         try{
             statement = conn.createStatement();
         }catch (SQLException e){
-            System.out.println("1");
             return 0;
         }
 
@@ -661,7 +715,6 @@ public class DBManager {
             int rowsAffected = statement.executeUpdate(sqlQuery);
 
             if (rowsAffected == 0) {
-                System.out.println("2");
                 // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
                 return 0;
             }else{
@@ -671,7 +724,6 @@ public class DBManager {
 
             // Se houver algum registro no ResultSet, definimos existeRegistro como true
         } catch (SQLException e) {
-            System.out.println("3");
             e.printStackTrace();
             return 0;
         } finally {
@@ -688,8 +740,10 @@ public class DBManager {
 
         int versionNumber = 0;
 
+        Statement statement = null;
+
         try {
-            Statement statement = conn.createStatement();
+            statement = conn.createStatement();
 
             String sqlQuery = "SELECT Versao FROM Versao";
 
@@ -699,37 +753,56 @@ public class DBManager {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    public boolean insertVersionDB() {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Count(*) FROM Versao";
+
+            int getCount = statement.executeQuery(sqlQuery).getInt(1);
+
+            if (getCount == 0) {
+                String insertQuery = "INSERT INTO Versao VALUES (NULL, 0)";
+                statement.executeUpdate(insertQuery);
+                return true;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
     }
 
     public boolean updateDBVersion() {
         Statement statement = null;
 
-        if (this.isFirstTime) {
-            try {
-                statement = conn.createStatement();
+        int versionNumber = getDBVersion();
 
-                String sqlQuery = "INSERT INTO Versao VALUES (NULL, '" + 0 + "')";
-
-                statement.executeUpdate(sqlQuery);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            } finally {
-                try {
-                    if (statement != null) {
-                        statement.close();
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            this.isFirstTime = false;
-
+        if (insertVersionDB()) {
             return true;
         }
-
-        int versionNumber = getDBVersion();
 
         try {
             statement = conn.createStatement();
@@ -737,6 +810,7 @@ public class DBManager {
             String sqlQuery = "UPDATE Versao SET Versao='" + ++versionNumber + "'WHERE id=" + 1;
 
             statement.executeUpdate(sqlQuery);
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

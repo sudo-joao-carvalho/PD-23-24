@@ -191,7 +191,6 @@ public class Server {
                         System.out.println("\nServer received a new request from Client with\n\tIP:" + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());
                     }
 
-
                     String requestResult = "";
                     while (!dbHelper.isRequestAlreadyProcessed()) {
                         switch (dbHelper.getOperation()) {
@@ -218,7 +217,13 @@ public class Server {
                                         }
                                     }
                                     case "presenca" -> {
-
+                                        if(!data.insertUserInEvent(dbHelper.getParams())){
+                                            requestResult = "User not inserted in the event";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }else{
+                                            requestResult = "User successfully inserted in the event";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }
                                     }
                                 }
                             }
@@ -295,6 +300,15 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }else{
                                             requestResult = "Delete evento failed";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }
+                                    }
+                                    case "presenca" -> {
+                                        if(data.deleteUserFromEvent(dbHelper.getParams())){
+                                            requestResult = "User deleted from event";
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }else{
+                                            requestResult = "Couldnt delete user from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }
                                     }

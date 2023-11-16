@@ -188,6 +188,11 @@ public class Client {
                 isDBHelperReady = true;
                 return dbHelper;
             }
+            if(table.equals("presenca")){
+                insertUserInEvent(dbHelper, params);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
         if(operation.equals("SELECT")){
@@ -208,6 +213,14 @@ public class Client {
         if(operation.equals("UPDATE")){
             if(table.equals("evento")){
                 editEventData(dbHelper, params, id);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        if(operation.equals("DELETE")){
+            if(table.equals("presenca")){
+                deleteUserInEvent(dbHelper, params);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -329,6 +342,22 @@ public class Client {
     public boolean listPresencasFromUserEmail(DBHelper dbHelper, ArrayList<String> params){
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
+        dbHelper.setParams(params);
+        dbHelper.setIsAdmin(true);
+        return true;
+    }
+
+    public boolean insertUserInEvent(DBHelper dbHelper, ArrayList<String> params){
+        dbHelper.setOperation("INSERT");
+        dbHelper.setTable("presenca");
+        dbHelper.setParams(params);
+        dbHelper.setIsAdmin(true);
+        return true;
+    }
+
+    public boolean deleteUserInEvent(DBHelper dbHelper, ArrayList<String> params){
+        dbHelper.setOperation("DELETE");
+        dbHelper.setTable("presenca");
         dbHelper.setParams(params);
         dbHelper.setIsAdmin(true);
         return true;

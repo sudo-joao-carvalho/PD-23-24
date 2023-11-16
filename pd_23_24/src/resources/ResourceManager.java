@@ -20,6 +20,7 @@ public class ResourceManager {
         return this.dbManager.listAllUsers(userId);
     }*/
 
+    //register
     public int insertUser(ArrayList<String> userParameters){
         return this.dbManager.insertUser(userParameters);
     }
@@ -52,5 +53,9 @@ public class ResourceManager {
 
     public String listPresencasFromUserEmail(String userEmail){
         return this.dbManager.listPresencasFromUserEmail(userEmail);
+    }
+
+    public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException{
+        return this.dbManager.deleteUserFromEvent(params);
     }
 }
