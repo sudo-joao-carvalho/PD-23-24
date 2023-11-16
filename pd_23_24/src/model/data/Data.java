@@ -51,4 +51,8 @@ public class Data {
     public int addCodeToEvent(Integer eventId) {
         return this.resourceManager.addCodeToEvent(eventId);
     }
+
+    public String listPresencasFromUserEmail(String userEmail){
+        return this.resourceManager.listPresencasFromUserEmail(userEmail);
+    }
 }

@@ -238,12 +238,17 @@ public class Server {
                                         }
                                     }
                                     case "evento" -> {
-                                        presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
-                                        requestResult = "PRESENCE LIST " + presenceList;
-                                        dbHelper.setIsRequestAlreadyProcessed(true);
+                                        if(!dbHelper.getIsAdmin()) {
+                                            presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
+                                            requestResult = "PRESENCE LIST\n" + presenceList;
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }else{
+                                            presenceList = data.listPresencasFromUserEmail(dbHelper.getParams().get(0));
+                                            requestResult = "LIST ALL PRESENCAS FROM USER\n" + presenceList;
+                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        }
                                     }
                                     case "presenca" -> {
-
 
                                     }
                                     default -> System.out.println("default");

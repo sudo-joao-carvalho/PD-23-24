@@ -312,7 +312,7 @@ public class DBManager {
                 String data = resultSet.getString("Data");
                 String horaInicio = resultSet.getString("HoraInicio");
 
-                str.append(idEvento).append("\t").append(nome).append("\t").append(local);
+                str.append("\n").append(idEvento).append("\t").append(nome).append("\t").append(local);
                 str.append("\t\t").append(data).append(horaInicio).append("\t\t");
             }
 
@@ -584,6 +584,55 @@ public class DBManager {
 
         updateDBVersion();
         return true;
+    }
+
+    public String listPresencasFromUserEmail(String email) {
+        Statement statement = null;
+
+        try {
+            StringBuilder str = new StringBuilder();
+            
+            statement = conn.createStatement();
+
+            String idUser = "SELECT id FROM utilizador WHERE lower(email) = lower('" + email + "')";
+
+            int id = statement.executeQuery(idUser).getInt("id");
+
+            String sqlQuery = "SELECT evento.Nome, evento.Local, evento.Data, evento.HoraInicio " +
+                    "FROM Evento evento " +
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON presenca.IdUtilizador = " + id +
+                    " WHERE utilizador.Email='" + email + "'";
+
+            ResultSet resultSet = statement.executeQuery(sqlQuery);
+
+            str.append("Nome\t\tLocal\t\tData\t\tHora Inicio\t");
+
+            while(resultSet.next()){
+                String nome = resultSet.getString("Nome");
+                String local = resultSet.getString("Local");
+                String data = resultSet.getString("Data");
+                String horaInicio = resultSet.getString("HoraInicio");
+
+                str.append("\n").append(nome).append("\t").append(local).append("\t\t").append(data).append("\t").append(horaInicio);
+                str.append("\t\t").append("\t\t");
+            }
+
+            return str.toString();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "";
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     public int addCodeToEvent(Integer eventId){ //TODO so se pode mudar codigo quando o evento ja esta a decorrer

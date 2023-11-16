@@ -195,6 +195,12 @@ public class Client {
                 isDBHelperReady = true;
                 return dbHelper;
             }
+
+            if(table.equals("evento")){
+                listPresencasFromUserEmail(dbHelper, params);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
         }
 
 
@@ -315,6 +321,14 @@ public class Client {
         dbHelper.setParams(params);
         dbHelper.setIdEvento(idEvento);
         dbHelper.setColumn(params.get(0));
+        return true;
+    }
+
+    public boolean listPresencasFromUserEmail(DBHelper dbHelper, ArrayList<String> params){
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setParams(params);
+        dbHelper.setIsAdmin(true);
         return true;
     }
 

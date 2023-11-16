@@ -450,7 +450,14 @@ public class ClientUI {
     }
 
     private void listPresencasFromUserEmail(){
+        String emailToSearch = InputProtection.readString("Insert the email to search: ", true);
 
+        ArrayList<String> singleParamEmail = new ArrayList<>();
+        singleParamEmail.add(emailToSearch);
+        this.client.createDBHelper("SELECT", "evento", singleParamEmail, -1);
+
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+        System.out.println(outputFromRequestResult);
     }
 
     private void getCSVFileFromUser(){
@@ -477,7 +484,7 @@ public class ClientUI {
 
             System.out.println("\n------------ ADMIN MENU ------------");
 
-            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check event attendance", "Get CSV file with event attendance", "Check events that user has attendance in", "Insert attendance", "Logout");
+            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check event attendance by user email", "Get CSV file with event attendance", "Check event attendance", "Insert attendance", "Logout");
 
             switch(choice) {
                 case 1 -> {

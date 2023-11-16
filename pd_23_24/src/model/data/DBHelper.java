@@ -22,12 +22,14 @@ public class DBHelper implements Serializable {
     private Integer idEvento;
     private ArrayList<String> verifyEmail;
     private boolean isRequestAlreadyProcessed;
+    private boolean isAdmin;
 
 
     public DBHelper(){
         this.requestResult = new AtomicReference<>("");
         this.isRequestAlreadyProcessed = false;
 
+        this.isAdmin = false;
         this.column = "";
     }
 
@@ -108,5 +110,13 @@ public class DBHelper implements Serializable {
 
     public void setColumn(String column) {
         this.column = column;
+    }
+
+    public boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 }

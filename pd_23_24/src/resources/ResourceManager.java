@@ -49,7 +49,8 @@ public class ResourceManager {
     public int addCodeToEvent(Integer eventId) {
         return this.dbManager.addCodeToEvent(eventId);
     }
-    // funções de BD (add, remove, consulta)
 
-    // aqui só puxa do DBManager, só chama basicamente
+    public String listPresencasFromUserEmail(String userEmail){
+        return this.dbManager.listPresencasFromUserEmail(userEmail);
+    }
 }
