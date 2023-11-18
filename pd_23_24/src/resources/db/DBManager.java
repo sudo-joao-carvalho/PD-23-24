@@ -1,9 +1,10 @@
 package resources.db;
 import java.io.*;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class DBManager {
@@ -424,6 +425,77 @@ public class DBManager {
         return false;
     }
 
+    public boolean checkForUserAttendance(int eventId, int userId){
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Id FROM Presenca WHERE IdEvento='" + eventId + "' AND IdUtilizador='" + userId + "'";
+
+            int count = statement.executeQuery(sqlQuery).getInt("Id");
+
+            if (count == 1) { // significa que o user tem presença em X evento
+                return true;
+            }
+
+            return false;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
+
+    public boolean checkEventCodeAndInsertUser(int eventCode, int userId) {
+
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Id FROM Evento WHERE Codigo='" + eventCode + "'";
+
+            int value = statement.executeQuery(sqlQuery).getInt("Id");
+
+            if (value == 0) {
+                return false;
+            }
+
+            if(!checkForUserAttendance(value, userId)){
+                return false;
+            }
+
+            String insertUserQuery = "INSERT INTO Presenca VALUES (NULL, '" + value + "', '" + userId + "')";
+
+            statement.executeUpdate(insertUserQuery);
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean insertUserInEvent(ArrayList<String> params) {
         Statement statement = null;
 
@@ -701,11 +773,33 @@ public class DBManager {
 
         Random random = new Random();
         int eventCode = random.nextInt(900000) + 100000;
-        System.out.println(eventCode);
 
-        //String sqlQuery = "INSERT INTO evento VALUES (SELECT codigo FROM evento WHERE id = '" + eventId + "'")";
+        String sqlTimeCheckerInicio = "SELECT HoraInicio FROM Evento WHERE Id=" + eventId;
+        String sqlTimeCheckerFim = "SELECT HoraFim FROM Evento WHERE Id=" + eventId;
+        String sqlTimeCheckerData = "SELECT Data FROM Evento WHERE Id=" + eventId;
 
-        //String sqlQuery = "INSERT INTO evento (codigo) SELECT codigo FROM evento WHERE id = " + eventId;
+        try {
+            String data = statement.executeQuery(sqlTimeCheckerData).getString("Data");
+
+            LocalDate todayDate = LocalDate.now();
+
+            LocalDate dbDate = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+            String horasInicio = statement.executeQuery(sqlTimeCheckerInicio).getString("HoraInicio");
+
+            String horasFim = statement.executeQuery(sqlTimeCheckerFim).getString("HoraFim");
+
+            LocalTime dbTimeInicio = LocalTime.parse(horasInicio, DateTimeFormatter.ofPattern("HH:mm"));
+
+            LocalTime dbTimeFim = LocalTime.parse(horasFim, DateTimeFormatter.ofPattern("HH:mm"));
+
+            if (!(dbTimeInicio.isBefore(LocalTime.now()) && dbTimeFim.isAfter(LocalTime.now())) && !dbDate.equals(todayDate)) {
+                return -2;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "' WHERE id = " + eventId;
 

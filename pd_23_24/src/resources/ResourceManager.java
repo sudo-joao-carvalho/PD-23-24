@@ -4,7 +4,6 @@ import resources.db.DBManager;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ResourceManager {
     private DBManager dbManager;
@@ -58,4 +57,6 @@ public class ResourceManager {
     public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException{
         return this.dbManager.deleteUserFromEvent(params);
     }
+
+    public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.dbManager.checkEventCodeAndInsertUser(eventCode, userID);}
 }

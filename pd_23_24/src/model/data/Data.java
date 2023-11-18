@@ -56,4 +56,6 @@ public class Data {
     public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException {
         return this.resourceManager.deleteUserFromEvent(params);
     }
+
+    public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.resourceManager.checkEventCodeAndInsertUser(eventCode, userID);}
 }

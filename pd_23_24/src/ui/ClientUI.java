@@ -128,6 +128,15 @@ public class ClientUI {
         return true;
     }
 
+    public void submitEventCode() {
+        String eventCode = InputProtection.readString("\tInsert event code: ", true);
+
+        this.client.createDBHelper("INSERT", "presenca", eventCode, this.client.getClientID());
+
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+        System.out.println(outputFromRequestResult);
+    }
+
     private void editEventData() {
         int choice = InputProtection.chooseOption(null, "Update Event Data", "Back to menu");
 
@@ -361,11 +370,11 @@ public class ClientUI {
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "List events", "List All Presences" ,"Edit User Profile", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "Submit event code", "List All Presences" ,"Edit User Profile", "Exit");
 
             switch (input){
                 case 1 -> {
-                    System.out.println("XOTA"); // LISTAR EVENT
+                    submitEventCode();
                 }
                 case 2 -> {
                     listPresencas();
@@ -440,13 +449,14 @@ public class ClientUI {
         this.client.createDBHelper("UPDATE", "evento", eventID, -1);
 
         String outputFromRequestResult = client.waitToReceiveResultRequest();
-        int eventCode = Integer.parseInt(outputFromRequestResult);
+        System.out.println(outputFromRequestResult);
+        //int eventCode = Integer.parseInt(outputFromRequestResult);
 
-        if(eventCode != 0){
+        /*if(eventCode != 0){
             System.out.println("Code " + eventCode + " inserted successfully");
         }else{
             System.out.println("Couldnt insert the generated code");
-        }
+        }*/
     }
 
     private void listPresencasFromUserEmail(){

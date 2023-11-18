@@ -230,22 +230,33 @@ public class Server {
                                     }
                                     case "evento" -> {
                                         if (!data.insertEvent(dbHelper.getParams())) {
-                                            requestResult = "Event not created";
+                                            requestResult = "[ ERROR ] Event not created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         } else {
-                                            requestResult = "Event created";
+                                            requestResult = "[ SUCCESS ] Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             sendHeartBeat.dbUpdated.set(true);
                                         }
                                     }
                                     case "presenca" -> {
-                                        if(!data.insertUserInEvent(dbHelper.getParams())){
-                                            requestResult = "User not inserted in the event";
-                                            dbHelper.setIsRequestAlreadyProcessed(true);
+                                        if(dbHelper.getIsAdmin()){
+                                            if(!data.insertUserInEvent(dbHelper.getParams())){
+                                                requestResult = "[ ERROR ] User not inserted in the event";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            }else{
+                                                requestResult = "[ SUCCESS ] User successfully inserted in the event";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                sendHeartBeat.dbUpdated.set(true);
+                                            }
                                         }else{
-                                            requestResult = "User successfully inserted in the event";
-                                            dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            if(data.checkEventCodeAndInsertUser(dbHelper.getEventCode(), dbHelper.getId())){
+                                                requestResult = "[ SUCCESS ] User registered in the event";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                sendHeartBeat.dbUpdated.set(true);
+                                            }else{
+                                                requestResult = "[ ERROR ] Failed registering user in the event";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                            }
                                         }
                                     }
                                 }
@@ -261,7 +272,7 @@ public class Server {
                                             requestResult = id + "User logged in: " + isAdmin;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         } else {
-                                            requestResult = "User doesnt exist";
+                                            requestResult = "[ ERROR ] User doesnt exist";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }
                                     }
@@ -286,11 +297,11 @@ public class Server {
                                 switch (dbHelper.getTable()) {
                                     case "utilizador" -> {
                                         if (data.editProfile(dbHelper.getParams(), dbHelper.getId())) {
-                                            requestResult = "Update done";
+                                            requestResult = "[ SUCCESS ] Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             sendHeartBeat.dbUpdated.set(true);
                                         } else {
-                                            requestResult = "Update failed";
+                                            requestResult = "[ ERROR ] Update failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
 
                                         }
@@ -299,18 +310,27 @@ public class Server {
                                         switch (dbHelper.getColumn()) {
                                             case "codigo" -> {
                                                 int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
-                                                requestResult = Integer.toString(codigo);
-                                                dbHelper.setIsRequestAlreadyProcessed(true);
-                                                sendHeartBeat.dbUpdated.set(true);
+                                                System.out.println(codigo);
+                                                if(codigo == -2){
+                                                    requestResult = "[ ERROR ] Event not happening right now";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                }else if(codigo == 0){
+                                                    requestResult = "[ ERROR ] Couldnt insert the generated code";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                }else{
+                                                    requestResult = "Code " + codigo + " inserted successfully";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                    sendHeartBeat.dbUpdated.set(true);
+                                                }
                                             }
                                             case "nome", "local", "data", "horainicio", "horafim" -> {
                                                 System.out.println(dbHelper.getParams());
                                                 if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
-                                                    requestResult = "Update done";
+                                                    requestResult = "[ SUCCESS ] Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                     sendHeartBeat.dbUpdated.set(true);
                                                 }else{
-                                                    requestResult = "Update failed";
+                                                    requestResult = "[ ERROR ] Update failed";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                 }
                                             }
@@ -322,21 +342,21 @@ public class Server {
                                 switch (dbHelper.getTable()){
                                     case "evento" -> {
                                         if(data.deleteEvent(dbHelper.getIdEvento())){
-                                            requestResult = "Delete evento done";
+                                            requestResult = "[ SUCCESS ] Delete evento done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             sendHeartBeat.dbUpdated.set(true);
                                         }else{
-                                            requestResult = "Delete evento failed";
+                                            requestResult = "[ ERROR ] Delete evento failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }
                                     }
                                     case "presenca" -> {
                                         if(data.deleteUserFromEvent(dbHelper.getParams())){
-                                            requestResult = "User deleted from event";
+                                            requestResult = "[ SUCCESS ] User deleted from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             sendHeartBeat.dbUpdated.set(true);
                                         }else{
-                                            requestResult = "Couldnt delete user from event";
+                                            requestResult = "[ ERROR ] Couldnt delete user from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }
                                     }

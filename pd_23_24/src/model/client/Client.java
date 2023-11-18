@@ -175,6 +175,11 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, String eventCode, int userID){
+        dbHelper = addDBHelper(queryOperation, sqlTable, eventCode, userID);
+        hasNewRequest.set(true);
+    }
+
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
@@ -262,6 +267,19 @@ public class Client {
         if (operation.equals("UPDATE")) {
             if (table.equals("utilizador")) {
                 updateParamUser(dbHelper, params, email, userID);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, String eventCode, int userID) {
+        DBHelper dbHelper = new DBHelper();
+        if (operation.equals("INSERT")) {
+            if (table.equals("presenca")) {
+                checkEventCodeAndInsertUser(dbHelper, eventCode, userID);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -360,6 +378,15 @@ public class Client {
         dbHelper.setTable("presenca");
         dbHelper.setParams(params);
         dbHelper.setIsAdmin(true);
+        return true;
+    }
+
+    public boolean checkEventCodeAndInsertUser(DBHelper dbHelper, String eventCode, int clientID) {
+        dbHelper.setOperation("INSERT");
+        dbHelper.setTable("presenca");
+        dbHelper.setEventCode(Integer.parseInt(eventCode));
+        dbHelper.setId(clientID);
+        dbHelper.setIsAdmin(false);
         return true;
     }
 

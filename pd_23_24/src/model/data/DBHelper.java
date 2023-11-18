@@ -20,6 +20,7 @@ public class DBHelper implements Serializable {
     private boolean logout;
     private String email;
     private Integer idEvento;
+    private int eventCode;
     private ArrayList<String> verifyEmail;
     private boolean isRequestAlreadyProcessed;
     private boolean isAdmin;
@@ -118,5 +119,13 @@ public class DBHelper implements Serializable {
 
     public void setIsAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
+    }
+
+    public int getEventCode() {
+        return eventCode;
+    }
+
+    public void setEventCode(int eventCode) {
+        this.eventCode = eventCode;
     }
 }
