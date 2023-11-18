@@ -72,6 +72,7 @@ public class DBManager {
             return false;
         }
 
+
         return true;
     }
 
@@ -79,6 +80,50 @@ public class DBManager {
     {
         if (conn != null)
             conn.close();
+    }
+
+    public int getDBVersion() {
+
+        int versionNumber = 0;
+
+        try {
+            Statement statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Versao FROM Versao";
+
+            versionNumber = statement.executeQuery(sqlQuery).getInt("Versao");
+
+            return versionNumber;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean updateDBVersion() {
+        Statement statement = null;
+
+        int versionNumber = getDBVersion();
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "UPDATE Versao SET Versao='" + ++versionNumber + "'WHERE id=" + 1;
+
+            statement.executeQuery(sqlQuery);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
     public String listAllUsers(Integer id) throws SQLException {
@@ -135,6 +180,7 @@ public class DBManager {
         try {
             statement.executeUpdate(sqlQuery, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = statement.getGeneratedKeys();
+            updateDBVersion();
             return rs.getInt(1); // devolve o id do novo evento
         } catch (SQLException e) {
             e.printStackTrace();
@@ -171,6 +217,7 @@ public class DBManager {
                 e.printStackTrace();
             }
         }
+<<<<<<< Updated upstream
     }
 
     public boolean deleteEvent(int eventId) throws SQLException {
@@ -230,6 +277,9 @@ public class DBManager {
                 statement.close();
             }
         }
+=======
+        updateDBVersion();
+>>>>>>> Stashed changes
         return 0;
     }
 
@@ -357,8 +407,30 @@ public class DBManager {
 
             }
         }
+<<<<<<< Updated upstream
         //updateVersion();
         return true;
+=======
+
+        String getId = "SELECT id FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
+        try {
+            ResultSet resultSet = statement.executeQuery(getId);
+
+            // Se houver algum registro no ResultSe"t, definimos existeRegistro como true
+            idRegisto = resultSet.getInt("id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        } finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário.
+            }
+        }
+        updateDBVersion();
+        return idRegisto;
+>>>>>>> Stashed changes
     }
 
     public int verifyLogin(ArrayList<String> params){
@@ -486,6 +558,7 @@ public class DBManager {
                 }
             }
 
+            updateDBVersion();
             return true;
         }else if(params.get(0).equalsIgnoreCase("email")){
             String newEmail = params.get(1);
@@ -504,7 +577,7 @@ public class DBManager {
 
                 }
             }
-
+            updateDBVersion();
             return true;
         }else if(params.get(0).equalsIgnoreCase("password")){
             String newPassword = params.get(1);
@@ -523,7 +596,7 @@ public class DBManager {
 
                 }
             }
-
+            updateDBVersion();
             return true;
         }if(params.get(0).equalsIgnoreCase("nif")){
             int newNif = Integer.parseInt(params.get(1));
@@ -542,13 +615,168 @@ public class DBManager {
 
                 }
             }
-
+            updateDBVersion();
             return true;
         }
 
         return false;
     }
 
+<<<<<<< Updated upstream
+=======
+    public boolean insertUserInEvent(ArrayList<String> params) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM utilizador WHERE email='" + params.get(0) + "'), (SELECT id FROM EVENTO WHERE nome='" + params.get(1) + "'))";
+
+            updateDBVersion();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean deleteEvent(int eventId) throws SQLException {
+
+        if (getTotalAttendanceForEventAsInt(eventId) == 0) {
+            return false;
+        }
+
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "DELETE FROM evento WHERE id=" + eventId;
+
+            statement.executeQuery(sqlQuery);
+
+            updateDBVersion();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    public int getTotalAttendanceForEventAsInt(int eventId) throws SQLException {
+
+        if (eventId <= 0) {
+            throw new IndexOutOfBoundsException("Invalid Id!");
+        }
+
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Count(*) AS totalPresencas FROM presenca WHERE Presenca.IdEvento=" + eventId;
+
+            ResultSet rs = statement.executeQuery(sqlQuery);
+
+            return rs.getInt("totalPresencas");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return 0;
+    }
+
+    public boolean editEventData(Integer eventId, HashMap<String, String> params) throws SQLException {
+
+        if (getTotalAttendanceForEventAsInt(eventId) != 0) { // se o evento já tiver uma presença ou mais, então gg
+            return false;
+        }
+
+        Statement statement = null;
+
+        String sqlQuery = "";
+
+        try {
+            statement = conn.createStatement();
+
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                switch (entry.getKey().toLowerCase()) {
+                    case "codigo" -> {
+                        // verificar depois qunado o evento está a correr e assim, o código mais recente é que prevalece tb
+                        //Random rnd = new Random();
+
+                        //int minVal = 100000;
+
+                        //int maxVal = 999999;
+
+                        //int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
+
+                        // tirei porque não sei se o código é random ou é o admin que mete
+
+                        // depois não esquecer do tempo em minutos da validade do código
+
+                        sqlQuery = "UPDATE evento SET codigo='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+
+                    case "nome" -> {
+                        sqlQuery = "UPDATE evento SET nome='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "local" -> {
+                        sqlQuery = "UPDATE evento SET local='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "data" -> {
+                        sqlQuery = "UPDATE evento SET data='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                    case "horainicio" -> {
+                        sqlQuery = "UPDATE evento SET horainicio='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+
+                    case "horafim" -> {
+                        sqlQuery = "UPDATE evento SET horafim='" + entry.getValue() + "' WHERE id=" + eventId;
+                    }
+                }
+                statement.executeUpdate(sqlQuery);
+            }
+        } catch (SQLException e){
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        updateDBVersion();
+        return true;
+    }
+
+>>>>>>> Stashed changes
 
 }
 
