@@ -508,7 +508,7 @@ public class ClientUI {
 
         while (true) {
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -560,14 +560,14 @@ public class ClientUI {
     public void start() {
 
         while (true) {
-            //System.out.println("Could not login");
-            if (loginRegister())
+            if (loginRegister()) {
                 if (!isAdmin) {
                     userMenu();
                 } else if (isAdmin) {
                     adminUI();
                     //case 1 -> adminMenu();
                 }
+            }
         }
     }
 }

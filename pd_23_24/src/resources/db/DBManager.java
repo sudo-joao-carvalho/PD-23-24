@@ -1,4 +1,5 @@
 package resources.db;
+import javax.swing.plaf.nimbus.State;
 import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -426,13 +427,14 @@ public class DBManager {
         return false;
     }
 
-    public boolean checkForUserAttendance(int eventId, int userId){
+    public boolean checkForUserAttendance(int userId){
         Statement statement = null;
 
         try {
             statement = conn.createStatement();
 
-            String sqlQuery = "SELECT Id FROM Presenca WHERE IdEvento='" + eventId + "' AND IdUtilizador='" + userId + "'";
+            //retirar o id do evento pq falha se o user ja estiver registado quer naquele evento ou em qualquer outro
+            String sqlQuery = "SELECT Id FROM Presenca WHERE IdUtilizador='" + userId + "'";
 
             int count = statement.executeQuery(sqlQuery).getInt("Id");
 
@@ -463,7 +465,6 @@ public class DBManager {
     public boolean checkEventCodeAndInsertUser(int eventCode, int userId) {
 
         Statement statement = null;
-        ResultSet resultSet = null;
 
         try {
             statement = conn.createStatement();
@@ -481,7 +482,7 @@ public class DBManager {
                 return false;
             }
 
-            if(checkForUserAttendance(value, userId)){
+            if(checkForUserAttendance(userId)){
                 return false;
             }
 
@@ -520,7 +521,6 @@ public class DBManager {
             int count = statement.executeQuery(checkQuery).getInt(1);
 
             if (count == 0) {
-                System.out.println("1");
                 return false;
             }
 
@@ -529,7 +529,6 @@ public class DBManager {
             int countUsers = statement.executeQuery(checkUserQuery).getInt(1);
 
             if (countUsers == 0) {
-                System.out.println("2");
                 return false;
             }
 

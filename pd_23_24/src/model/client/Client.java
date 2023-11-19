@@ -5,6 +5,7 @@ import ui.ClientUI;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,6 @@ public class Client {
     public AtomicReference<String> requestResult;
     public AtomicReference<Boolean> srHandle;
     public AtomicReference<Boolean> hasNewRequest;
-
     private String email;
     private String password;
     private int clientID;
@@ -70,7 +70,7 @@ public class Client {
             try {
                 socketSr = new Socket(serverIP, serverPort);
 
-                socketSr.setSoTimeout(10000);
+                //socketSr.setSoTimeout(10000);
                 os = socketSr.getOutputStream();
                 is = socketSr.getInputStream();
 
@@ -79,9 +79,10 @@ public class Client {
 
                 this.sTr = new ConnectToServer(socketSr);
                 sTr.start();
-                return;
             } catch (IOException e) {
+                e.printStackTrace();
             }
+
         //}
     }
 
@@ -122,8 +123,26 @@ public class Client {
                 throw new RuntimeException(e);
             }
 
-
             while(srHandle.get()){
+                /*String str = "";
+                try {
+                    str = (String) ois.readObject();
+                    if(str.equals("QUIT")){
+                        System.out.println("a");
+                        socketServer.close();
+                        throw new IOException("Connection with server closed");
+                    }else if(str.equals("SUCCESS")){
+                        continue;
+                    }
+
+                } catch (IOException e) {
+                    closeClient();
+                    System.out.println("\nConnection with server closed");
+                    System.exit(0);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }*/
+
                 if(hasNewRequest.get()){
                     requestResult.set(""); //reset requestResult
                     try {
@@ -138,7 +157,6 @@ public class Client {
                             if (receivedObject instanceof AtomicReference) {
                                 AtomicReference<String> atomicReference = (AtomicReference<String>) receivedObject;
                                 String result = atomicReference.get();
-                                // Agora você pode usar a variável 'result'
 
                                 requestResult.set(result);
                             }
@@ -420,5 +438,9 @@ public class Client {
 
     public void setIsAdmin(boolean isAdmin) {
         this.admin = isAdmin;
+    }
+
+    public void closeClient(){
+        srHandle.set(false);
     }
 }

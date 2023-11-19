@@ -145,9 +145,6 @@ public class Server {
                     try {
                         Socket toClientSocket = serverSocket.accept();
 
-                        //TODO fazer uma verificacao aqui para so fazer isto antes do utilizador estar logado ou algo do genero, pq senao se a pessoa nao escrever nada em 10 segundos da broken pipe pq o socket da timeout
-                        toClientSocket.setSoTimeout(TIMEOUT * 1000);
-
                         InputStream is = toClientSocket.getInputStream();
                         OutputStream os = toClientSocket.getOutputStream();
 
@@ -179,9 +176,13 @@ public class Server {
         private Socket socket;
         private DBHelper dbHelper;
 
+         private AtomicReference<Boolean> isUserAuth;
+
         RunnableClientThread(Socket socket) {
             this.socket = socket;
             this.dbHelper = new DBHelper();
+
+            isUserAuth = new AtomicReference<>(false);
         }
 
         @Override
@@ -201,12 +202,34 @@ public class Server {
 
                     operationResult.set("");
 
+                    if(!isUserAuth.get()){ //
+                        /*try {
+                            System.out.println("1");
+                            socket.setSoTimeout(TIMEOUT * 1000);
+                            if ((this.dbHelper = (DBHelper) ois.readObject()) != null) {
+                                System.out.println("\nServer received a new request from Client with\n\tIP:" +
+                                        socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());
+                            }
+                        } catch (SocketTimeoutException e) {
+                            // Timeout ocorreu, encerrar a conexão com o cliente
+                            System.out.println("Timeout occurred. Closing connection with client.");
+                            oos.writeObject("QUIT");
+                            socket.close();
+                            break;
+                        }*/
+                        socket.setSoTimeout(TIMEOUT * 1000);
+                    }else{
+                        socket.setSoTimeout(0);
+                        //oos.writeObject("SUCCESS");
+                    }
+
                     if ((this.dbHelper = (DBHelper) ois.readObject()) != null) {
                         System.out.println("\nServer received a new request from Client with\n\tIP:" + socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());
                     }
 
                     String requestResult = "";
                     while (!dbHelper.isRequestAlreadyProcessed()) {
+
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
                                 switch (dbHelper.getTable()) {
@@ -219,6 +242,7 @@ public class Server {
                                             requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             sendHeartBeat.dbUpdated.set(true);
+                                            isUserAuth.set(true);
                                         }
                                     }
                                     case "evento" -> {
@@ -264,6 +288,7 @@ public class Server {
                                         if (id != 0) {
                                             requestResult = id + "User logged in: " + isAdmin;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
+                                            isUserAuth.set(true);
                                         } else {
                                             requestResult = "User doesnt exist";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -317,7 +342,6 @@ public class Server {
                                                 }
                                             }
                                             case "nome", "local", "data", "horainicio", "horafim" -> {
-                                                System.out.println(dbHelper.getParams());
                                                 if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
                                                     requestResult = "Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
