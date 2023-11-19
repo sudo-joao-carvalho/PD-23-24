@@ -443,10 +443,10 @@ public class ClientUI {
     }
 
     private void addCodeToEvent(){
-        int eventID = InputProtection.readInt("Event Id: ");
+        int idEvento = InputProtection.readInt("Event Id: ");
         System.out.println("Randomizing code and inserting it into DataBase...");
 
-        this.client.createDBHelper("UPDATE", "evento", eventID, -1);
+        this.client.createDBHelper("UPDATE", "evento", idEvento, -1);
 
         String outputFromRequestResult = client.waitToReceiveResultRequest();
         System.out.println(outputFromRequestResult);
