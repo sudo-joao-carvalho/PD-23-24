@@ -2,6 +2,7 @@ package resources.db;
 import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public class DBManager {
         String sqlQuery = "INSERT INTO Evento VALUES (NULL, 0, '" +
                 params.get(i++) + "' , '" + params.get(i++) + "' , '" +
                 params.get(i++) + "' , '" + params.get(i++) + "' , '" +
-                params.get(i) + "')";
+                params.get(i) + "', 0)";
 
         try {
             statement.executeUpdate(sqlQuery);
@@ -435,6 +436,8 @@ public class DBManager {
 
             int count = statement.executeQuery(sqlQuery).getInt("Id");
 
+            System.out.println(count);
+
             if (count == 1) { // significa que o user tem presença em X evento
                 return true;
             }
@@ -460,6 +463,7 @@ public class DBManager {
     public boolean checkEventCodeAndInsertUser(int eventCode, int userId) {
 
         Statement statement = null;
+        ResultSet resultSet = null;
 
         try {
             statement = conn.createStatement();
@@ -468,11 +472,20 @@ public class DBManager {
 
             int value = statement.executeQuery(sqlQuery).getInt("Id");
 
+            sqlQuery = "SELECT CodeExpireTime AS expireTime FROM Evento WHERE Codigo='" + eventCode + "'";
+            String expireTime = statement.executeQuery(sqlQuery).getString("expireTime");
+
+            LocalTime dbExpireTime = LocalTime.parse(expireTime, DateTimeFormatter.ofPattern("HH:mm"));
+
             if (value == 0) {
                 return false;
             }
 
-            if(!checkForUserAttendance(value, userId)){
+            if(checkForUserAttendance(value, userId)){
+                return false;
+            }
+
+            if(LocalTime.now().isAfter(dbExpireTime)){
                 return false;
             }
 
@@ -762,7 +775,7 @@ public class DBManager {
 
     }
 
-    public int addCodeToEvent(Integer eventId){ //TODO so se pode mudar codigo quando o evento ja esta a decorrer
+    public int addCodeToEvent(Integer eventId, Integer codeExpirationTime){ //TODO so se pode mudar codigo quando o evento ja esta a decorrer
 
         Statement statement = null;
         try{
@@ -801,7 +814,16 @@ public class DBManager {
             e.printStackTrace();
         }
 
-        String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "' WHERE id = " + eventId;
+        LocalTime timeNow = LocalTime.now();
+
+        LocalDateTime localDateTimeAtual = LocalDateTime.of(1, 1, 1, timeNow.getHour(), timeNow.getMinute(), timeNow.getSecond());
+        LocalDateTime localDateTimeComMinutosAdicionados = localDateTimeAtual.plusMinutes(codeExpirationTime);
+        LocalTime localTimeComMinutosAdicionados = localDateTimeComMinutosAdicionados.toLocalTime();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        String localTimeFormatado = localTimeComMinutosAdicionados.format(formatter);
+
+        String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "', codeExpireTime = '" + localTimeFormatado + "' WHERE id = " + eventId;
 
         try {
             //ResultSet resultSet = statement.executeQuery(verificar);

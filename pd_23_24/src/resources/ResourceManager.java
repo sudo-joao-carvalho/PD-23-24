@@ -46,8 +46,8 @@ public class ResourceManager {
         return this.dbManager.editEventData(eventId, params);
     }
 
-    public int addCodeToEvent(Integer eventId) {
-        return this.dbManager.addCodeToEvent(eventId);
+    public int addCodeToEvent(Integer eventId, Integer codeExpirationTime) {
+        return this.dbManager.addCodeToEvent(eventId, codeExpirationTime);
     }
 
     public String listPresencasFromUserEmail(String userEmail){

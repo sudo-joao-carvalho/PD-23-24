@@ -45,8 +45,8 @@ public class Data {
         return this.resourceManager.deleteEvent(eventId);
     }
 
-    public int addCodeToEvent(Integer eventId) {
-        return this.resourceManager.addCodeToEvent(eventId);
+    public int addCodeToEvent(Integer eventId, Integer codeExpirationTime) {
+        return this.resourceManager.addCodeToEvent(eventId, codeExpirationTime);
     }
 
     public String listPresencasFromUserEmail(String userEmail){

@@ -444,9 +444,10 @@ public class ClientUI {
 
     private void addCodeToEvent(){
         int idEvento = InputProtection.readInt("Event Id: ");
+        int codeExpirationTime = InputProtection.readInt("Code expiration time (minutes) : ");
         System.out.println("Randomizing code and inserting it into DataBase...");
 
-        this.client.createDBHelper("UPDATE", "evento", idEvento, -1);
+        this.client.createDBHelper("UPDATE", "evento", idEvento, codeExpirationTime, -1);
 
         String outputFromRequestResult = client.waitToReceiveResultRequest();
         System.out.println(outputFromRequestResult);

@@ -21,6 +21,7 @@ public class DBHelper implements Serializable {
     private String email;
     private Integer idEvento;
     private int eventCode;
+    private int codeExpirationTime;
     private ArrayList<String> verifyEmail;
     private boolean isRequestAlreadyProcessed;
     private boolean isAdmin;
@@ -127,5 +128,13 @@ public class DBHelper implements Serializable {
 
     public void setEventCode(int eventCode) {
         this.eventCode = eventCode;
+    }
+
+    public int getCodeExpirationTime() {
+        return codeExpirationTime;
+    }
+
+    public void setCodeExpirationTime(int codeExpirationTime) {
+        this.codeExpirationTime = codeExpirationTime;
     }
 }

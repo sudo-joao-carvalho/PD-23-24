@@ -302,7 +302,7 @@ public class Server {
                                     case "evento" -> {
                                         switch (dbHelper.getColumn()) {
                                             case "codigo" -> {
-                                                int codigo = data.addCodeToEvent(dbHelper.getIdEvento());
+                                                int codigo = data.addCodeToEvent(dbHelper.getIdEvento(), dbHelper.getCodeExpirationTime());
                                                 System.out.println(codigo);
                                                 if(codigo == -2){
                                                     requestResult = "Event not happening right now";

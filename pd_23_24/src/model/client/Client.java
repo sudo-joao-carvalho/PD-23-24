@@ -175,6 +175,11 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int codeExpirationTime, int idUser){
+        dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, codeExpirationTime, idUser);
+        hasNewRequest.set(true);
+    }
+
     public void createDBHelper(String queryOperation, String sqlTable, String eventCode, int userID){
         dbHelper = addDBHelper(queryOperation, sqlTable, eventCode, userID);
         hasNewRequest.set(true);
@@ -251,14 +256,6 @@ public class Client {
             }
         }
 
-        if(operation.equals("UPDATE")){
-            if(table.equals("evento")){
-                addCodeToEvent(dbHelper, idEvento, idUser);
-                isDBHelperReady = true;
-                return dbHelper;
-            }
-        }
-
         return null;
     }
 
@@ -280,6 +277,19 @@ public class Client {
         if (operation.equals("INSERT")) {
             if (table.equals("presenca")) {
                 checkEventCodeAndInsertUser(dbHelper, eventCode, userID);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, int idEvento, int codeExpirationTIme, int idUser){
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("UPDATE")){
+            if(table.equals("evento")){
+                addCodeToEvent(dbHelper, idEvento, codeExpirationTIme, idUser);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -340,11 +350,12 @@ public class Client {
         return true;
     }
 
-    public boolean addCodeToEvent(DBHelper dbHelper, Integer idEvento, Integer idClient){
+    public boolean addCodeToEvent(DBHelper dbHelper, Integer idEvento, Integer codeExpirationTime, Integer idClient){
         dbHelper.setOperation("UPDATE");
         dbHelper.setTable("evento");
         dbHelper.setIdEvento(idEvento);
         dbHelper.setColumn("codigo");
+        dbHelper.setCodeExpirationTime(codeExpirationTime);
         return true;
     }
 
