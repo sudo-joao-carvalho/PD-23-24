@@ -194,8 +194,6 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         } catch (NotBoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
-
-
         }
     }
 
