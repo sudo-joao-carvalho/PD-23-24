@@ -27,6 +27,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     public void addBackupServiceObserver(BackupServerRemoteInterface observer) throws RemoteException{
         synchronized (observer){
             if(!observers.contains(observer)){
+                System.out.println("Adicionei um backup");
                 observers.add(observer);
                 System.out.println("Mais um BackupServer");
             }
@@ -148,6 +149,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
             /*
              * Cria o servico.
              */
+
             RemoteService service = new RemoteService();
 
             System.out.println("Servico RemoteService criado e em execucao (" + service.getRef().remoteToString() + "...");

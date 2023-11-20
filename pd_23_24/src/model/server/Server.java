@@ -172,6 +172,8 @@ public class Server {
 
     private HeartBeat heartBeat;
 
+    private static int idBackupServer = 0; // incrementa com cada backupSV criado, começa em 0
+
     SendHeartBeat sendHeartBeat;
 
     private String presenceList;

@@ -108,11 +108,36 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     private InetAddress groupIp;
     private SocketAddress socketAddr;
     MulticastHandler mHandler; //thread
-    private static int idS = 0; // incrementa com cada backupSV criado, começa em 0
+
+    private static final String ID_FILE_PATH = "src/resources/files/backup_server_id.txt"; // ficheiro de texto serve apenas para guardar e puxar os ids dos sv backup
+
+    private static int idS;
+
+    static {
+        try (BufferedReader reader = new BufferedReader(new FileReader(ID_FILE_PATH))) {
+            String idStr = reader.readLine();
+            if (idStr != null && !idStr.isEmpty()) {
+                idS = Integer.parseInt(idStr);
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
     private int id;
+
+
 
     public BackupServer() throws IOException {
         this.id = ++idS;
+
+        // Atualiza o arquivo com o novo ID
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ID_FILE_PATH))) {
+            writer.write(String.valueOf(idS));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));
         this.socketAddr = new InetSocketAddress(groupIp, Integer.parseInt( MULTICAST.getValue(1)));
@@ -147,7 +172,9 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
-            backupServer.saveDatabaseCopyLocally(databaseCopy, args[1]);
+            if (!backupServer.saveDatabaseCopyLocally(databaseCopy, args[0], args[1])) {
+                return;
+            }
 
             getRemoteService.addBackupServiceObserver(backupServer);
 
@@ -174,16 +201,59 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         }
     }
 
-    public void saveDatabaseCopyLocally(byte[] databaseCopy, String filename) {
+    public boolean saveDatabaseCopyLocally(byte[] databaseCopy, String directory, String filename) {
 
-        File backupFile = new File("src/resources/db/backup/" + filename + "-" + id + ".db"); // Substitua pelo nome desejado
+        File fileDirectory = new File(directory + id + "/"); // se o caminho introduzido por parâmetro de linha de comandos não existir, vai ter de se criar
+        // depois disso verificamos se existe ou não algum ficheiro dentro dela
 
-        try (FileOutputStream fos = new FileOutputStream(backupFile)) {
+        if(!fileDirectory.exists()) {
+            boolean created = fileDirectory.mkdir();
+            if (!created) {
+                System.out.println("Não foi possível criar o diretório de backup.");
+                return false;
+            }
+        }
+
+        if (fileDirectory.list() != null && fileDirectory.list().length != 0) {
+            System.out.println("\nDirectory already contains files. Shutting down...\n");
+            return false;
+        }
+
+        //File backupFile = new File(directory + "backupDirectory" + id + "/" + filename + "-" + id + ".db");
+
+        // Criar o caminho completo para o diretório de backup
+        /*String backupDirectoryPath = directory + id + "/";
+
+        // Criar o objeto File para representar o diretório de backup
+        File backupDirectory = new File(backupDirectoryPath);
+
+        if (!backupDirectory.exists()) {
+            boolean created = backupDirectory.mkdir();
+            if (!created) {
+                System.out.println("Não foi possível criar o diretório de backup.");
+                return false;
+            }
+        }*/
+
+        // Criar o caminho completo para o arquivo de backup
+        String backupFilePath = fileDirectory + "/" + filename + "-" + id + ".db";
+
+        try (FileOutputStream fos = new FileOutputStream(backupFilePath)) {
             fos.write(databaseCopy);
             System.out.println("Cópia da base de dados recebida e guardada.\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return true;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
 
