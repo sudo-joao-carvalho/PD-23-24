@@ -17,7 +17,7 @@ public class HeartBeat implements Serializable {
     private int nConnections;
     private String dbDirectory;
     private LocalTime time;
-    private String allQueries;
+    private String query;
 
     public HeartBeat(int port, boolean available/*, int dbVersion, int nConnections*/, String dbDirectory) { // tudo o que vai no hb
         this.port = port;
@@ -93,11 +93,11 @@ public class HeartBeat implements Serializable {
     }
 
     public String getAllQueries() {
-        return allQueries;
+        return query;
     }
 
-    public void setAllQueries(String allQueries) {
-        this.allQueries = allQueries;
+    public void setQuery(String query) {
+        this.query = query;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class HeartBeat implements Serializable {
                 ", nConnections=" + nConnections +
                 ", dbDirectory='" + dbDirectory + '\'' +
                 ", time=" + time +
-                ", allQueries='" + allQueries + '\'' +
+                ", query='" + query + '\'' +
                 '}';
     }
 
