@@ -11,11 +11,16 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.atomic.AtomicReference;
 
 class MulticastHandler extends Thread { //thread to receive the hearbeat with the info (HEARTBEAT RECEIVER)
     public static final int MAX_SIZE = 1000;
     private MulticastSocket mcastSocket;
     private boolean isRunning;
+
+    private RemoteServiceInterface remoteService;
+
+    private String dbDirectory;
 
     public MulticastHandler(MulticastSocket mcastSocket) {
         this.mcastSocket = mcastSocket;
@@ -24,6 +29,11 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
 
     public void terminate() {
         isRunning = false;
+    }
+
+    public void setParams(RemoteServiceInterface remoteService, String dbDirectory) {
+        this.remoteService = remoteService;
+        this.dbDirectory = dbDirectory;
     }
 
     @Override
@@ -55,29 +65,20 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                         System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + ") ");
                         System.out.println(hb.getMsg());
 
-                        /*if (msg.getMsg().toUpperCase().contains(LIST.toUpperCase())) {
+                        /*if(hb.getDbVersion() != getLocalDbVersion()){
+                            //Mata o BackupServer
+                            this.interrupt();
+                        }*/
 
-                            try (ByteArrayOutputStream buff = new ByteArrayOutputStream();
-                                 ObjectOutputStream out = new ObjectOutputStream(buff)) {
+                        //System.out.println(dbDirectory);
 
-                                out.writeObject(username);
-
-                                pkt.setData(buff.toByteArray());
-                                pkt.setLength(buff.size());
+                        /*if (remoteService != null) {
+                            if (hb.getIsUpdateDB()) {
+                                System.out.println(dbDirectory);
+                                //remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
-
-                            s.send(pkt);
-                            continue;
-                        }
-
-                        System.out.println();
-                        System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + ") ");
-                        System.out.println(msg.getNickname() + ": " + msg.getMsg() + " (" + msg.getClass() + ")");*/
-
-                    } /*else if (obj instanceof String) {
-
-                        System.out.println((String) obj + " (" + obj.getClass() + ")");
-                    }*/
+                        }*/
+                    }
 
                 } catch (ClassNotFoundException e) {
                     System.out.println();
@@ -170,11 +171,19 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
-            if (!backupServer.saveDatabaseCopyLocally(databaseCopy, args[0], args[1])) {
+            /*String dbDirectory = null;
+
+            String result = backupServer.saveDatabaseCopyLocally(databaseCopy, args[0], args[1]);
+            
+            if (result.equals("Error")) {
                 return;
             }
 
+            dbDirectory = result;
+
             getRemoteService.addBackupServiceObserver(backupServer);
+
+            backupServer.getMHandler().setParams(getRemoteService, dbDirectory);*/
 
             //System.out.println("A espera para terminar...\n");
 
@@ -197,7 +206,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         }
     }
 
-    public boolean saveDatabaseCopyLocally(byte[] databaseCopy, String directory, String filename) {
+    public String saveDatabaseCopyLocally(byte[] databaseCopy, String directory, String filename) {
 
         File fileDirectory = new File(directory + id + "/"); // se o caminho introduzido por parâmetro de linha de comandos não existir, vai ter de se criar
         // depois disso verificamos se existe ou não algum ficheiro dentro dela
@@ -206,13 +215,13 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             boolean created = fileDirectory.mkdir();
             if (!created) {
                 System.out.println("Não foi possível criar o diretório de backup.");
-                return false;
+                return "Error";
             }
         }
 
         if (fileDirectory.list() != null && fileDirectory.list().length != 0) {
             System.out.println("\nDirectory already contains files. Shutting down...\n");
-            return false;
+            return "Error";
         }
 
         //File backupFile = new File(directory + "backupDirectory" + id + "/" + filename + "-" + id + ".db");
@@ -237,11 +246,13 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         try (FileOutputStream fos = new FileOutputStream(backupFilePath)) {
             fos.write(databaseCopy);
             System.out.println("Cópia da base de dados recebida e guardada.\n");
+
+            return backupFilePath;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return true;
+        return "Error";
     }
 
     public int getId() {
@@ -250,6 +261,10 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public MulticastHandler getMHandler() {
+        return mHandler;
     }
 }
 

@@ -21,6 +21,8 @@ public class HeartBeat implements Serializable {
 
     private String RMIServiceName;
 
+    private boolean updateDB;
+
     public HeartBeat(int registryListeningPort, boolean available, int dbVersion/*, int nConnections*/, String dbDirectory) { // tudo o que vai no hb
         this.registryListeningPort = registryListeningPort;
         this.available = available;
@@ -29,6 +31,7 @@ public class HeartBeat implements Serializable {
         this.dbDirectory = dbDirectory;
         this.msg = "Estou bibo";
         this.RMIServiceName = "TP-PD-2324";
+        this.updateDB = false;
     }
 
     public String getMsg() {
@@ -109,6 +112,14 @@ public class HeartBeat implements Serializable {
 
     public void setRMIServiceName(String RMIServiceName) {
         this.RMIServiceName = RMIServiceName;
+    }
+
+    public boolean getIsUpdateDB() {
+        return updateDB;
+    }
+
+    public void setUpdateDB(boolean updateDB) {
+        this.updateDB = updateDB;
     }
 
     @Override

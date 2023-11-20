@@ -10,6 +10,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,9 +73,34 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
     //fazer aqui as operacoes da base de dados
     public void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
-        System.out.println(query);
+        /*System.out.println(query);
 
-        notifyObservers("a");
+        Connection conn = null;
+
+        System.out.println(dbDirectory);
+
+        try {
+            conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            Statement statement = conn.createStatement();
+            int numRowsAffected = statement.executeUpdate(query);
+
+            if(numRowsAffected != 0){
+                notifyObservers("Base de dados de backup alterada");
+            }else{
+                notifyObservers("Nao foi possivel alterar a base de dados");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create statement!\n");
+        }*/
+
+
     }
 
     @Override
@@ -80,6 +109,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
             // Lógica para obter a cópia da base de dados em bytes
             File dbFile = new File("src/resources/db/PD-2023-24-TP.db"); // Substitua pelo caminho correto
             byte[] databaseCopy = Files.readAllBytes(dbFile.toPath());
+            notifyObservers("Database copied");
             return databaseCopy;
         } catch (IOException e) {
             throw new RemoteException("Erro ao obter cópia da base de dados", e);
