@@ -126,13 +126,11 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
     private int id;
 
-
-
     public BackupServer() throws IOException {
         this.id = ++idS;
 
         // Atualiza o arquivo com o novo ID
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ID_FILE_PATH))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(ID_FILE_PATH))) { // escreve-se para o ficheiro o novo Id
             writer.write(String.valueOf(idS));
         } catch (IOException e) {
             e.printStackTrace();
