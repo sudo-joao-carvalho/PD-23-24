@@ -31,43 +31,52 @@ class SendHeartBeat extends Thread{
         this.dbUpdated = new AtomicReference<>(false);
     }
 
+    private Object dbUpdatedLock = new Object();
+
+    public void notifyDbUpdated() {
+        synchronized (dbUpdatedLock) {
+            dbUpdatedLock.notify();
+        }
+    }
+
     @Override
-    public void run(){
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+    public void run() {
+        while (isRunning.get()) {
+            try {
+                synchronized (dbUpdatedLock) {
+                    // Aguarda por HBTIMER segundos ou notificação de atualização da base de dados
+                    dbUpdatedLock.wait(HBTIMER * 1000);
 
-            while(isRunning.get()){
-                if(dbUpdated.get()){ //mandar hearbeat quando a versao da base de dados e updated
-                    oos.writeObject(hearbeat);
-                    byte[] buffer = baos.toByteArray();
-                    DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
-                            InetAddress.getByName("230.44.44.44"), 4444);
-                    mcastSocket.send(dp);
-
-                    continue;
+                    // Verifica se dbUpdated é true e envia um heartbeat
+                    if (dbUpdated.get()) {
+                        sendHeartbeat(hearbeat);
+                        dbUpdated.set(false);
+                    } else {
+                        // Envia um heartbeat a cada 5 segundos
+                        sendHeartbeat(hearbeat);
+                    }
                 }
-
-                try{
-                    Thread.sleep(HBTIMER * 1000);
-                } catch (InterruptedException e) {
-                    this.isRunning.set(false);
-                    throw new RuntimeException(e);
+            } catch (InterruptedException | IOException e) {
+                if (isRunning.get()) {
+                    e.printStackTrace();
                 }
+                if (!mcastSocket.isClosed()) {
+                    mcastSocket.close();
+                }
+            }
+        }
+    }
 
-                oos.writeObject(hearbeat);
-                byte[] buffer = baos.toByteArray();
-                DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
-                        InetAddress.getByName("230.44.44.44"), 4444);
-                mcastSocket.send(dp);
-            }
 
-        } catch (IOException e) {
-            if (this.isRunning.get()) {
-                e.printStackTrace();
-            }
-            if (!mcastSocket.isClosed()) {
-                mcastSocket.close();
-            }
+    private void sendHeartbeat(HeartBeat heartbeat) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+
+            oos.writeObject(heartbeat);
+            byte[] buffer = baos.toByteArray();
+            DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
+                    InetAddress.getByName("230.44.44.44"), 4444);
+            mcastSocket.send(dp);
         }
     }
 }
@@ -241,7 +250,8 @@ public class Server {
                                         } else {
                                             requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            //sendHeartBeat.dbUpdated.set(true);
+                                            sendHeartBeat.notifyDbUpdated();
                                             isUserAuth.set(true);
                                         }
                                     }
@@ -252,7 +262,8 @@ public class Server {
                                         } else {
                                             requestResult = "Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            //sendHeartBeat.dbUpdated.set(true);
+                                            sendHeartBeat.notifyDbUpdated();
                                         }
                                     }
                                     case "presenca" -> {
@@ -263,13 +274,15 @@ public class Server {
                                             }else{
                                                 requestResult = "User successfully inserted in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                sendHeartBeat.dbUpdated.set(true);
+                                                //sendHeartBeat.dbUpdated.set(true);
+                                                sendHeartBeat.notifyDbUpdated();
                                             }
                                         }else{
                                             if(data.checkEventCodeAndInsertUser(dbHelper.getEventCode(), dbHelper.getId())){
                                                 requestResult = "User registered in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                sendHeartBeat.dbUpdated.set(true);
+                                                //sendHeartBeat.dbUpdated.set(true);
+                                                sendHeartBeat.notifyDbUpdated();
                                             }else{
                                                 requestResult = "Failed registering user in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
@@ -317,7 +330,8 @@ public class Server {
                                         if (data.editProfile(dbHelper.getParams(), dbHelper.getId())) {
                                             requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            //sendHeartBeat.dbUpdated.set(true);
+                                            sendHeartBeat.notifyDbUpdated();
                                         } else {
                                             requestResult = "Update failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -338,14 +352,16 @@ public class Server {
                                                 }else{
                                                     requestResult = "Code " + codigo + " inserted successfully";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    sendHeartBeat.dbUpdated.set(true);
+                                                    //sendHeartBeat.dbUpdated.set(true);
+                                                    sendHeartBeat.notifyDbUpdated();
                                                 }
                                             }
                                             case "nome", "local", "data", "horainicio", "horafim" -> {
                                                 if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
                                                     requestResult = "Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    sendHeartBeat.dbUpdated.set(true);
+                                                    //sendHeartBeat.dbUpdated.set(true);
+                                                    sendHeartBeat.notifyDbUpdated();
                                                 }else{
                                                     requestResult = "Update failed";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
@@ -361,7 +377,8 @@ public class Server {
                                         if(data.deleteEvent(dbHelper.getIdEvento())){
                                             requestResult = "Delete evento done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            //sendHeartBeat.dbUpdated.set(true);
+                                            sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Delete evento failed";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -371,7 +388,8 @@ public class Server {
                                         if(data.deleteUserFromEvent(dbHelper.getParams())){
                                             requestResult = "User deleted from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            sendHeartBeat.dbUpdated.set(true);
+                                            //sendHeartBeat.dbUpdated.set(true);
+                                            sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Couldnt delete user from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -395,7 +413,7 @@ public class Server {
                         }
                     }
 
-                    sendHeartBeat.dbUpdated.set(false);
+                    //sendHeartBeat.dbUpdated.set(false);
 
                 }
 

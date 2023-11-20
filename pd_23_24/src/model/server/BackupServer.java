@@ -95,7 +95,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
             }
 
         }catch (Exception e){
-            // lidar com esta exceção tal como todas as outras no proj
+            // lidar com esta exceção tal como todas as outras no projeto
         }
 
         if (!isRunning){
@@ -168,17 +168,17 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             }
 
             //args seguintes sao mandados pelo heartbeat
-            String objectUrl = "rmi://" + args[0] + "/servidor-ficheiros-pd";
+            /*String objectUrl = "rmi://" + args[0] + "/servidor-ficheiros-pd";
 
             RemoteServiceInterface getRemoteFileService = (RemoteServiceInterface) Naming.lookup(objectUrl);
 
-            System.setProperty("java-rmi.server.hostname", args[1]);
+            System.setProperty("java-rmi.server.hostname", args[1]);*/
 
             BackupServer BackupServer = new BackupServer();
 
-            System.out.println("Serviço GetRemoteFileObserver criado e em execução...\n");
+            System.out.println("Serviço BackupServer criado e em execução...\n");
 
-            getRemoteFileService.addBackupServiceObserver(BackupServer);
+            /*getRemoteFileService.addBackupServiceObserver(BackupServer);
 
             System.out.println("A espera para terminar...\n");
 
@@ -189,15 +189,15 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             getRemoteFileService.removeBackupServiceObserver(BackupServer);
 
             // terminar o serviço
-            UnicastRemoteObject.unexportObject(BackupServer, true);
+            UnicastRemoteObject.unexportObject(BackupServer, true);*/
 
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        } catch (NotBoundException e) {
+        } /*catch (NotBoundException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
+        } */catch (IOException e) {
 
 
         }

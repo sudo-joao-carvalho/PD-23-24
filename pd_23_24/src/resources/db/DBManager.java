@@ -440,7 +440,7 @@ public class DBManager {
 
             System.out.println(count);
 
-            if (count == 1) { // significa que o user tem presença em X evento
+            if (count != 0) { // significa que o user tem presença em X evento
                 return true;
             }
 
