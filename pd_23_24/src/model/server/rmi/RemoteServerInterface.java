@@ -4,5 +4,5 @@ import java.rmi.Remote;
 
 public interface RemoteServerInterface extends Remote {
 
-    void makeDBChanges(String query) throws java.io.IOException;
+    void writeDBFileChunk(byte[] fileChunk, int nbytes) throws java.io.IOException;
 }

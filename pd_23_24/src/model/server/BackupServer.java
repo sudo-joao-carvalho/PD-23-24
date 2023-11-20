@@ -4,11 +4,9 @@ import model.server.hb.HeartBeat;
 import model.server.rmi.BackupServerRemoteInterface;
 import model.server.rmi.RemoteServiceInterface;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -110,8 +108,11 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     private InetAddress groupIp;
     private SocketAddress socketAddr;
     MulticastHandler mHandler; //thread
+    private static int idS = 0; // incrementa com cada backupSV criado, começa em 0
+    private int id;
 
     public BackupServer() throws IOException {
+        this.id = ++idS;
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));
         this.socketAddr = new InetSocketAddress(groupIp, Integer.parseInt( MULTICAST.getValue(1)));
@@ -130,8 +131,8 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     public static void main(String[] args) throws IOException {
 
         try {
-            if (args.length != 1) {
-                System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory-\n");
+            if (args.length != 2) {
+                System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory- -dbFileName-\n");
                 return;
             }
 
@@ -142,15 +143,13 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             //args seguintes sao mandados pelo heartbeat
             String objectUrl = "rmi://localhost/TP-PD-2324";
 
-            RemoteServiceInterface getRemoteFileService = (RemoteServiceInterface) Naming.lookup(objectUrl);
+            RemoteServiceInterface getRemoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
 
-            //System.setProperty("java-rmi.server.hostname", "192.168.1.186");
+            byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
-            /*BackupServer BackupServer = new BackupServer();
+            backupServer.saveDatabaseCopyLocally(databaseCopy, args[1]);
 
-            System.out.println("Serviço BackupServer criado e em execução...\n");*/
-
-            getRemoteFileService.addBackupServiceObserver(backupServer);
+            getRemoteService.addBackupServiceObserver(backupServer);
 
             //System.out.println("A espera para terminar...\n");
 
@@ -174,4 +173,18 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
         }
     }
+
+    public void saveDatabaseCopyLocally(byte[] databaseCopy, String filename) {
+
+        File backupFile = new File("src/resources/db/backup/" + filename + "-" + id + ".db"); // Substitua pelo nome desejado
+
+        try (FileOutputStream fos = new FileOutputStream(backupFile)) {
+            fos.write(databaseCopy);
+            System.out.println("Cópia da base de dados recebida e guardada.\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class DBManager {
-    // aqui ficam as queries e a lógica toda das queries
     private Connection conn;
 
+    private String executedQuery;
 
     public DBManager() throws SQLException {
         this.conn = DriverManager.getConnection("jdbc:sqlite:src/resources/db/PD-2023-24-TP.db");
@@ -140,8 +140,8 @@ public class DBManager {
 
         try {
             statement.executeUpdate(sqlQuery);
-
             updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true; // já não devolve o id do novo evento
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,6 +232,7 @@ public class DBManager {
         }
 
         updateDBVersion();
+        this.executedQuery = sqlQuery;
         return idRegisto;
     }
 
@@ -361,6 +362,7 @@ public class DBManager {
             }
 
             updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true;
         }else if(params.get(0).equalsIgnoreCase("email")){
             String newEmail = params.get(1);
@@ -381,6 +383,7 @@ public class DBManager {
             }
 
             updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true;
         }else if(params.get(0).equalsIgnoreCase("password")){
             String newPassword = params.get(1);
@@ -401,6 +404,7 @@ public class DBManager {
             }
 
             updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true;
         }if(params.get(0).equalsIgnoreCase("nif")){
             int newNif = Integer.parseInt(params.get(1));
@@ -421,6 +425,7 @@ public class DBManager {
             }
 
             updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true;
         }
 
@@ -437,8 +442,6 @@ public class DBManager {
             String sqlQuery = "SELECT Id FROM Presenca WHERE IdUtilizador='" + userId + "'";
 
             int count = statement.executeQuery(sqlQuery).getInt("Id");
-
-            System.out.println(count);
 
             if (count != 0) { // significa que o user tem presença em X evento
                 return true;
@@ -494,6 +497,8 @@ public class DBManager {
 
             statement.executeUpdate(insertUserQuery);
 
+            updateDBVersion();
+            this.executedQuery = sqlQuery;
             return true;
 
         } catch (SQLException e) {
@@ -546,6 +551,7 @@ public class DBManager {
                     ")";*/
 
             statement.executeUpdate(sqlQuery);
+            this.executedQuery = sqlQuery;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -613,6 +619,7 @@ public class DBManager {
                 return false;
             }
 
+            this.executedQuery = sqlQuery;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -709,6 +716,7 @@ public class DBManager {
             }
             statement.executeUpdate(sqlQuery);
 
+            this.executedQuery = sqlQuery;
         } catch (SQLException e){
             return false;
         } finally {
@@ -833,6 +841,7 @@ public class DBManager {
                 // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
                 return 0;
             }else{
+                this.executedQuery = sqlQuery;
                 updateDBVersion();
                 return eventCode;
             }
@@ -936,6 +945,12 @@ public class DBManager {
         }
         return true;
     }
+
+    public void setExecutedQuery(String query){
+        this.executedQuery = query;
+    }
+
+    public String getExecutedQuery(){return this.executedQuery;}
 
 }
 

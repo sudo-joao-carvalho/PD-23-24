@@ -10,27 +10,28 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class RemoteServerService extends UnicastRemoteObject implements RemoteServerInterface {
 
-    ObjectOutputStream oos = null;
+    FileOutputStream fout = null;
 
-    protected RemoteServerService() throws RemoteException {
+    public RemoteServerService() throws java.rmi.RemoteException{
+
     }
 
-    public synchronized void setOos(ObjectOutputStream oos) {
-        this.oos = oos;
+    public synchronized void setFout(FileOutputStream fout) {
+        this.fout = fout;
     }
 
     @Override
-    public void makeDBChanges(String query) throws IOException {
-        if(oos == null){
-            System.out.println("Nao existe qualquer tipo de operacao a ser feita");
-            throw new IOException("<CLI> Nao existe qualquer tipo de operacao a ser feita");
+    public void writeDBFileChunk(byte[] fileChunk, int nbytes) throws IOException {
+        if(fout == null){
+            System.out.println("Nao existe qualquer ficheiro aberto para escrita");
+            throw new IOException("<CLI> Nao existe qualquer ficheiro aberto para escrita");
         }
 
         try{
-            oos.write(query.getBytes(), 0 , query.length());
+            fout.write(fileChunk, 0, nbytes);
         }catch (IOException e){
-            System.out.println("Excepcao ao fazer operacao na base de dados " + e);
-            throw new IOException("<CLI> Excepcao ao fazer operacao na base de dados " , e.getCause());
+            System.out.println("Excepcao ao escrever no ficheiro " + e);
+            throw new IOException("<CLI> Excepcao ao escrever no ficheiro " , e.getCause());
         }
     }
 }

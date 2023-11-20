@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -15,6 +16,7 @@ import java.util.List;
 public class RemoteService extends UnicastRemoteObject implements RemoteServiceInterface {
 
     public static final String SERVICE_NAME = "TP-PD-2324";
+
     List<BackupServerRemoteInterface> observers;
 
     public RemoteService() throws RemoteException {
@@ -26,7 +28,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
         synchronized (observer){
             if(!observers.contains(observer)){
                 observers.add(observer);
-                System.out.println("Mais um observador");
+                System.out.println("Mais um BackupServer");
             }
         }
     }
@@ -35,7 +37,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     public void removeBackupServiceObserver(BackupServerRemoteInterface observer) throws RemoteException {
         synchronized (observer){
             if(observers.remove(observer)){
-                System.out.println("Menos um observador");
+                System.out.println("Menos um BackupServer");
             }
         }
     }
@@ -52,7 +54,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
                     observer.notify(msg);
                 }catch (RemoteException e){
                     observersToRemove.add(observer);
-                    System.out.println("- um observador (observador inacessivel)");
+                    System.out.println("- um BackupServer (BackupServer inacessivel)");
                 }
             }
 
@@ -66,46 +68,21 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
     //fazer aqui as operacoes da base de dados
     public void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
-        System.out.println("tou no dbChanges");
-        //        byte [] fileChunk = new byte[MAX_CHUNCK_SIZE];
-//        int nbytes;
-//
-//        fileName = fileName.trim();
-//        System.out.println("Recebido pedido para: " + fileName);
-//
-//        try(FileInputStream requestedFileInputStream = getRequestedFileInputStream(fileName)){
-//
-//            /*
-//             * Obtem os bytes do ficheiro por blocos de bytes ("file chunks").
-//             */
-//            while((nbytes = requestedFileInputStream.read(fileChunk))!=-1){
-//
-//                /*
-//                 * Escreve o bloco actual no cliente, invocando o metodo writeFileChunk da
-//                 * sua interface remota.
-//                 */
-//
-//                cliRemoto.writeFileChunk(fileChunk, nbytes); //cliRemoto é a interface do server
-//
-//            }
-//
-//            System.out.println("Ficheiro " + new File(localDirectory+File.separator+fileName).getCanonicalPath() +
-//                    " transferido para o cliente com sucesso.");
-//            notifyObservers("Ficheiro " + new File(localDirectory+File.separator+fileName).getCanonicalPath() +
-//                    " transferido para o cliente com sucesso.");
-//            System.out.println();
-//
-//            return;
-//
-//        }catch(FileNotFoundException e){   //Subclasse de IOException
-//            System.out.println("Ocorreu a excecao {" + e + "} ao tentar abrir o ficheiro!");
-//            throw new FileNotFoundException(fileName);
-//        }catch(IOException e){
-//            System.out.println("Ocorreu a excecao de E/S: \n\t" + e);
-//            throw new IOException(fileName, e.getCause());
-//        }
+        System.out.println(query);
 
         notifyObservers("a");
+    }
+
+    @Override
+    public byte[] getDatabaseCopy() throws RemoteException {
+        try {
+            // Lógica para obter a cópia da base de dados em bytes
+            File dbFile = new File("src/resources/db/PD-2023-24-TP.db"); // Substitua pelo caminho correto
+            byte[] databaseCopy = Files.readAllBytes(dbFile.toPath());
+            return databaseCopy;
+        } catch (IOException e) {
+            throw new RemoteException("Erro ao obter cópia da base de dados", e);
+        }
     }
 
     static public void main(String []args) {

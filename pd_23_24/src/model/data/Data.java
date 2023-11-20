@@ -62,4 +62,6 @@ public class Data {
     public int getDBVersion() {
         return this.resourceManager.getDBVersion();
     }
+
+    public String getExecutedQuery(){return this.resourceManager.getExecutedQuery();}
 }

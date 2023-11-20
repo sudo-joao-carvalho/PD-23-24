@@ -13,6 +13,7 @@ import ui.ServerUI;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
@@ -31,12 +32,18 @@ class SendHeartBeat extends Thread{
 
     public AtomicReference<Boolean> dbUpdated;
 
-    public SendHeartBeat(HeartBeat hearbeat, MulticastSocket mcastSocket){
+    RemoteServerService remoteServerService = null;
+    RemoteServiceInterface remoteService;
+    String dbDirectory;
+
+    public SendHeartBeat(HeartBeat hearbeat, MulticastSocket mcastSocket, String dbDirectory){
         this.hearbeat = hearbeat;
         this.mcastSocket = mcastSocket;
 
         this.isRunning = new AtomicReference<>(true);
         this.dbUpdated = new AtomicReference<>(false);
+
+        this.dbDirectory = dbDirectory;
     }
 
     private Object dbUpdatedLock = new Object();
@@ -44,6 +51,7 @@ class SendHeartBeat extends Thread{
     public void notifyDbUpdated() {
         synchronized (dbUpdatedLock) {
             dbUpdatedLock.notify();
+            dbUpdated.set(true);
         }
     }
 
@@ -57,12 +65,14 @@ class SendHeartBeat extends Thread{
 
                     // Verifica se dbUpdated é true e envia um heartbeat
                     if (dbUpdated.get()) {
-                        sendHeartbeat(hearbeat);
+                        makeRMIRequest();
                         dbUpdated.set(false);
-                    } else {
+                    } /*else {
                         // Envia um heartbeat a cada 5 segundos
                         sendHeartbeat(hearbeat);
-                    }
+                    }*/
+
+                    sendHeartbeat(hearbeat);
                 }
             } catch (InterruptedException | IOException e) {
                 if (isRunning.get()) {
@@ -75,6 +85,9 @@ class SendHeartBeat extends Thread{
         }
     }
 
+    /*public synchronized transferDB() {
+
+    }*/
 
     private void sendHeartbeat(HeartBeat heartbeat) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -85,6 +98,57 @@ class SendHeartBeat extends Thread{
             DatagramPacket dp = new DatagramPacket(buffer, buffer.length,
                     InetAddress.getByName("230.44.44.44"), 4444);
             mcastSocket.send(dp);
+        }
+    }
+
+    private void makeRMIRequest(){
+        String objectUrl = "rmi://localhost/TP-PD-2324";
+
+        /*File backupFile = new File("src/resources/db/backup/PD-2023-24-TP-backup.db"); // Substitua pelo nome desejado
+        Files.write(backupFile.toPath(), "src/resources/db/backup/PD-2023-24-TP-backup.db");
+
+        if(!backupFile.exists()){
+            System.out.println("A diretoria " + backupFile + " nao existe!");
+            return;
+        }
+
+        if(!backupFile.isDirectory()){
+            System.out.println("O caminho " + backupFile + " nao se refere a uma diretoria!");
+            return;
+        }
+        if(!backupFile.canWrite()){
+            System.out.println("Sem permissoes de escrita na diretoria " + backupFile);
+            return;
+        }*/
+
+        try/*(FileOutputStream localFileOutputStream = new FileOutputStream(backupFile))*/{
+
+            /*
+             * Obtem a referencia remota para o servico com nome "servidor-ficheiros-pd".
+             */
+            remoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
+            /*
+             * Lanca o servico local para acesso remoto por parte do servidor.
+             */
+            //remoteServerService = new RemoteServerService();
+
+            /*
+             * Passa ao servico RMI LOCAL uma referencia para o objecto localFileOutputStream.
+             */
+            //remoteServerService.setFout(localFileOutputStream);
+            /*
+             * Obtem o ficheiro pretendido, invocando o metodo getFile no servico remoto.
+             */
+            remoteService.makeBackUpDBChanges(this.dbDirectory, this.hearbeat.getQuery()/*, myRemoteService*/);
+
+        }catch(RemoteException e){
+            System.out.println("Erro remoto - " + e);
+        }catch(NotBoundException e){
+            System.out.println("Servico remoto desconhecido - " + e);
+        }catch(IOException e){
+            System.out.println("Erro E/S - " + e);
+        }catch(Exception e){
+            System.out.println("Erro - " + e);
         }
     }
 }
@@ -111,9 +175,6 @@ public class Server {
     SendHeartBeat sendHeartBeat;
 
     private String presenceList;
-
-    //RemoteServerService myRemoteServerService = null;
-    RemoteServiceInterface remoteService;
 
     public static void main(String[] args) {
 
@@ -145,7 +206,7 @@ public class Server {
 
         this.heartBeat = new HeartBeat(1099, true, data.getDBVersion()/*, 1*/, dbDirectory);
 
-        this.sendHeartBeat = new SendHeartBeat(this.heartBeat, mcastSocket);
+        this.sendHeartBeat = new SendHeartBeat(this.heartBeat, mcastSocket, this.dbDirectory);
         sendHeartBeat.start();
 
         this.tcpHandler = new TcpHandler();
@@ -154,44 +215,7 @@ public class Server {
         operationResult = new AtomicReference<>("");
         handlerClient = new AtomicReference<>(true);
 
-        initRMI();
-    }
-
-    public void initRMI(){
-        String objectUrl = "rmi://localhost/TP-PD-2324";
-
-        try{
-
-            /*
-             * Obtem a referencia remota para o servico com nome "servidor-ficheiros-pd".
-             */
-
-            remoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
-            /*
-             * Lanca o servico local para acesso remoto por parte do servidor.
-             */
-            //myRemoteService = new GetRemoteFileClientService();
-
-            /*
-             * Passa ao servico RMI LOCAL uma referencia para o objecto localFileOutputStream.
-             */
-            //myRemoteService.setFout(localFileOutputStream);
-
-            /*
-             * Obtem o ficheiro pretendido, invocando o metodo getFile no servico remoto.
-             */
-            remoteService.makeBackUpDBChanges(dbDirectory, this.heartBeat.getQuery()/*, myRemoteService*/);
-
-
-        }catch(RemoteException e){
-            System.out.println("Erro remoto - " + e);
-        }catch(NotBoundException e){
-            System.out.println("Servico remoto desconhecido - " + e);
-        }catch(IOException e){
-            System.out.println("Erro E/S - " + e);
-        }catch(Exception e){
-            System.out.println("Erro - " + e);
-        }
+        //initRMI();
     }
 
     class TcpHandler extends Thread{
@@ -302,7 +326,7 @@ public class Server {
                                             requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
-                                            //heartBeat.setQuery();
+                                            heartBeat.setQuery(data.getExecutedQuery());
                                             sendHeartBeat.notifyDbUpdated();
                                             isUserAuth.set(true);
                                         }
@@ -315,7 +339,7 @@ public class Server {
                                             requestResult = "Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
-                                            //heartBeat.setQuery();
+                                            heartBeat.setQuery(data.getExecutedQuery());
                                             sendHeartBeat.notifyDbUpdated();
                                         }
                                     }
@@ -328,7 +352,7 @@ public class Server {
                                                 requestResult = "User successfully inserted in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
                                                 heartBeat.setDbVersion(data.getDBVersion());
-                                                //heartBeat.setQuery();
+                                                heartBeat.setQuery(data.getExecutedQuery());
                                                 sendHeartBeat.notifyDbUpdated();
                                             }
                                         }else{
@@ -336,7 +360,7 @@ public class Server {
                                                 requestResult = "User registered in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
                                                 heartBeat.setDbVersion(data.getDBVersion());
-                                                //heartBeat.setQuery();
+                                                heartBeat.setQuery(data.getExecutedQuery());
                                                 sendHeartBeat.notifyDbUpdated();
                                             }else{
                                                 requestResult = "Failed registering user in the event";
@@ -386,7 +410,7 @@ public class Server {
                                             requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
-                                            //heartBeat.setQuery();
+                                            heartBeat.setQuery(data.getExecutedQuery());
                                             sendHeartBeat.notifyDbUpdated();
                                         } else {
                                             requestResult = "Update failed";
@@ -409,7 +433,7 @@ public class Server {
                                                     requestResult = "Code " + codigo + " inserted successfully";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                     heartBeat.setDbVersion(data.getDBVersion());
-                                                    //heartBeat.setQuery();
+                                                    heartBeat.setQuery(data.getExecutedQuery());
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }
                                             }
@@ -418,7 +442,7 @@ public class Server {
                                                     requestResult = "Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                     heartBeat.setDbVersion(data.getDBVersion());
-                                                    //heartBeat.setQuery();
+                                                    heartBeat.setQuery(data.getExecutedQuery());
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }else{
                                                     requestResult = "Update failed";
@@ -436,7 +460,7 @@ public class Server {
                                             requestResult = "Delete evento done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
-                                            //heartBeat.setQuery();
+                                            heartBeat.setQuery(data.getExecutedQuery());
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Delete evento failed";
@@ -448,7 +472,7 @@ public class Server {
                                             requestResult = "User deleted from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
-                                            //heartBeat.setQuery();
+                                            heartBeat.setQuery(data.getExecutedQuery());
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Couldnt delete user from event";

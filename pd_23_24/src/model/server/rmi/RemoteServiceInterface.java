@@ -11,4 +11,6 @@ public interface RemoteServiceInterface extends Remote {
     void addBackupServiceObserver(BackupServerRemoteInterface observer) throws java.rmi.RemoteException;
 
     void removeBackupServiceObserver(BackupServerRemoteInterface observer) throws java.rmi.RemoteException;
+
+    byte[] getDatabaseCopy() throws RemoteException;
 }
