@@ -113,7 +113,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
     private static int idS;
 
-    static {
+    static { // lê-se do ficheiro de texto e puxa-se para dentro da variável do id para associar a cada backup sv
         try (BufferedReader reader = new BufferedReader(new FileReader(ID_FILE_PATH))) {
             String idStr = reader.readLine();
             if (idStr != null && !idStr.isEmpty()) {
