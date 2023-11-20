@@ -59,4 +59,6 @@ public class ResourceManager {
     }
 
     public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.dbManager.checkEventCodeAndInsertUser(eventCode, userID);}
+
+    public int getDBVersion(){return this.dbManager.getDBVersion();}
 }

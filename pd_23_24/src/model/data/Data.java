@@ -58,4 +58,8 @@ public class Data {
     }
 
     public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.resourceManager.checkEventCodeAndInsertUser(eventCode, userID);}
+
+    public int getDBVersion() {
+        return this.resourceManager.getDBVersion();
+    }
 }

@@ -5,6 +5,5 @@ import java.rmi.RemoteException;
 
 public interface BackupServerRemoteInterface extends Remote {
     void notify(String description) throws RemoteException;
-
 }
 

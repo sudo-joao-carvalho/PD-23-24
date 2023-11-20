@@ -45,7 +45,6 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                 mcastSocket.receive(pkt);
 
                 try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(pkt.getData(), 0, pkt.getLength()))) {
-
                     obj = in.readObject();
 
                     if (obj instanceof HeartBeat) {
@@ -129,37 +128,6 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     }
 
     public static void main(String[] args) throws IOException {
-        /*if (args.length != 1) {
-            System.out.println("Número inválido de argumentos recebido. Sintaxe: java -dbDirectory-\n");
-            return;
-        }
-
-        File localDir = new File(args[0].trim());
-
-        if (!localDir.exists()) {
-            System.out.println("\nCan't write in non existent directory.\n");
-            return;
-        }
-
-        if (!localDir.isDirectory()) {
-            System.out.println("\nDesired path isn't directory.\n");
-            return;
-        }
-
-        if (localDir.list().length != 0) {
-            System.out.println("Directory already contains files. Shutting down.\n");
-            return;
-        }
-
-        if (!localDir.canWrite()) {
-            System.out.println("\nNo WRITE permissions to directory!\n");
-            return;
-        }
-
-        BackupServer backupServer = new BackupServer();
-
-        while (true){
-        }*/
 
         try {
             if (args.length != 1) {
@@ -167,37 +135,41 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
                 return;
             }
 
-            //args seguintes sao mandados pelo heartbeat
-            /*String objectUrl = "rmi://" + args[0] + "/servidor-ficheiros-pd";
-
-            RemoteServiceInterface getRemoteFileService = (RemoteServiceInterface) Naming.lookup(objectUrl);
-
-            System.setProperty("java-rmi.server.hostname", args[1]);*/
-
-            BackupServer BackupServer = new BackupServer();
+            BackupServer backupServer = new BackupServer();
 
             System.out.println("Serviço BackupServer criado e em execução...\n");
 
-            /*getRemoteFileService.addBackupServiceObserver(BackupServer);
+            //args seguintes sao mandados pelo heartbeat
+            String objectUrl = "rmi://localhost/TP-PD-2324";
 
-            System.out.println("A espera para terminar...\n");
+            RemoteServiceInterface getRemoteFileService = (RemoteServiceInterface) Naming.lookup(objectUrl);
 
-            System.out.println();
+            //System.setProperty("java-rmi.server.hostname", "192.168.1.186");
 
-            System.in.read();
+            /*BackupServer BackupServer = new BackupServer();
 
-            getRemoteFileService.removeBackupServiceObserver(BackupServer);
+            System.out.println("Serviço BackupServer criado e em execução...\n");*/
+
+            getRemoteFileService.addBackupServiceObserver(backupServer);
+
+            //System.out.println("A espera para terminar...\n");
+
+            //System.out.println();
+
+            //System.in.read();
+
+            //getRemoteFileService.removeBackupServiceObserver(backupServer);
 
             // terminar o serviço
-            UnicastRemoteObject.unexportObject(BackupServer, true);*/
+            //UnicastRemoteObject.unexportObject(backupServer, true);
 
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        } /*catch (NotBoundException e) {
+        } catch (NotBoundException e) {
             throw new RuntimeException(e);
-        } */catch (IOException e) {
+        } catch (IOException e) {
 
 
         }

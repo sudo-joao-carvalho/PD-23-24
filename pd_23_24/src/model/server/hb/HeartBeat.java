@@ -10,7 +10,7 @@ public class HeartBeat implements Serializable {
     private static final long serialVersionUID = 1000L;
 
     private String msg;
-    private int port;
+    private int registryListeningPort;
     private String ip;
     private boolean available;
     private int dbVersion;
@@ -19,13 +19,16 @@ public class HeartBeat implements Serializable {
     private LocalTime time;
     private String query;
 
-    public HeartBeat(int port, boolean available/*, int dbVersion, int nConnections*/, String dbDirectory) { // tudo o que vai no hb
-        this.port = port;
+    private String RMIServiceName;
+
+    public HeartBeat(int registryListeningPort, boolean available, int dbVersion/*, int nConnections*/, String dbDirectory) { // tudo o que vai no hb
+        this.registryListeningPort = registryListeningPort;
         this.available = available;
-        /*this.dbVersion = dbVersion;
-        this.nConnections = nConnections;*/
+        this.dbVersion = dbVersion;
+        /*this.nConnections = nConnections;*/
         this.dbDirectory = dbDirectory;
         this.msg = "Estou bibo";
+        this.RMIServiceName = "TP-PD-2324";
     }
 
     public String getMsg() {
@@ -36,12 +39,12 @@ public class HeartBeat implements Serializable {
         this.msg = msg;
     }
 
-    public int getPort() {
-        return port;
+    public int getRegistryListeningPort() {
+        return registryListeningPort;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public void setRegistryListeningPort(int registryListeningPort) {
+        this.registryListeningPort = registryListeningPort;
     }
 
     public String getIp() {
@@ -92,7 +95,7 @@ public class HeartBeat implements Serializable {
         this.time = time;
     }
 
-    public String getAllQueries() {
+    public String getQuery() {
         return query;
     }
 
@@ -100,11 +103,19 @@ public class HeartBeat implements Serializable {
         this.query = query;
     }
 
+    public String getRMIServiceName() {
+        return RMIServiceName;
+    }
+
+    public void setRMIServiceName(String RMIServiceName) {
+        this.RMIServiceName = RMIServiceName;
+    }
+
     @Override
     public String toString() {
         return "HeartBeat{" +
                 "msg='" + msg + '\'' +
-                ", port=" + port +
+                ", registryListeningPort=" + registryListeningPort +
                 ", ip='" + ip + '\'' +
                 ", available=" + available +
                 ", dbVersion=" + dbVersion +
@@ -112,11 +123,12 @@ public class HeartBeat implements Serializable {
                 ", dbDirectory='" + dbDirectory + '\'' +
                 ", time=" + time +
                 ", query='" + query + '\'' +
+                ", rmiServiceName='" + RMIServiceName + '\'' +
                 '}';
     }
 
     @Override
     public int hashCode(){
-        return port;
+        return registryListeningPort;
     }
 }

@@ -4,12 +4,20 @@ import model.ModelManager;
 import model.data.DBHelper;
 import model.data.Data;
 import model.server.hb.HeartBeat;
+import model.server.rmi.RemoteServerService;
+import model.server.rmi.RemoteService;
+import model.server.rmi.RemoteServiceInterface;
 import resources.ResourceManager;
 import ui.ServerUI;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.rmi.Naming;
+import java.rmi.NoSuchObjectException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -84,19 +92,6 @@ class SendHeartBeat extends Thread{
 public class Server {
     public static final int TIMEOUT = 20; // seconds TODO alterar para 10
 
-    public static void main(String[] args) {
-
-        ServerUI serverUI = null;
-        try {
-            ModelManager modelManager = new ModelManager(Integer.parseInt(args[0]), args[1]/*, Integer.parseInt(args[2])*/);
-            serverUI = new ServerUI(modelManager);
-        } catch (SQLException | IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        serverUI.start();
-    }
-
     private final String dbDirectory;
     private final Data data;
     private int serverPort;
@@ -117,9 +112,28 @@ public class Server {
 
     private String presenceList;
 
+    //RemoteServerService myRemoteServerService = null;
+    RemoteServiceInterface remoteService;
+
+    public static void main(String[] args) {
+
+        ServerUI serverUI = null;
+        try {
+            ModelManager modelManager = new ModelManager(Integer.parseInt(args[0]), args[1]/*, Integer.parseInt(args[2])*/);
+            serverUI = new ServerUI(modelManager);
+
+        } catch (SQLException | IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        serverUI.start();
+    }
+
     public Server(int port, String dbDirectory /*, Integer rmiPort*/) throws SQLException, IOException {
         this.serverPort = port;
         this.dbDirectory = dbDirectory;
+
+        this.data = new Data(new ResourceManager());
 
         // multicast
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
@@ -129,18 +143,55 @@ public class Server {
         this.mcastSocket.joinGroup(socketAddr, networkInterface); // creates group for object comms
         // multicast
 
-        this.heartBeat = new HeartBeat(port, true/*, 1, 1*/, dbDirectory);
+        this.heartBeat = new HeartBeat(1099, true, data.getDBVersion()/*, 1*/, dbDirectory);
 
         this.sendHeartBeat = new SendHeartBeat(this.heartBeat, mcastSocket);
         sendHeartBeat.start();
-
-        this.data = new Data(new ResourceManager());
 
         this.tcpHandler = new TcpHandler();
         tcpHandler.start();
 
         operationResult = new AtomicReference<>("");
         handlerClient = new AtomicReference<>(true);
+
+        initRMI();
+    }
+
+    public void initRMI(){
+        String objectUrl = "rmi://localhost/TP-PD-2324";
+
+        try{
+
+            /*
+             * Obtem a referencia remota para o servico com nome "servidor-ficheiros-pd".
+             */
+
+            remoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
+            /*
+             * Lanca o servico local para acesso remoto por parte do servidor.
+             */
+            //myRemoteService = new GetRemoteFileClientService();
+
+            /*
+             * Passa ao servico RMI LOCAL uma referencia para o objecto localFileOutputStream.
+             */
+            //myRemoteService.setFout(localFileOutputStream);
+
+            /*
+             * Obtem o ficheiro pretendido, invocando o metodo getFile no servico remoto.
+             */
+            remoteService.makeBackUpDBChanges(dbDirectory, this.heartBeat.getQuery()/*, myRemoteService*/);
+
+
+        }catch(RemoteException e){
+            System.out.println("Erro remoto - " + e);
+        }catch(NotBoundException e){
+            System.out.println("Servico remoto desconhecido - " + e);
+        }catch(IOException e){
+            System.out.println("Erro E/S - " + e);
+        }catch(Exception e){
+            System.out.println("Erro - " + e);
+        }
     }
 
     class TcpHandler extends Thread{
@@ -250,7 +301,8 @@ public class Server {
                                         } else {
                                             requestResult = id + "true";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            //sendHeartBeat.dbUpdated.set(true);
+                                            heartBeat.setDbVersion(data.getDBVersion());
+                                            //heartBeat.setQuery();
                                             sendHeartBeat.notifyDbUpdated();
                                             isUserAuth.set(true);
                                         }
@@ -262,7 +314,8 @@ public class Server {
                                         } else {
                                             requestResult = "Event created";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            //sendHeartBeat.dbUpdated.set(true);
+                                            heartBeat.setDbVersion(data.getDBVersion());
+                                            //heartBeat.setQuery();
                                             sendHeartBeat.notifyDbUpdated();
                                         }
                                     }
@@ -274,14 +327,16 @@ public class Server {
                                             }else{
                                                 requestResult = "User successfully inserted in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                //sendHeartBeat.dbUpdated.set(true);
+                                                heartBeat.setDbVersion(data.getDBVersion());
+                                                //heartBeat.setQuery();
                                                 sendHeartBeat.notifyDbUpdated();
                                             }
                                         }else{
                                             if(data.checkEventCodeAndInsertUser(dbHelper.getEventCode(), dbHelper.getId())){
                                                 requestResult = "User registered in the event";
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
-                                                //sendHeartBeat.dbUpdated.set(true);
+                                                heartBeat.setDbVersion(data.getDBVersion());
+                                                //heartBeat.setQuery();
                                                 sendHeartBeat.notifyDbUpdated();
                                             }else{
                                                 requestResult = "Failed registering user in the event";
@@ -330,7 +385,8 @@ public class Server {
                                         if (data.editProfile(dbHelper.getParams(), dbHelper.getId())) {
                                             requestResult = "Update done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            //sendHeartBeat.dbUpdated.set(true);
+                                            heartBeat.setDbVersion(data.getDBVersion());
+                                            //heartBeat.setQuery();
                                             sendHeartBeat.notifyDbUpdated();
                                         } else {
                                             requestResult = "Update failed";
@@ -352,7 +408,8 @@ public class Server {
                                                 }else{
                                                     requestResult = "Code " + codigo + " inserted successfully";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    //sendHeartBeat.dbUpdated.set(true);
+                                                    heartBeat.setDbVersion(data.getDBVersion());
+                                                    //heartBeat.setQuery();
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }
                                             }
@@ -360,7 +417,8 @@ public class Server {
                                                 if(data.editEventData(dbHelper.getIdEvento(), dbHelper.getParams())){
                                                     requestResult = "Update done";
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
-                                                    //sendHeartBeat.dbUpdated.set(true);
+                                                    heartBeat.setDbVersion(data.getDBVersion());
+                                                    //heartBeat.setQuery();
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }else{
                                                     requestResult = "Update failed";
@@ -377,7 +435,8 @@ public class Server {
                                         if(data.deleteEvent(dbHelper.getIdEvento())){
                                             requestResult = "Delete evento done";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            //sendHeartBeat.dbUpdated.set(true);
+                                            heartBeat.setDbVersion(data.getDBVersion());
+                                            //heartBeat.setQuery();
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Delete evento failed";
@@ -388,7 +447,8 @@ public class Server {
                                         if(data.deleteUserFromEvent(dbHelper.getParams())){
                                             requestResult = "User deleted from event";
                                             dbHelper.setIsRequestAlreadyProcessed(true);
-                                            //sendHeartBeat.dbUpdated.set(true);
+                                            heartBeat.setDbVersion(data.getDBVersion());
+                                            //heartBeat.setQuery();
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Couldnt delete user from event";
@@ -412,9 +472,6 @@ public class Server {
                             break;
                         }
                     }
-
-                    //sendHeartBeat.dbUpdated.set(false);
-
                 }
 
             } catch (IOException e) {

@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 
 public interface RemoteServiceInterface extends Remote {
 
-    void makeBackUpDBChanges(String dbDirectory, RemoteServerInterface cliRemoto) throws IOException, RemoteException;
+    void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException, RemoteException;
 
     void addBackupServiceObserver(BackupServerRemoteInterface observer) throws java.rmi.RemoteException;
 

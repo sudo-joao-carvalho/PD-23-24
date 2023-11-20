@@ -14,10 +14,11 @@ import java.util.List;
 
 public class RemoteService extends UnicastRemoteObject implements RemoteServiceInterface {
 
-    public static final String SERVICE_NAME = "tp-pd";
+    public static final String SERVICE_NAME = "TP-PD-2324";
     List<BackupServerRemoteInterface> observers;
 
-    protected RemoteService() throws RemoteException {
+    public RemoteService() throws RemoteException {
+        observers = new ArrayList<>();
     }
 
     @Override
@@ -64,8 +65,9 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     }
 
     //fazer aqui as operacoes da base de dados
-    public void makeBackUpDBChanges(String dbDirectory, RemoteServerInterface cliRemoto) throws IOException {
-//        byte [] fileChunk = new byte[MAX_CHUNCK_SIZE];
+    public void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
+        System.out.println("tou no dbChanges");
+        //        byte [] fileChunk = new byte[MAX_CHUNCK_SIZE];
 //        int nbytes;
 //
 //        fileName = fileName.trim();
@@ -103,6 +105,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 //            throw new IOException(fileName, e.getCause());
 //        }
 
+        notifyObservers("a");
     }
 
     static public void main(String []args) {
@@ -168,16 +171,16 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
             /*
              * Cria o servico.
              */
-            RemoteService fileService = new RemoteService();
+            RemoteService service = new RemoteService();
 
-            System.out.println("Servico GetRemoteFile criado e em execucao (" + fileService.getRef().remoteToString() + "...");
+            System.out.println("Servico RemoteService criado e em execucao (" + service.getRef().remoteToString() + "...");
 
             /*
              * Regista o servico no rmiregistry local para que os clientes possam localiza'-lo, ou seja,
              * obter a sua referencia remota (endereco IP, porto de escuta, etc.).
              */
 
-            Naming.bind("rmi://localhost/" + SERVICE_NAME, fileService);
+            Naming.bind("rmi://localhost/" + SERVICE_NAME, service);
 
             System.out.println("Servico " + SERVICE_NAME + " registado no registry...");
 
@@ -186,7 +189,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
              *
              *  UnicastRemoteObject.unexportObject(fileService, true).
              */
-            UnicastRemoteObject.unexportObject(fileService, true);
+            //UnicastRemoteObject.unexportObject(service, true);
 
         } catch (RemoteException e) {
             System.out.println("Erro remoto - " + e);
