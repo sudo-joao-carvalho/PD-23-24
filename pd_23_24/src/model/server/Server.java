@@ -193,6 +193,7 @@ public class Server {
 
         this.data = new Data(/*new ResourceManager()*/);
 
+        //System.setProperty("java.net.preferIPv4Stack", "true");
         // multicast
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));

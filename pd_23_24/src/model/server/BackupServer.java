@@ -135,6 +135,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             e.printStackTrace();
         }
 
+        //System.setProperty("java.net.preferIPv4Stack", "true");
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));
         this.socketAddr = new InetSocketAddress(groupIp, Integer.parseInt( MULTICAST.getValue(1)));
