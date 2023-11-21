@@ -72,7 +72,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     }
 
     //fazer aqui as operacoes da base de dados
-    public void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
+    public synchronized void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
         //System.out.println(query);
 
         Connection conn = null;
@@ -103,7 +103,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     }
 
     @Override
-    public byte[] getDatabaseCopy() throws RemoteException {
+    public synchronized byte[] getDatabaseCopy() throws RemoteException {
         try {
             // Lógica para obter a cópia da base de dados em bytes
             File dbFile = new File("src/resources/db/PD-2023-24-TP.db"); // Substitua pelo caminho correto
