@@ -21,7 +21,7 @@ public class ServerUI {
 
         //System.out.println("Server running");
 
-        while (true) {
+        //while (true) {
 
             /*try{
                 Thread.sleep(500);
@@ -44,6 +44,6 @@ public class ServerUI {
                     return;
                 }*/
             //}
-        }
+        //}
     }
 }

@@ -73,7 +73,7 @@ class SendHeartBeat extends Thread{
                     }*/
 
                     sendHeartbeat(hearbeat);
-                    //hearbeat.setUpdateDB(false);
+                    hearbeat.setUpdateDB(false);
                 }
             } catch (InterruptedException | IOException e) {
                 if (isRunning.get()) {
@@ -169,8 +169,6 @@ public class Server {
 
     private HeartBeat heartBeat;
 
-    private static int idBackupServer = 0; // incrementa com cada backupSV criado, começa em 0
-
     SendHeartBeat sendHeartBeat;
 
     private String presenceList;
@@ -182,10 +180,10 @@ public class Server {
             ModelManager modelManager = new ModelManager(Integer.parseInt(args[0]), args[1]/*, Integer.parseInt(args[2])*/);
             serverUI = new ServerUI(modelManager);
 
+
         } catch (SQLException | IOException | InterruptedException e) {
             e.printStackTrace();
         }
-
         serverUI.start();
     }
 
@@ -326,7 +324,7 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
                                             heartBeat.setQuery(data.getExecutedQuery());
-                                            //heartBeat.setUpdateDB(true);
+                                            heartBeat.setUpdateDB(true);
                                             sendHeartBeat.notifyDbUpdated();
                                             isUserAuth.set(true);
                                         }
@@ -340,7 +338,7 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
                                             heartBeat.setQuery(data.getExecutedQuery());
-                                            //heartBeat.setUpdateDB(true);
+                                            heartBeat.setUpdateDB(true);
                                             sendHeartBeat.notifyDbUpdated();
                                         }
                                     }
@@ -354,7 +352,7 @@ public class Server {
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
                                                 heartBeat.setDbVersion(data.getDBVersion());
                                                 heartBeat.setQuery(data.getExecutedQuery());
-                                                //heartBeat.setUpdateDB(true);
+                                                heartBeat.setUpdateDB(true);
                                                 sendHeartBeat.notifyDbUpdated();
                                             }
                                         }else{
@@ -363,7 +361,7 @@ public class Server {
                                                 dbHelper.setIsRequestAlreadyProcessed(true);
                                                 heartBeat.setDbVersion(data.getDBVersion());
                                                 heartBeat.setQuery(data.getExecutedQuery());
-                                                //heartBeat.setUpdateDB(true);
+                                                heartBeat.setUpdateDB(true);
                                                 sendHeartBeat.notifyDbUpdated();
                                             }else{
                                                 requestResult = "Failed registering user in the event";
@@ -414,7 +412,7 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
                                             heartBeat.setQuery(data.getExecutedQuery());
-                                            //heartBeat.setUpdateDB(true);
+                                            heartBeat.setUpdateDB(true);
                                             sendHeartBeat.notifyDbUpdated();
                                         } else {
                                             requestResult = "Update failed";
@@ -438,7 +436,7 @@ public class Server {
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                     heartBeat.setDbVersion(data.getDBVersion());
                                                     heartBeat.setQuery(data.getExecutedQuery());
-                                                    //heartBeat.setUpdateDB(true);
+                                                    heartBeat.setUpdateDB(true);
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }
                                             }
@@ -448,7 +446,7 @@ public class Server {
                                                     dbHelper.setIsRequestAlreadyProcessed(true);
                                                     heartBeat.setDbVersion(data.getDBVersion());
                                                     heartBeat.setQuery(data.getExecutedQuery());
-                                                    //heartBeat.setUpdateDB(true);
+                                                    heartBeat.setUpdateDB(true);
                                                     sendHeartBeat.notifyDbUpdated();
                                                 }else{
                                                     requestResult = "Update failed";
@@ -467,7 +465,7 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
                                             heartBeat.setQuery(data.getExecutedQuery());
-                                            //heartBeat.setUpdateDB(true);
+                                            heartBeat.setUpdateDB(true);
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Delete evento failed";
@@ -480,7 +478,7 @@ public class Server {
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                             heartBeat.setDbVersion(data.getDBVersion());
                                             heartBeat.setQuery(data.getExecutedQuery());
-                                            //heartBeat.setUpdateDB(true);
+                                            heartBeat.setUpdateDB(true);
                                             sendHeartBeat.notifyDbUpdated();
                                         }else{
                                             requestResult = "Couldnt delete user from event";

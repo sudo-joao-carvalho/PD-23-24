@@ -73,11 +73,11 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
     //fazer aqui as operacoes da base de dados
     public void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
-        /*System.out.println(query);
+        //System.out.println(query);
 
         Connection conn = null;
 
-        System.out.println(dbDirectory);
+        //System.out.println(dbDirectory);
 
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);
@@ -98,8 +98,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create statement!\n");
-        }*/
-
+        }
 
     }
 

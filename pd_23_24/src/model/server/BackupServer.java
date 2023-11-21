@@ -72,12 +72,12 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
 
                         //System.out.println(dbDirectory);
 
-                        /*if (remoteService != null) {
+                        if (remoteService != null) {
                             if (hb.getIsUpdateDB()) {
-                                System.out.println(dbDirectory);
-                                //remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
+                                //System.out.println(dbDirectory);
+                                remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
-                        }*/
+                        }
                     }
 
                 } catch (ClassNotFoundException e) {
@@ -171,7 +171,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
-            /*String dbDirectory = null;
+            String dbDirectory = null;
 
             String result = backupServer.saveDatabaseCopyLocally(databaseCopy, args[0], args[1]);
             
@@ -183,7 +183,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             getRemoteService.addBackupServiceObserver(backupServer);
 
-            backupServer.getMHandler().setParams(getRemoteService, dbDirectory);*/
+            backupServer.getMHandler().setParams(getRemoteService, dbDirectory);
 
             //System.out.println("A espera para terminar...\n");
 
