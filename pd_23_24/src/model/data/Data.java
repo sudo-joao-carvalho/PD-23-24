@@ -10,8 +10,9 @@ public class Data {
 
     private ResourceManager resourceManager;
 
-    public Data(ResourceManager resourceManager) {
-        this.resourceManager = resourceManager;
+    public Data(/*ResourceManager resourceManager*/) throws SQLException {
+        //this.resourceManager = resourceManager;
+        this.resourceManager = new ResourceManager();
     }
 
     public boolean connectToDB(String DBDirectory, int port){

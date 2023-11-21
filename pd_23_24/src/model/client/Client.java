@@ -5,6 +5,7 @@ import ui.ClientUI;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -67,23 +68,24 @@ public class Client {
         OutputStream os = null;
         InputStream is = null;
 
-            try {
-                socketSr = new Socket(serverIP, serverPort);
+        try {
+            socketSr = new Socket(serverIP, serverPort);
 
-                //socketSr.setSoTimeout(10000);
-                os = socketSr.getOutputStream();
-                is = socketSr.getInputStream();
+            //socketSr.setSoTimeout(10000);
+            os = socketSr.getOutputStream();
+            is = socketSr.getInputStream();
 
-                String client = "CLIENT";
-                os.write(client.getBytes(), 0, client.length());
+            String client = "CLIENT";
+            os.write(client.getBytes(), 0, client.length());
 
-                this.sTr = new ConnectToServer(socketSr);
-                sTr.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            this.sTr = new ConnectToServer(socketSr);
+            sTr.start();
+        }catch(SocketException e){
+            System.out.println("Ligacao com o servidor encerrada");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        //}
     }
 
 

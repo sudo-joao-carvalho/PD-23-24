@@ -11,6 +11,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.LocalTime;
 import java.util.concurrent.atomic.AtomicReference;
 
 class MulticastHandler extends Thread { //thread to receive the hearbeat with the info (HEARTBEAT RECEIVER)
@@ -62,7 +63,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                         //System.out.println("Recebi heartbeat: " + hb.getMsg())
 
                         System.out.println();
-                        System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + ") ");
+                        System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + "\t" + LocalTime.now() + ") ");
                         System.out.println(hb.getMsg());
 
                         /*if(hb.getDbVersion() != getLocalDbVersion()){
@@ -70,11 +71,8 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                             this.interrupt();
                         }*/
 
-                        //System.out.println(dbDirectory);
-
                         if (remoteService != null) {
                             if (hb.getIsUpdateDB()) {
-                                //System.out.println(dbDirectory);
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
                         }
@@ -147,7 +145,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     }
 
     @Override
-    public void notify(String description) throws RemoteException { //fazer as operacoes da db
+    public void notify(String description) throws RemoteException {
         System.out.println("-> " + description);
         System.out.println();
     }

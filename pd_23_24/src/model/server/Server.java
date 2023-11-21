@@ -191,7 +191,7 @@ public class Server {
         this.serverPort = port;
         this.dbDirectory = dbDirectory;
 
-        this.data = new Data(new ResourceManager());
+        this.data = new Data(/*new ResourceManager()*/);
 
         // multicast
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
