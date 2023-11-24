@@ -19,8 +19,6 @@ import java.util.List;
 
 public class RemoteService extends UnicastRemoteObject implements RemoteServiceInterface {
 
-    public static final String SERVICE_NAME = "TP-PD-2324";
-
     List<BackupServerRemoteInterface> observers;
 
     public RemoteService() throws RemoteException {
@@ -116,96 +114,6 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     }
 
     static public void main(String []args) {
-        File localDirectory;
-
-        /*
-         * Se existirem varias interfaces de rede activas na maquina onde corre esta aplicacao,
-         * convem definir de forma explicita o endereco que deve ser incluido na referencia remota do servico
-         * RMI criado. Para o efeito, o endereco deve ser atribuido 'a propriedade java.rmi.server.hostname.
-         *
-         * Pode ser no codigo atraves do metodo System.setProperty():
-         *      - System.setProperty("java.rmi.server.hostname", "10.65.129.232"); //O endereco usado e' apenas um exemplo
-         *      - System.setProperty("java.rmi.server.hostname", args[3]); //Neste caso, assume-se que o endereco e' passado como quarto argumento na linha de comando
-         *
-         * Tambem pode ser como opcao passada 'a maquina virtual Java:
-         *      - java -Djava.rmi.server.hostname=10.202.128.22 GetRemoteFileClient ... //O endereco usado e' apenas um exemplo
-         *      - No Netbeans: Properties -> Run -> VM Options -> -Djava.rmi.server.hostname=10.202.128.22 //O endereco usado e' apenas um exemplo
-         */
-
-        /*
-         * Trata os argumentos da linha de comando
-         */
-        if (args.length != 1) {
-            System.out.println("Sintaxe: java GetFileUdpServer localRootDirectory");
-            return;
-        }
-
-        localDirectory = new File(args[0].trim());
-
-        if (!localDirectory.exists()) {
-            System.out.println("A directoria " + localDirectory + " nao existe!");
-            return;
-        }
-
-        if (!localDirectory.isDirectory()) {
-            System.out.println("O caminho " + localDirectory + " nao se refere a uma diretoria!");
-            return;
-        }
-
-        if (!localDirectory.canRead()) {
-            System.out.println("Sem permissoes de leitura na diretoria " + localDirectory + "!");
-            return;
-        }
-
-        /*
-         * Lanca o rmiregistry localmente no porto TCP por omissao (1099).
-         */
-        try {
-
-            try {
-
-                System.out.println("Tentativa de lancamento do registry no porto " +
-                        Registry.REGISTRY_PORT + "...");
-
-                LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
-
-                System.out.println("Registry lancado!");
-
-            } catch (RemoteException e) {
-                System.out.println("Registry provavelmente ja' em execucao!");
-            }
-
-            /*
-             * Cria o servico.
-             */
-
-            RemoteService service = new RemoteService();
-
-            System.out.println("Servico RemoteService criado e em execucao (" + service.getRef().remoteToString() + "...");
-
-            /*
-             * Regista o servico no rmiregistry local para que os clientes possam localiza'-lo, ou seja,
-             * obter a sua referencia remota (endereco IP, porto de escuta, etc.).
-             */
-
-            Naming.bind("rmi://localhost/" + SERVICE_NAME, service);
-
-            System.out.println("Servico " + SERVICE_NAME + " registado no registry...");
-
-            /*
-             * Para terminar um servico RMI do tipo UnicastRemoteObject:
-             *
-             *  UnicastRemoteObject.unexportObject(fileService, true).
-             */
-            //UnicastRemoteObject.unexportObject(service, true);
-
-        } catch (RemoteException e) {
-            System.out.println("Erro remoto - " + e);
-            System.exit(1);
-        } catch (Exception e) {
-            System.out.println("Erro - " + e);
-            System.exit(1);
-        }
 
     }
 }

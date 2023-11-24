@@ -23,6 +23,8 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
 
     private String dbDirectory;
 
+    private HeartBeat hb;
+
     public MulticastHandler(MulticastSocket mcastSocket) {
         this.mcastSocket = mcastSocket;
         this.isRunning = true;
@@ -36,6 +38,8 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
         this.remoteService = remoteService;
         this.dbDirectory = dbDirectory;
     }
+
+    public HeartBeat getHeartBeat(){return hb;}
 
     @Override
     public void run(){
@@ -59,6 +63,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                     if (obj instanceof HeartBeat) {
 
                         hb = (HeartBeat) obj;
+                        this.hb = hb;
 
                         //System.out.println("Recebi heartbeat: " + hb.getMsg())
 
@@ -164,9 +169,13 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             System.out.println("Serviço BackupServer criado e em execução...\n");
 
             //args seguintes sao mandados pelo heartbeat
-            String objectUrl = "rmi://localhost/TP-PD-2324";
+            //String objectUrl = "rmi://localhost/TP-PD-2324";
 
-            RemoteServiceInterface getRemoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
+            while(backupServer.getMHandler().getHeartBeat() == null){ //este while serve para enquanto nao receber o primeiro hearbeat nao dar erro
+
+            }
+
+            RemoteServiceInterface getRemoteService = (RemoteServiceInterface) Naming.lookup(backupServer.getMHandler().getHeartBeat().getRMIServiceName());
 
             byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
@@ -183,6 +192,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             getRemoteService.addBackupServiceObserver(backupServer);
 
             backupServer.getMHandler().setParams(getRemoteService, dbDirectory);
+
 
             //System.out.println("A espera para terminar...\n");
 

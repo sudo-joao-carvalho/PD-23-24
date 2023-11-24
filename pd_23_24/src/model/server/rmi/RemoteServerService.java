@@ -16,10 +16,6 @@ public class RemoteServerService extends UnicastRemoteObject implements RemoteSe
 
     }
 
-    public synchronized void setFout(FileOutputStream fout) {
-        this.fout = fout;
-    }
-
     @Override
     public void writeDBFileChunk(byte[] fileChunk, int nbytes) throws IOException {
         if(fout == null){

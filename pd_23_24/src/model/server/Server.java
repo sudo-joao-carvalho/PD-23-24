@@ -18,6 +18,8 @@ import java.rmi.Naming;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.*;
@@ -44,6 +46,7 @@ class SendHeartBeat extends Thread{
         this.dbUpdated = new AtomicReference<>(false);
 
         this.dbDirectory = dbDirectory;
+
     }
 
     private Object dbUpdatedLock = new Object();
@@ -152,6 +155,7 @@ class SendHeartBeat extends Thread{
 
 public class Server {
     public static final int TIMEOUT = 20; // seconds TODO alterar para 10
+    public static final String SERVICE_NAME = "TP-PD-2324";
 
     private final String dbDirectory;
     private final Data data;
@@ -173,7 +177,14 @@ public class Server {
 
     private String presenceList;
 
+    RemoteService remoteService;
+
     public static void main(String[] args) {
+
+        if (args.length != 3) {
+            System.out.println("Too few arguments to run. Shutting down SERVER.\n");
+            return;
+        }
 
         ServerUI serverUI = null;
         try {
@@ -202,7 +213,7 @@ public class Server {
         this.mcastSocket.joinGroup(socketAddr, networkInterface); // creates group for object comms
         // multicast
 
-        this.heartBeat = new HeartBeat(1099, true, data.getDBVersion()/*, 1*/, dbDirectory);
+        this.heartBeat = new HeartBeat(1099, true, data.getDBVersion()/*, 1*/, dbDirectory, SERVICE_NAME);
 
         this.sendHeartBeat = new SendHeartBeat(this.heartBeat, mcastSocket, this.dbDirectory);
         sendHeartBeat.start();
@@ -213,7 +224,97 @@ public class Server {
         operationResult = new AtomicReference<>("");
         handlerClient = new AtomicReference<>(true);
 
-        //initRMI();
+        this.remoteService = new RemoteService();
+        startRemoteService("src/");
+    }
+
+    public void startRemoteService(String arg) {
+        File localDirectory;
+
+        /*
+         * Se existirem varias interfaces de rede activas na maquina onde corre esta aplicacao,
+         * convem definir de forma explicita o endereco que deve ser incluido na referencia remota do servico
+         * RMI criado. Para o efeito, o endereco deve ser atribuido 'a propriedade java.rmi.server.hostname.
+         *
+         * Pode ser no codigo atraves do metodo System.setProperty():
+         *      - System.setProperty("java.rmi.server.hostname", "10.65.129.232"); //O endereco usado e' apenas um exemplo
+         *      - System.setProperty("java.rmi.server.hostname", args[3]); //Neste caso, assume-se que o endereco e' passado como quarto argumento na linha de comando
+         *
+         * Tambem pode ser como opcao passada 'a maquina virtual Java:
+         *      - java -Djava.rmi.server.hostname=10.202.128.22 GetRemoteFileClient ... //O endereco usado e' apenas um exemplo
+         *      - No Netbeans: Properties -> Run -> VM Options -> -Djava.rmi.server.hostname=10.202.128.22 //O endereco usado e' apenas um exemplo
+         */
+
+        /*
+         * Trata os argumentos da linha de comando
+         */
+
+        localDirectory = new File(arg.trim());
+
+        if (!localDirectory.exists()) {
+            System.out.println("A directoria " + localDirectory + " nao existe!");
+            return;
+        }
+
+        if (!localDirectory.isDirectory()) {
+            System.out.println("O caminho " + localDirectory + " nao se refere a uma diretoria!");
+            return;
+        }
+
+        if (!localDirectory.canRead()) {
+            System.out.println("Sem permissoes de leitura na diretoria " + localDirectory + "!");
+            return;
+        }
+
+        /*
+         * Lanca o rmiregistry localmente no porto TCP por omissao (1099).
+         */
+        try {
+
+            try {
+
+                System.out.println("Tentativa de lancamento do registry no porto " +
+                        Registry.REGISTRY_PORT + "...");
+
+                LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+
+                System.out.println("Registry lancado!");
+
+            } catch (RemoteException e) {
+                System.out.println("Registry provavelmente ja' em execucao!");
+            }
+
+            /*
+             * Cria o servico.
+             */
+
+            //RemoteService service = new RemoteService();
+
+            System.out.println("Servico RemoteService criado e em execucao (" + this.remoteService.getRef().remoteToString() + "...");
+
+            /*
+             * Regista o servico no rmiregistry local para que os clientes possam localiza'-lo, ou seja,
+             * obter a sua referencia remota (endereco IP, porto de escuta, etc.).
+             */
+
+            Naming.bind("rmi://localhost/" + SERVICE_NAME, remoteService);
+
+            System.out.println("Servico " + SERVICE_NAME + " registado no registry...");
+
+            /*
+             * Para terminar um servico RMI do tipo UnicastRemoteObject:
+             *
+             *  UnicastRemoteObject.unexportObject(fileService, true).
+             */
+            //UnicastRemoteObject.unexportObject(service, true);
+
+        } catch (RemoteException e) {
+            System.out.println("Erro remoto - " + e);
+            System.exit(1);
+        } catch (Exception e) {
+            System.out.println("Erro - " + e);
+            System.exit(1);
+        }
     }
 
     class TcpHandler extends Thread{
