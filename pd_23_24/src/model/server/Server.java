@@ -4,25 +4,18 @@ import model.ModelManager;
 import model.data.DBHelper;
 import model.data.Data;
 import model.server.hb.HeartBeat;
-import model.server.rmi.RemoteServerService;
 import model.server.rmi.RemoteService;
 import model.server.rmi.RemoteServiceInterface;
-import resources.ResourceManager;
 import ui.ServerUI;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.rmi.Naming;
-import java.rmi.NoSuchObjectException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
-import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 class SendHeartBeat extends Thread{
@@ -33,9 +26,6 @@ class SendHeartBeat extends Thread{
     private AtomicReference<Boolean> isRunning;
 
     public AtomicReference<Boolean> dbUpdated;
-
-    RemoteServerService remoteServerService = null;
-    RemoteServiceInterface remoteService;
     String dbDirectory;
 
     public SendHeartBeat(HeartBeat hearbeat, MulticastSocket mcastSocket, String dbDirectory){

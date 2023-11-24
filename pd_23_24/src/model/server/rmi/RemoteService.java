@@ -112,8 +112,4 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
             throw new RemoteException("Erro ao obter cópia da base de dados", e);
         }
     }
-
-    static public void main(String []args) {
-
-    }
 }
