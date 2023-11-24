@@ -58,7 +58,6 @@ class SendHeartBeat extends Thread{
 
                     // Verifica se dbUpdated é true e envia um heartbeat
                     if (dbUpdated.get()) {
-                        makeRMIRequest();
                         dbUpdated.set(false);
                     } /*else {
                         // Envia um heartbeat a cada 5 segundos
@@ -89,57 +88,6 @@ class SendHeartBeat extends Thread{
                     InetAddress.getByName("230.44.44.44"), 4444);
             mcastSocket.send(dp);
         }
-    }
-
-    private void makeRMIRequest(){
-        String objectUrl = "rmi://localhost/TP-PD-2324";
-
-        /*File backupFile = new File("src/resources/db/backup/PD-2023-24-TP-backup.db"); // Substitua pelo nome desejado
-        Files.write(backupFile.toPath(), "src/resources/db/backup/PD-2023-24-TP-backup.db");
-
-        if(!backupFile.exists()){
-            System.out.println("A diretoria " + backupFile + " nao existe!");
-            return;
-        }
-
-        if(!backupFile.isDirectory()){
-            System.out.println("O caminho " + backupFile + " nao se refere a uma diretoria!");
-            return;
-        }
-        if(!backupFile.canWrite()){
-            System.out.println("Sem permissoes de escrita na diretoria " + backupFile);
-            return;
-        }*/
-
-        //try/*(FileOutputStream localFileOutputStream = new FileOutputStream(backupFile))*/{
-
-            /*
-             * Obtem a referencia remota para o servico com nome "servidor-ficheiros-pd".
-             */
-            //remoteService = (RemoteServiceInterface) Naming.lookup(objectUrl);
-            /*
-             * Lanca o servico local para acesso remoto por parte do servidor.
-             */
-            //remoteServerService = new RemoteServerService();
-
-            /*
-             * Passa ao servico RMI LOCAL uma referencia para o objecto localFileOutputStream.
-             */
-            //remoteServerService.setFout(localFileOutputStream);
-            /*
-             * Obtem o ficheiro pretendido, invocando o metodo getFile no servico remoto.
-             */
-            //remoteService.makeBackUpDBChanges(this.dbDirectory, this.hearbeat.getQuery()/*, myRemoteService*/);
-
-        /*}catch(RemoteException e){
-            System.out.println("Erro remoto - " + e);
-        }catch(NotBoundException e){
-            System.out.println("Servico remoto desconhecido - " + e);
-        }catch(IOException e){
-            System.out.println("Erro E/S - " + e);
-        }catch(Exception e){
-            System.out.println("Erro - " + e);
-        }*/
     }
 }
 

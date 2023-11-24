@@ -1,14 +1,9 @@
 package model.server.rmi;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -75,17 +70,18 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
         Connection conn = null;
 
+        Statement statement = null;
+
         //System.out.println(dbDirectory);
 
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);
         } catch (SQLException e) {
             e.printStackTrace();
-            return;
         }
 
         try {
-            Statement statement = conn.createStatement();
+            statement = conn.createStatement();
             int numRowsAffected = statement.executeUpdate(query);
 
             if(numRowsAffected != 0){
@@ -94,17 +90,66 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
                 notifyObservers("Nao foi possivel alterar a base de dados");
             }
 
+            //Quando é feita a alteracao aqui é feita a atualizacao da versao da base de dados de backup
+
+            String newQuery = "SELECT Versao FROM Versao";
+
+            int oldVersion = statement.executeQuery(newQuery).getInt("Versao");
+            String sqlQuery = "UPDATE Versao SET Versao='" + ++oldVersion + "'WHERE id=" + 1;
+            statement.executeUpdate(sqlQuery);
+
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create statement!\n");
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
         }
 
     }
 
     @Override
+    public synchronized int getCurrentDBVersion(String dbDirectory) throws IOException, SQLException {
+        Connection conn = null;
+
+        //System.out.println(dbDirectory);
+
+        try {
+            conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        Statement statement = conn.createStatement();
+        try {
+
+            String newQuery = "SELECT Versao FROM Versao";
+
+            return statement.executeQuery(newQuery).getInt("Versao");
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create statement!\n");
+        }finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
     public synchronized byte[] getDatabaseCopy() throws RemoteException {
         try {
-            // Lógica para obter a cópia da base de dados em bytes
-            File dbFile = new File("src/resources/db/PD-2023-24-TP.db"); // Substitua pelo caminho correto
+            File dbFile = new File("src/resources/db/PD-2023-24-TP.db");
             byte[] databaseCopy = Files.readAllBytes(dbFile.toPath());
             notifyObservers("Database copied");
             return databaseCopy;

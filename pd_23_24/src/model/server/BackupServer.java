@@ -65,20 +65,17 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                         hb = (HeartBeat) obj;
                         this.hb = hb;
 
-                        //System.out.println("Recebi heartbeat: " + hb.getMsg())
-
                         System.out.println();
                         System.out.print("(" + pkt.getAddress().getHostAddress() + ":" + pkt.getPort() + "\t" + LocalTime.now() + ") ");
                         System.out.println(hb.getMsg());
 
-                        /*if(hb.getDbVersion() != getLocalDbVersion()){
-                            //Mata o BackupServer
-                            this.interrupt();
-                        }*/
-
                         if (remoteService != null) {
                             if (hb.getIsUpdateDB()) {
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
+                            }
+
+                            if(hb.getDbVersion() != remoteService.getCurrentDBVersion(dbDirectory)){
+                                throw new Exception("Backup DB and Server DB have different versions");
                             }
                         }
                     }
@@ -86,12 +83,15 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                 } catch (ClassNotFoundException e) {
                     System.out.println();
                     System.out.println("Mensagem recebida de tipo inesperado! " + e);
+                    return;
                 } catch (IOException e) {
                     System.out.println();
                     System.out.println("Impossibilidade de aceder ao conteudo da mensagem recebida! " + e);
+                    return;
                 } catch (Exception e) {
                     System.out.println();
                     System.out.println("Excepcao: " + e);
+                    System.exit(0);
                 }
             }
 
