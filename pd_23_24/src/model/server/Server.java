@@ -91,6 +91,23 @@ class SendHeartBeat extends Thread{
     }
 }
 
+class RemoveUsersFromEvent extends Thread{
+
+    Data data;
+
+    public RemoveUsersFromEvent(Data data){
+        this.data = data;
+    }
+    @Override
+    public void run(){
+        while(true){
+            if(data.removeUsersOnEventEnd()){
+                System.out.println("Users removidos do evento");
+            }
+        }
+    }
+}
+
 public class Server {
     public static final int TIMEOUT = 20; // seconds TODO alterar para 10
     public static final String SERVICE_NAME = "TP-PD-2324";
@@ -112,6 +129,8 @@ public class Server {
     private HeartBeat heartBeat;
 
     SendHeartBeat sendHeartBeat;
+
+    RemoveUsersFromEvent removeUsersFromEvent;
 
     private String presenceList;
 
@@ -164,6 +183,9 @@ public class Server {
 
         this.remoteService = new RemoteService();
         startRemoteService("src/");
+
+        this.removeUsersFromEvent = new RemoveUsersFromEvent(this.data);
+        removeUsersFromEvent.start();
     }
 
     public void startRemoteService(String arg) {
@@ -264,6 +286,9 @@ public class Server {
 
                 while (true) {
                     try {
+                        /*if(data.removeUsersOnEventEnd()){
+                            System.out.println("User removido do evento");
+                        }*/
                         Socket toClientSocket = serverSocket.accept();
 
                         InputStream is = toClientSocket.getInputStream();
@@ -349,7 +374,9 @@ public class Server {
                     }
 
                     String requestResult = "";
-                    while (!dbHelper.isRequestAlreadyProcessed()) {
+                    while (true) {
+                        assert dbHelper != null;
+                        if (dbHelper.isRequestAlreadyProcessed()) break;
 
                         switch (dbHelper.getOperation()) {
                             case "INSERT" -> {
@@ -466,6 +493,18 @@ public class Server {
                                                 break;
                                             }
 
+                                            if(dbHelper.getIdEvento() != -1){
+                                                requestResult = data.checkAllRegisteredPresences(dbHelper.getIdEvento());
+                                                if(requestResult.equals("")){
+                                                    requestResult = "Checking presences at event failed";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                    break;
+                                                }
+
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                break;
+                                            }
+
                                             presenceList = data.listPresencasFromUserEmail(dbHelper.getParams().get(0));
                                             requestResult = "LIST ALL PRESENCAS FROM USER\n" + presenceList;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
@@ -569,7 +608,7 @@ public class Server {
                     dbHelper.setRequestResult(requestResult);
 
                     while(true){
-                        if(!this.dbHelper.getRequestResult().equals("")){
+                        if(!this.dbHelper.getRequestResult().toString().equals("")){
                             oos.writeObject(this.dbHelper.getRequestResult());
                             this.dbHelper.setRequestResult("");
                             break;

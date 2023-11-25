@@ -5,12 +5,12 @@ import java.io.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 public class DBManager {
@@ -436,13 +436,14 @@ public class DBManager {
         return false;
     }
 
-    public boolean checkForUserAttendance(int userId){
+    public boolean checkForUserAttendance(int userId){ //falta mudar isto para se ele esta num evento naquela hora
         Statement statement = null;
 
         try {
             statement = conn.createStatement();
 
             //retirar o id do evento pq falha se o user ja estiver registado quer naquele evento ou em qualquer outro
+
             String sqlQuery = "SELECT Id FROM Presenca WHERE IdUtilizador='" + userId + "'";
 
             int count = statement.executeQuery(sqlQuery).getInt("Id");
@@ -468,6 +469,22 @@ public class DBManager {
         return false;
     }
 
+    public boolean checkIfEventNow(String horaFim){
+        String[] elements = horaFim.split(":");
+
+        int hora = Integer.parseInt(elements[0]);
+        int minuto = Integer.parseInt(elements[1]);
+
+        int horaNow = LocalTime.now().getHour();
+        int minutoNow = LocalTime.now().getMinute();
+
+        if(hora >= horaNow && minuto >= minutoNow){
+            return true;
+        }
+
+        return false;
+    }
+
 
     public boolean checkEventCodeAndInsertUser(int eventCode, int userId) {
 
@@ -476,9 +493,10 @@ public class DBManager {
         try {
             statement = conn.createStatement();
 
-            String sqlQuery = "SELECT Id FROM Evento WHERE Codigo='" + eventCode + "'";
+            String sqlQuery = "SELECT Id, HoraFim FROM Evento WHERE Codigo='" + eventCode + "'";
 
             int value = statement.executeQuery(sqlQuery).getInt("Id");
+            String horaFim = statement.executeQuery(sqlQuery).getString("HoraFim");
 
             sqlQuery = "SELECT CodeExpireTime AS expireTime FROM Evento WHERE Codigo='" + eventCode + "'";
             String expireTime = statement.executeQuery(sqlQuery).getString("expireTime");
@@ -490,10 +508,17 @@ public class DBManager {
             }
 
             if(checkForUserAttendance(userId)){
+                System.out.println("ja esta num evento nessa hora");
                 return false;
             }
 
             if(LocalTime.now().isAfter(dbExpireTime)){
+                System.out.println("codigo expirado");
+                return false;
+            }
+
+            if(!checkIfEventNow(horaFim)){
+                System.out.println("evento nao esta a decorrer");
                 return false;
             }
 
@@ -1181,6 +1206,116 @@ public class DBManager {
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
+    public String checkAllRegisteredPresences(int eventId) {
+        Statement statement = null;
+
+        try {
+
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT utilizador.Nome, NIF, Email FROM Utilizador utilizador " +
+                    "JOIN Presenca presenca ON presenca.IdUtilizador = utilizador.Id " +
+                    "JOIN Evento evento ON presenca.IdEvento = evento.Id " +
+                    "WHERE evento.Id='" + eventId + "'";
+
+            ResultSet rs = statement.executeQuery(sqlQuery);
+
+            StringBuilder sb = new StringBuilder();
+
+            String titleCard = "Nome\t\tNIF\t\tEmail\n";
+
+            sb.append(titleCard);
+
+            while (rs.next()) {
+                sb.append(rs.getString("Nome")).append("\t").append(rs.getString("NIF")).append("\t").append(rs.getString("Email")).append("\n");
+            }
+
+            return sb.toString();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return "";
+    }
+
+    public boolean removeUsersOnEventEnd() {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String horaAtual = String.valueOf(LocalTime.now().getHour());
+            String minutoAtual = String.valueOf(LocalTime.now().getMinute());
+
+            String query = "SELECT Id, Data, HoraFim FROM Evento";
+            ResultSet queryResult = statement.executeQuery(query);
+
+            while(queryResult.next()){
+
+                String data = queryResult.getString("Data");
+                String horaFim = queryResult.getString("HoraFim");
+
+                String[] splitData = data.split("/");
+                int diaDB = Integer.parseInt(splitData[0]);
+                int mesDB = Integer.parseInt(splitData[1]);
+                int anoDB = Integer.parseInt(splitData[2]);
+
+                Thread.sleep(1000);
+
+                String[] splitHoraFim = horaFim.split(":");
+                String horaFimDB = splitHoraFim[0];
+                String minutoFimDB = splitHoraFim[1];
+
+                if(diaDB == LocalDate.now().getDayOfMonth() && mesDB == LocalDate.now().getMonthValue() && anoDB == LocalDate.now().getYear()) {
+                    if(Integer.parseInt(minutoFimDB) == 59 && Integer.parseInt(minutoAtual) == 0) {
+                        String sqlRemoveQuery = "DELETE FROM Presenca " +
+                                "WHERE IdUtilizador IN (SELECT Id FROM Utilizador WHERE Id = Presenca.IdUtilizador) " +
+                                "AND IdEvento IN (SELECT Id FROM Evento WHERE Id = '" + queryResult.getString("Id") + "')";
+
+                        statement.executeUpdate(sqlRemoveQuery);
+                        updateDBVersion();
+                        this.executedQuery = sqlRemoveQuery;
+                        return true;
+                    }
+
+                    if(Integer.parseInt(horaFimDB) <= Integer.parseInt(horaAtual) && Integer.parseInt(minutoFimDB) <= Integer.parseInt(minutoAtual)){
+                        String sqlRemoveQuery = "DELETE FROM Presenca " +
+                                "WHERE IdUtilizador IN (SELECT Id FROM Utilizador WHERE Id = Presenca.IdUtilizador) " +
+                                "AND IdEvento IN (SELECT Id FROM Evento WHERE Id = '" + queryResult.getString("Id") + "')";
+
+                        statement.executeUpdate(sqlRemoveQuery);
+                        updateDBVersion();
+                        this.executedQuery = sqlRemoveQuery;
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         } finally {
             try {
                 if (statement != null) {

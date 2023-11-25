@@ -473,13 +473,16 @@ public class ClientUI {
     }
 
     private void checkRegisteredPresences(){
+        int eventId = InputProtection.readInt("Insert the Event ID: ");
 
+        this.client.createDBHelper("SELECT", "evento", eventId, -1, true, false);
+        System.out.println(client.waitToReceiveResultRequest());
     }
 
     private void getCSVWithRegisteredPresences(){
         int eventId = InputProtection.readInt("Insert the Event ID: ");
 
-        this.client.createDBHelper("SELECT", "evento", eventId, -1, true);
+        this.client.createDBHelper("SELECT", "evento", eventId, -1, true, true);
         System.out.println(client.waitToReceiveResultRequest());
     }
 

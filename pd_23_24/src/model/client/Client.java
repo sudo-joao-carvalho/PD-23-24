@@ -200,8 +200,8 @@ public class Client {
         hasNewRequest.set(true);
     }
 
-    public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int idUser, boolean isAdmin){
-        dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, idUser, isAdmin);
+    public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int idUser, boolean isAdmin, boolean getCSV){
+        dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, idUser, isAdmin, getCSV);
         hasNewRequest.set(true);
     }
 
@@ -312,11 +312,13 @@ public class Client {
         return null;
     }
 
-    public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser, boolean isAdmin) {
+    public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser, boolean isAdmin, boolean getCSV) {
         DBHelper dbHelper = new DBHelper();
         if(operation.equals("SELECT")){
             if(table.equals("evento")){
-                getCSVEventPresences(dbHelper, idEvento, idUser, isAdmin);
+                if(getCSV)
+                    getCSVEventPresences(dbHelper, idEvento, idUser, isAdmin, true);
+                else checkRegisteredPresences(dbHelper, idEvento, idUser, isAdmin, false);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -502,12 +504,21 @@ public class Client {
         return true;
     }
 
-    public boolean getCSVEventPresences(DBHelper dbHelper, int idEvento, int idUser, boolean isAdmin){
+    public boolean checkRegisteredPresences(DBHelper dbHelper, int idEvento, int idUser, boolean isAdmin, boolean getCSV){
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
         dbHelper.setIsAdmin(isAdmin);
         dbHelper.setIdEvento(idEvento);
-        dbHelper.setGetCSV(true);
+        dbHelper.setGetCSV(getCSV);
+        return true;
+    }
+
+    public boolean getCSVEventPresences(DBHelper dbHelper, int idEvento, int idUser, boolean isAdmin, boolean getCSV){
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setIsAdmin(isAdmin);
+        dbHelper.setIdEvento(idEvento);
+        dbHelper.setGetCSV(getCSV);
         return true;
     }
 

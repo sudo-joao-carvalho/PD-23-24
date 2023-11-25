@@ -78,5 +78,13 @@ public class ResourceManager {
         return this.dbManager.checkCreatedEvents(pesquisa);
     }
 
+    public String checkAllRegisteredPresences(int eventId){
+        return this.dbManager.checkAllRegisteredPresences(eventId);
+    }
+
+    public boolean removeUsersOnEventEnd(){
+        return this.dbManager.removeUsersOnEventEnd();
+    }
+
     public String getExecutedQuery(){return this.dbManager.getExecutedQuery();}
 }

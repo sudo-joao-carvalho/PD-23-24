@@ -80,5 +80,13 @@ public class Data {
         return this.resourceManager.checkCreatedEvents(pesquisa);
     }
 
+    public String checkAllRegisteredPresences(int eventId) {
+        return this.resourceManager.checkAllRegisteredPresences(eventId);
+    }
+
+    public boolean removeUsersOnEventEnd(){
+        return this.resourceManager.removeUsersOnEventEnd();
+    }
+
     public String getExecutedQuery(){return this.resourceManager.getExecutedQuery();}
 }

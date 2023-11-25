@@ -39,6 +39,8 @@ public class DBHelper implements Serializable {
         this.getCSV = false;
         this.email = "";
         this.searchFilter = "";
+
+        this.idEvento = -1;
     }
 
 
