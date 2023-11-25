@@ -25,6 +25,7 @@ public class DBHelper implements Serializable {
     private ArrayList<String> verifyEmail;
     private boolean isRequestAlreadyProcessed;
     private boolean isAdmin;
+    private boolean getCSV;
 
 
     public DBHelper(){
@@ -33,6 +34,7 @@ public class DBHelper implements Serializable {
 
         this.isAdmin = false;
         this.column = "";
+        this.getCSV = false;
     }
 
 
@@ -136,5 +138,13 @@ public class DBHelper implements Serializable {
 
     public void setCodeExpirationTime(int codeExpirationTime) {
         this.codeExpirationTime = codeExpirationTime;
+    }
+
+    public boolean isGetCSV() {
+        return getCSV;
+    }
+
+    public void setGetCSV(boolean getCSV) {
+        this.getCSV = getCSV;
     }
 }

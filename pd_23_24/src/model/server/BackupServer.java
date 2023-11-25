@@ -74,7 +74,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
 
-                            if(hb.getDbVersion() != remoteService.getCurrentDBVersion(dbDirectory)){
+                            if(hb.getDbVersion() + 1 != remoteService.getCurrentDBVersion(dbDirectory)) {
                                 throw new Exception("Backup DB and Server DB have different versions");
                             }
                         }
@@ -83,24 +83,23 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                 } catch (ClassNotFoundException e) {
                     System.out.println();
                     System.out.println("Mensagem recebida de tipo inesperado! " + e);
+                    terminate();
                     return;
                 } catch (IOException e) {
                     System.out.println();
                     System.out.println("Impossibilidade de aceder ao conteudo da mensagem recebida! " + e);
+                    terminate();
                     return;
                 } catch (Exception e) {
                     System.out.println();
                     System.out.println("Excepcao: " + e);
-                    System.exit(0);
+                    terminate();
+                    //System.exit(0);
                 }
             }
 
         }catch (Exception e){
             // lidar com esta exceção tal como todas as outras no projeto
-        }
-
-        if (!isRunning){
-            return;
         }
     }
 }
@@ -262,14 +261,6 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         }
 
         return "Error";
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public MulticastHandler getMHandler() {

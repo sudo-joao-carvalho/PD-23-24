@@ -60,6 +60,10 @@ public class ResourceManager {
 
     public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.dbManager.checkEventCodeAndInsertUser(eventCode, userID);}
 
+    public boolean getCSV(int userId) {
+        return this.dbManager.getCSV(userId);
+    }
+
     public int getDBVersion(){return this.dbManager.getDBVersion();}
 
     public String getExecutedQuery(){return this.dbManager.getExecutedQuery();}

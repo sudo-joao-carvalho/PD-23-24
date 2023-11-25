@@ -365,12 +365,16 @@ public class ClientUI {
         }
     }
 
+    public void getCSV(){
+        this.client.createDBHelper("SELECT", "evento", this.client.getClientID(), true);
+    }
+
     public void userMenu(){
         while(true){
             System.out.print("\nMain Menu");
 
             //TODO adicionar parametros ao menu
-            int input = InputProtection.chooseOption("Choose an action:",  "Submit event code", "List All Presences" ,"Edit User Profile", "Exit");
+            int input = InputProtection.chooseOption("Choose an action:",  "Submit event code", "List All Presences" ,"Edit User Profile", "Get CSV file with presences", "Exit");
 
             switch (input){
                 case 1 -> {
@@ -383,6 +387,9 @@ public class ClientUI {
                     editProfile();
                 }
                 case 4 -> {
+                    getCSV();
+                }
+                case 5 -> {
                     return;
                 }
             }

@@ -946,6 +946,74 @@ public class DBManager {
         return true;
     }
 
+    public boolean getCSV(int userId) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            statement.execute("PRAGMA header = on");
+            statement.execute("PRAGMA mode = csv");
+
+
+            String userQuery = "SELECT Nome, NIF, Email FROM Utilizador WHERE Id='" + userId + "'";
+            ResultSet userResult = statement.executeQuery(userQuery);
+
+
+            String eventQuery = "SELECT Evento.Nome as nomeEvento, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento evento " +
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                    "WHERE utilizador.Id='" + userId + "'";
+
+            File file = new File("src/resources/files/presencas.csv");
+            try (FileWriter csvWriter = new FileWriter(file)) {
+                csvWriter.append("NomeCliente,NIF,Email\n");
+
+                while (userResult.next()) {
+                    csvWriter.append(userResult.getString("Nome"))
+                            .append(",")
+                            .append(userResult.getString("NIF"))
+                            .append(",")
+                            .append(userResult.getString("Email"))
+                            .append("\n\n");
+                }
+
+                csvWriter.append("NomeEvento, Local, Data, Hora Inicio\n");
+
+                ResultSet eventResult = statement.executeQuery(eventQuery);
+
+               while (eventResult.next()) {
+                    csvWriter
+                            .append(eventResult.getString("NomeEvento"))
+                            .append(",")
+                            .append(eventResult.getString("Local"))
+                            .append(",")
+                            .append(eventResult.getString("Data"))
+                            .append(",")
+                            .append(eventResult.getString("HoraInicio"))
+                            .append("\n");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
     public void setExecutedQuery(String query){
         this.executedQuery = query;
     }

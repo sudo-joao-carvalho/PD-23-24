@@ -429,6 +429,12 @@ public class Server {
                                     }
                                     case "evento" -> {
                                         if(!dbHelper.getIsAdmin()) {
+                                            if(dbHelper.isGetCSV()){
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                data.getCSV(dbHelper.getId());
+                                                break;
+                                            }
+
                                             presenceList = data.listPresencas(dbHelper.getIdEvento(), dbHelper.getId());
                                             requestResult = "PRESENCE LIST\n" + presenceList;
                                             dbHelper.setIsRequestAlreadyProcessed(true);

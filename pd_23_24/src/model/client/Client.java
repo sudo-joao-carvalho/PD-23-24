@@ -195,6 +195,11 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, int idUser, boolean getCSV){
+        dbHelper = addDBHelper(queryOperation, sqlTable, idUser);
+        hasNewRequest.set(true);
+    }
+
     public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int codeExpirationTime, int idUser){
         dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, codeExpirationTime, idUser);
         hasNewRequest.set(true);
@@ -276,6 +281,18 @@ public class Client {
             }
         }
 
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, int idUser) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                getCSV(dbHelper, idUser);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
         return null;
     }
 
@@ -418,6 +435,15 @@ public class Client {
         dbHelper.setEventCode(Integer.parseInt(eventCode));
         dbHelper.setId(clientID);
         dbHelper.setIsAdmin(false);
+        return true;
+    }
+
+    public boolean getCSV(DBHelper dbHelper, int clientId) { // isto é para o que não é ADMIN
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setId(clientId);
+        dbHelper.setIsAdmin(false);
+        dbHelper.setGetCSV(true);
         return true;
     }
 

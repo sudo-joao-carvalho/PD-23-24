@@ -60,6 +60,10 @@ public class Data {
 
     public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.resourceManager.checkEventCodeAndInsertUser(eventCode, userID);}
 
+    public boolean getCSV(int userId) {
+        return this.resourceManager.getCSV(userId);
+    }
+
     public int getDBVersion() {
         return this.resourceManager.getDBVersion();
     }
