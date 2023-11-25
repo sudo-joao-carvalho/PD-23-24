@@ -25,9 +25,9 @@ public class DBManager {
     }
 
     public boolean connectToDB(String directory, int port) {
-        if (new File(directory + "/PD-2023-24-TP.db" /*"/PD-2023-24-TP-" + port + ".db"*/).exists()) {
+        if (new File(directory + "/PD-2023-24-TP.db").exists()) {
             try {
-                this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP.db"/*"/PD-2022-23-TP-" + port + ".db\""*/);
+                this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP.db");
             } catch(SQLException e) {
                 e.printStackTrace();
                 return false;
