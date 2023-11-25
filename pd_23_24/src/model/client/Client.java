@@ -185,6 +185,11 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, int id, boolean getCSV){
+        dbHelper = addDBHelper(queryOperation, sqlTable, params, id, getCSV);
+        hasNewRequest.set(true);
+    }
+
     public void createDBHelper(String queryOperation, String sqlTable, ArrayList<String> params, String email, int userID){
         dbHelper = addDBHelper(queryOperation, sqlTable, params, email, userID);
         hasNewRequest.set(true);
@@ -195,8 +200,13 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, int idEvento, int idUser, boolean isAdmin){
+        dbHelper = addDBHelper(queryOperation, sqlTable, idEvento, idUser, isAdmin);
+        hasNewRequest.set(true);
+    }
+
     public void createDBHelper(String queryOperation, String sqlTable, int idUser, boolean getCSV){
-        dbHelper = addDBHelper(queryOperation, sqlTable, idUser);
+        dbHelper = addDBHelper(queryOperation, sqlTable, idUser, getCSV);
         hasNewRequest.set(true);
     }
 
@@ -263,6 +273,19 @@ public class Client {
         return null;
     }
 
+    public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id, boolean getCSV) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                listPresencasFromUserEmailCSV(dbHelper, params, getCSV);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        return null;
+    }
+
     public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser) {
         DBHelper dbHelper = new DBHelper();
         if(operation.equals("SELECT")){
@@ -284,11 +307,24 @@ public class Client {
         return null;
     }
 
-    public DBHelper addDBHelper(String operation, String table, int idUser) {
+    public DBHelper addDBHelper(String operation, String table, int idEvento, int idUser, boolean isAdmin) {
         DBHelper dbHelper = new DBHelper();
         if(operation.equals("SELECT")){
             if(table.equals("evento")){
-                getCSV(dbHelper, idUser);
+                getCSVEventPresences(dbHelper, idEvento, idUser, isAdmin);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        return null;
+    }
+
+    public DBHelper addDBHelper(String operation, String table, int idUser, boolean getCSV) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                getCSV(dbHelper, idUser, getCSV);
                 isDBHelperReady = true;
                 return dbHelper;
             }
@@ -438,12 +474,30 @@ public class Client {
         return true;
     }
 
-    public boolean getCSV(DBHelper dbHelper, int clientId) { // isto é para o que não é ADMIN
+    public boolean getCSV(DBHelper dbHelper, int clientId, boolean getCSV) { // isto é para o que não é ADMIN
         dbHelper.setOperation("SELECT");
         dbHelper.setTable("evento");
         dbHelper.setId(clientId);
         dbHelper.setIsAdmin(false);
+        dbHelper.setGetCSV(getCSV);
+        return true;
+    }
+
+    public boolean getCSVEventPresences(DBHelper dbHelper, int idEvento, int idUser, boolean isAdmin){
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setIsAdmin(isAdmin);
+        dbHelper.setIdEvento(idEvento);
         dbHelper.setGetCSV(true);
+        return true;
+    }
+
+    public boolean listPresencasFromUserEmailCSV(DBHelper dbHelper, ArrayList<String> params, boolean getCSV){
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setEmail(params.get(0));
+        dbHelper.setIsAdmin(true);
+        dbHelper.setGetCSV(getCSV);
         return true;
     }
 

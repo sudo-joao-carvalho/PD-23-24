@@ -35,6 +35,7 @@ public class DBHelper implements Serializable {
         this.isAdmin = false;
         this.column = "";
         this.getCSV = false;
+        this.email = "";
     }
 
 

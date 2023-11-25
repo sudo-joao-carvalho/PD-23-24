@@ -474,7 +474,10 @@ public class ClientUI {
     }
 
     private void getCSVWithRegisteredPresences(){
+        int eventId = InputProtection.readInt("Insert the Event ID: ");
 
+        this.client.createDBHelper("SELECT", "evento", eventId, -1, true);
+        System.out.println(client.waitToReceiveResultRequest());
     }
 
     private void listPresencasFromUserEmail(){
@@ -489,7 +492,14 @@ public class ClientUI {
     }
 
     private void getCSVFileFromUser(){
+        String emailToSearch = InputProtection.readString("Insert the email to search: ", true);
 
+        ArrayList<String> singleParamEmail = new ArrayList<>();
+        singleParamEmail.add(emailToSearch);
+        this.client.createDBHelper("SELECT", "evento", singleParamEmail, -1, true);
+
+        String outputFromRequestResult = client.waitToReceiveResultRequest();
+        System.out.println(outputFromRequestResult);
     }
 
     private void deleteAttendance(){
@@ -532,7 +542,7 @@ public class ClientUI {
 
             System.out.println("\n------------ ADMIN MENU ------------");
 
-            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check registered presences", "Get CSV with registered presences" ,"Check event attendance by user email", "Get CSV file with event attendance", "Delete attendance", "Insert attendance", "Logout");
+            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check registered presences", "Get CSV with registered presences" ,"Check event attendance by user email", "Get CSV with user attendance by user email", "Delete attendance", "Insert attendance", "Logout");
 
             switch(choice) {
                 case 1 -> {

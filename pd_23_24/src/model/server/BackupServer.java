@@ -74,7 +74,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
 
-                            if(hb.getDbVersion() + 1 != remoteService.getCurrentDBVersion(dbDirectory)) {
+                            if(hb.getDbVersion() != remoteService.getCurrentDBVersion(dbDirectory)) {
                                 throw new Exception("Backup DB and Server DB have different versions");
                             }
                         }

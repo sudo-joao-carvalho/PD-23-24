@@ -68,5 +68,13 @@ public class Data {
         return this.resourceManager.getDBVersion();
     }
 
+    public boolean getCSVAdmin(int eventId) {
+        return this.resourceManager.getCSVAdmin(eventId);
+    }
+
+    public boolean getCSVAdminListUserAttendanceByEmail(String email) {
+        return this.resourceManager.getCSVAdminListUserAttendanceByEmail(email);
+    }
+
     public String getExecutedQuery(){return this.resourceManager.getExecutedQuery();}
 }

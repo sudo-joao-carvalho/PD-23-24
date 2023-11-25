@@ -440,6 +440,20 @@ public class Server {
                                             requestResult = "PRESENCE LIST\n" + presenceList;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
                                         }else{
+                                            if(dbHelper.isGetCSV()){
+                                                if(!dbHelper.getEmail().equals("")){
+                                                    data.getCSVAdminListUserAttendanceByEmail(dbHelper.getEmail());
+                                                    requestResult = "File obtained";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                    break;
+                                                }
+
+                                                data.getCSVAdmin(dbHelper.getIdEvento());
+                                                requestResult = "File obtained";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                break;
+                                            }
+
                                             presenceList = data.listPresencasFromUserEmail(dbHelper.getParams().get(0));
                                             requestResult = "LIST ALL PRESENCAS FROM USER\n" + presenceList;
                                             dbHelper.setIsRequestAlreadyProcessed(true);

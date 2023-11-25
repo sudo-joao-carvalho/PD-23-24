@@ -5,6 +5,7 @@ import java.io.*;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -949,6 +950,7 @@ public class DBManager {
         return true;
     }
 
+
     public boolean getCSV(int userId) {
         Statement statement = null;
 
@@ -1024,29 +1026,16 @@ public class DBManager {
 
             ResultSet rs = statement.executeQuery(sqlQuery);
 
-            String sqlQueryUserInfo = "SELECT Nome, NIF, Email FROM Utilizador utilizador " +
-                    "JOIN Presenca presenca ON presenca.IdUtilizador = utilizador.Id " +
-                    "JOIN Evento evento ON presenca.IdEvento = evento.Id " +
-                    "WHERE evento.Id='" + eventId + "'";
-
-            ResultSet rs1 = statement.executeQuery(sqlQueryUserInfo);
-
             File file = new File("src/resources/files/presencasAdmin.csv");
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            String[] dateFormat = rs.getString("Data").split("/");
+            String dia = dateFormat[0];
+            String mes = dateFormat[1];
+            String ano = dateFormat[2];
 
-            Date date = (Date)dateFormat.parse(rs.getString("Data"));
-
-            String dia = new SimpleDateFormat("dd").format(date);
-            String mes = new SimpleDateFormat("MM").format(date);
-            String ano = new SimpleDateFormat("yyyy").format(date);
-
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
-
-            Date time = (Date)timeFormat.parse(rs.getString("HoraInicio"));
-
-            String hora = new SimpleDateFormat("HH").format(time);
-            String minutos = new SimpleDateFormat("mm").format(time);
+            String[] hourFormat = rs.getString("HoraInicio").split(":");
+            String hora = hourFormat[0];
+            String minutos = hourFormat[1];
 
             try (FileWriter csvWriter = new FileWriter(file)) { // meter o while()
                 csvWriter.append("Nome").append(";").append(rs.getString("Nome")).append("\n")
@@ -1056,8 +1045,15 @@ public class DBManager {
 
                 csvWriter.append("Nome").append(";").append("Número identificação").append(";").append("Email").append("\n");
 
+                String sqlQueryUserInfo = "SELECT utilizador.Nome, NIF, Email FROM Utilizador utilizador " +
+                        "JOIN Presenca presenca ON presenca.IdUtilizador = utilizador.Id " +
+                        "JOIN Evento evento ON presenca.IdEvento = evento.Id " +
+                        "WHERE evento.Id='" + eventId + "'";
+
+                ResultSet rs1 = statement.executeQuery(sqlQueryUserInfo);
+
                 while (rs1.next()) {
-                    csvWriter.append(rs1.getString("Nome")).append(";").append(rs1.getString("NIF")).append(";").append(rs1.getString("Email"));
+                    csvWriter.append(rs1.getString("Nome")).append(";").append(rs1.getString("NIF")).append(";").append(rs1.getString("Email")).append("\n");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -1067,8 +1063,6 @@ public class DBManager {
 
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
         } finally {
             try {
                 if (statement != null) {
@@ -1078,6 +1072,74 @@ public class DBManager {
                 e.printStackTrace();
             }
         }
+        return false;
+    }
+
+    public boolean getCSVAdminListUserAttendanceByEmail(String email) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            statement.execute("PRAGMA header = on");
+            statement.execute("PRAGMA mode = csv");
+
+            String userQuery = "SELECT Id, Nome, NIF, Email FROM Utilizador WHERE Email='" + email + "'";
+
+            ResultSet userResult = statement.executeQuery(userQuery);
+
+            String eventQuery = "SELECT Evento.Nome as nomeEvento, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento evento " +
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                    "WHERE utilizador.Id='" + userResult.getInt("Id") + "'";
+
+            File file = new File("src/resources/files/presencasUserByEmailAdmin.csv");
+
+            try (FileWriter csvWriter = new FileWriter(file)) {
+                csvWriter.append("NomeCliente,NIF,Email\n");
+
+                //while (userResult.next()) {
+                csvWriter.append(userResult.getString("Nome"))
+                        .append(",")
+                        .append(userResult.getString("NIF"))
+                        .append(",")
+                        .append(userResult.getString("Email"))
+                        .append("\n\n");
+                //}
+
+                csvWriter.append("NomeEvento, Local, Data, Hora Inicio\n");
+
+                ResultSet eventResult = statement.executeQuery(eventQuery);
+
+                while (eventResult.next()) {
+                    csvWriter
+                            .append(eventResult.getString("NomeEvento"))
+                            .append(",")
+                            .append(eventResult.getString("Local"))
+                            .append(",")
+                            .append(eventResult.getString("Data"))
+                            .append(",")
+                            .append(eventResult.getString("HoraInicio"))
+                            .append("\n");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
         return false;
     }
 
