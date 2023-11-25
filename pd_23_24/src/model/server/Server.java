@@ -430,8 +430,9 @@ public class Server {
                                     case "evento" -> {
                                         if(!dbHelper.getIsAdmin()) {
                                             if(dbHelper.isGetCSV()){
-                                                dbHelper.setIsRequestAlreadyProcessed(true);
                                                 data.getCSV(dbHelper.getId());
+                                                requestResult = "File obtained";
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
                                                 break;
                                             }
 

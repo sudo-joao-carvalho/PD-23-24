@@ -367,6 +367,8 @@ public class ClientUI {
 
     public void getCSV(){
         this.client.createDBHelper("SELECT", "evento", this.client.getClientID(), true);
+
+        System.out.println(client.waitToReceiveResultRequest());
     }
 
     public void userMenu(){
@@ -467,6 +469,14 @@ public class ClientUI {
         }*/
     }
 
+    private void checkRegisteredPresences(){
+
+    }
+
+    private void getCSVWithRegisteredPresences(){
+
+    }
+
     private void listPresencasFromUserEmail(){
         String emailToSearch = InputProtection.readString("Insert the email to search: ", true);
 
@@ -522,7 +532,7 @@ public class ClientUI {
 
             System.out.println("\n------------ ADMIN MENU ------------");
 
-            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check event attendance by user email", "Get CSV file with event attendance", "Delete attendance", "Insert attendance", "Logout");
+            int choice = InputProtection.chooseOption("Choose action: ", "Create Event", "Edit Event Data", "Delete Event", "Check created events", "Generate code for user registration", "Check registered presences", "Get CSV with registered presences" ,"Check event attendance by user email", "Get CSV file with event attendance", "Delete attendance", "Insert attendance", "Logout");
 
             switch(choice) {
                 case 1 -> {
@@ -546,18 +556,26 @@ public class ClientUI {
                 }
 
                 case 6 -> {
-                    listPresencasFromUserEmail();
+                    checkRegisteredPresences();
                 }
 
                 case 7 -> {
-                    getCSVFileFromUser();
+                    getCSVWithRegisteredPresences();
                 }
 
                 case 8 -> {
-                    deleteAttendance();
+                    listPresencasFromUserEmail();
                 }
 
                 case 9 -> {
+                    getCSVFileFromUser();
+                }
+
+                case 10 -> {
+                    deleteAttendance();
+                }
+
+                case 11 -> {
                     insertAttendance();
                 }
             }
