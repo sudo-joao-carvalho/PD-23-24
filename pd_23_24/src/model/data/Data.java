@@ -76,5 +76,9 @@ public class Data {
         return this.resourceManager.getCSVAdminListUserAttendanceByEmail(email);
     }
 
+    public String checkCreatedEvents(String pesquisa) {
+        return this.resourceManager.checkCreatedEvents(pesquisa);
+    }
+
     public String getExecutedQuery(){return this.resourceManager.getExecutedQuery();}
 }

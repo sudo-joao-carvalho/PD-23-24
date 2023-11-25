@@ -1075,6 +1075,57 @@ public class DBManager {
         return false;
     }
 
+    public String checkCreatedEvents(String pesquisa) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String titleCard = "Nome\t\tLocal\t\tData\t\tHoraInicio\t\tHoraFim\n";
+
+            if (pesquisa.equals("")) {
+                String sqlQueryAllEvents = "SELECT * FROM Evento";
+
+                ResultSet resultSet = statement.executeQuery(sqlQueryAllEvents);
+
+                StringBuilder ret = new StringBuilder();
+                ret.append(titleCard);
+
+                while(resultSet.next()){
+                    ret.append(resultSet.getString("Nome")).append(" ").append(resultSet.getString("Local")).append(" ").append(resultSet.getString("Data")).append(" ").append(resultSet.getString("HoraInicio")).append(" ").append(resultSet.getString("HoraFim")).append("\n");
+                }
+
+                return ret.toString();
+            }
+
+            String sqlQuery = "SELECT Nome, Local, Data, HoraInicio, HoraFim FROM Evento WHERE lower(Nome) LIKE lower('" + pesquisa + "') OR lower(Local) LIKE lower('" + pesquisa + "') OR lower(Data) LIKE lower('" + pesquisa + "') OR lower(HoraInicio) LIKE lower('" + pesquisa + "') OR lower(HoraFim) LIKE lower('" + pesquisa + "')";
+
+            ResultSet rs = statement.executeQuery(sqlQuery);
+
+            StringBuilder returnValue = new StringBuilder();
+            returnValue.append(titleCard);
+
+            while (rs.next()) {
+                returnValue.append(rs.getString("Nome")).append(" ").append(rs.getString("Local")).append(" ").append(rs.getString("Data")).append(" ").append(rs.getString("HoraInicio")).append(" ").append(rs.getString("HoraFim")).append("\n");
+            }
+
+            return returnValue.toString();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return "";
+    }
+
     public boolean getCSVAdminListUserAttendanceByEmail(String email) {
         Statement statement = null;
 

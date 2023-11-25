@@ -27,6 +27,8 @@ public class DBHelper implements Serializable {
     private boolean isAdmin;
     private boolean getCSV;
 
+    private String searchFilter;
+
 
     public DBHelper(){
         this.requestResult = new AtomicReference<>("");
@@ -36,6 +38,7 @@ public class DBHelper implements Serializable {
         this.column = "";
         this.getCSV = false;
         this.email = "";
+        this.searchFilter = "";
     }
 
 
@@ -147,5 +150,13 @@ public class DBHelper implements Serializable {
 
     public void setGetCSV(boolean getCSV) {
         this.getCSV = getCSV;
+    }
+
+    public String getSearchFilter() {
+        return searchFilter;
+    }
+
+    public void setSearchFilter(String searchFilter) {
+        this.searchFilter = searchFilter;
     }
 }

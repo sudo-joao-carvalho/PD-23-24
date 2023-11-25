@@ -220,6 +220,11 @@ public class Client {
         hasNewRequest.set(true);
     }
 
+    public void createDBHelper(String queryOperation, String sqlTable, String search){
+        dbHelper = addDBHelper(queryOperation, sqlTable, search);
+        hasNewRequest.set(true);
+    }
+
     public DBHelper addDBHelper(String operation, String table, ArrayList<String> params, int id /*, ArrayList<String> userLogin*/) {
         DBHelper dbHelper = new DBHelper();
         if (operation.equals("INSERT")) {
@@ -371,6 +376,20 @@ public class Client {
         return null;
     }
 
+    public DBHelper addDBHelper(String operation, String table, String search) {
+        DBHelper dbHelper = new DBHelper();
+        if(operation.equals("SELECT")){
+            if(table.equals("evento")){
+                checkCreatedEvents(dbHelper, search);
+                isDBHelperReady = true;
+                return dbHelper;
+            }
+        }
+
+        return null;
+    }
+
+
     public boolean insertUser(DBHelper dbHelper, ArrayList<String> userParameters){
         dbHelper.setOperation("INSERT");
         dbHelper.setTable("utilizador");
@@ -498,6 +517,14 @@ public class Client {
         dbHelper.setEmail(params.get(0));
         dbHelper.setIsAdmin(true);
         dbHelper.setGetCSV(getCSV);
+        return true;
+    }
+
+    public boolean checkCreatedEvents(DBHelper dbHelper, String pesquisa) {
+        dbHelper.setOperation("SELECT");
+        dbHelper.setTable("evento");
+        dbHelper.setIsAdmin(true);
+        dbHelper.setSearchFilter(pesquisa);
         return true;
     }
 

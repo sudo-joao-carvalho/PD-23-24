@@ -74,5 +74,9 @@ public class ResourceManager {
         return this.dbManager.getCSVAdminListUserAttendanceByEmail(email);
     }
 
+    public String checkCreatedEvents(String pesquisa) {
+        return this.dbManager.checkCreatedEvents(pesquisa);
+    }
+
     public String getExecutedQuery(){return this.dbManager.getExecutedQuery();}
 }

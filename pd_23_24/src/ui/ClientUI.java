@@ -448,7 +448,10 @@ public class ClientUI {
     }
 
     private void checkCreatedEvents(){
+        String searchFilter = InputProtection.readString("Search: ", true);
 
+        this.client.createDBHelper("SELECT", "evento", searchFilter);
+        System.out.println(client.waitToReceiveResultRequest());
     }
 
     private void addCodeToEvent(){

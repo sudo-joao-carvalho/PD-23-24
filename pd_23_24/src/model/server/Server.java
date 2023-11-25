@@ -454,6 +454,18 @@ public class Server {
                                                 break;
                                             }
 
+                                            if(!dbHelper.getSearchFilter().equals("")){
+                                                requestResult = data.checkCreatedEvents(dbHelper.getSearchFilter());
+                                                if(requestResult.equals("")){
+                                                    requestResult = "Search Error";
+                                                    dbHelper.setIsRequestAlreadyProcessed(true);
+                                                    break;
+                                                }
+
+                                                dbHelper.setIsRequestAlreadyProcessed(true);
+                                                break;
+                                            }
+
                                             presenceList = data.listPresencasFromUserEmail(dbHelper.getParams().get(0));
                                             requestResult = "LIST ALL PRESENCAS FROM USER\n" + presenceList;
                                             dbHelper.setIsRequestAlreadyProcessed(true);
