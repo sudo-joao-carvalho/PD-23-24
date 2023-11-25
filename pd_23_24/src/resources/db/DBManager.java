@@ -24,7 +24,7 @@ public class DBManager {
         insertVersionDB();
     }
 
-    public boolean connectToDB(String directory, int port) {
+    public boolean connectToDB(String directory) {
         if (new File(directory + "/PD-2023-24-TP.db").exists()) {
             try {
                 this.conn = DriverManager.getConnection("jdbc:sqlite:" + directory + "/PD-2023-24-TP.db");
@@ -48,8 +48,9 @@ public class DBManager {
         }
 
         FileOutputStream fos;
+
         try{
-            fos = new FileOutputStream(directory + "/PD-2023-24-TP.db"/*"/PD-2023-24-TP-" + port + ".db"*/);
+            fos = new FileOutputStream(directory + "/PD-2023-24-TP.db");
         }catch (FileNotFoundException e){
             return false;
         }
@@ -436,7 +437,7 @@ public class DBManager {
         return false;
     }
 
-    public boolean checkForUserAttendance(int userId){ //falta mudar isto para se ele esta num evento naquela hora
+    public boolean checkForUserAttendance(int userId){
         Statement statement = null;
 
         try {

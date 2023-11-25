@@ -15,8 +15,8 @@ public class Data {
         this.resourceManager = new ResourceManager();
     }
 
-    public boolean connectToDB(String DBDirectory, int port){
-        return this.resourceManager.connectToDB(DBDirectory, port);
+    public boolean connectToDB(String DBDirectory){
+        return this.resourceManager.connectToDB(DBDirectory);
     }
 
     //login

@@ -334,7 +334,7 @@ public class Server {
         @Override
         public void run() {
 
-            if (!data.connectToDB(dbDirectory, serverPort)) {
+            if (!data.connectToDB(dbDirectory)) {
                 System.out.println("Couldnt connect to database");
                 return;
             } else

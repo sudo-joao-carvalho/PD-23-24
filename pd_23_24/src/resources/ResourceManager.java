@@ -11,8 +11,8 @@ public class ResourceManager {
         this.dbManager = new DBManager();
     }
 
-    public boolean connectToDB(String DBDirectory, int port){
-        return this.dbManager.connectToDB(DBDirectory, port);
+    public boolean connectToDB(String DBDirectory){
+        return this.dbManager.connectToDB(DBDirectory);
     }
 
     /*public String listUsers(Integer userId) throws SQLException {
