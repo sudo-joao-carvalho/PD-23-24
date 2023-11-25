@@ -1085,8 +1085,9 @@ public class DBManager {
         this.executedQuery = query;
     }
 
-    public String getExecutedQuery(){return this.executedQuery;}
-
+    public String getExecutedQuery(){
+        return this.executedQuery;
+    }
 }
 
 
