@@ -40,7 +40,7 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
         }
     }
 
-    protected /*synchronized*/ void notifyObservers(String msg){ //esta funcao se nao conseguir notificar um observer remove-o da lista
+    protected void notifyObservers(String msg){
 
         List<BackupServerRemoteInterface> observersToRemove = new ArrayList<>();
 
@@ -58,21 +58,14 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
 
             observers.removeAll(observersToRemove);
         }
-
-        /*synchronized (observers){
-            observers.removeAll(observersToRemove);
-        }*/
     }
 
     //fazer aqui as operacoes da base de dados
-    public synchronized void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException {
-        //System.out.println(query);
+    public synchronized void makeBackUpDBChanges(String dbDirectory, String query) throws IOException {
 
         Connection conn = null;
 
         Statement statement = null;
-
-        //System.out.println(dbDirectory);
 
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);
@@ -116,8 +109,6 @@ public class RemoteService extends UnicastRemoteObject implements RemoteServiceI
     @Override
     public synchronized int getCurrentDBVersion(String dbDirectory) throws IOException, SQLException {
         Connection conn = null;
-
-        //System.out.println(dbDirectory);
 
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbDirectory);

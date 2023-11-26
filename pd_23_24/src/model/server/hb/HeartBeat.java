@@ -23,11 +23,10 @@ public class HeartBeat implements Serializable {
 
     private boolean updateDB;
 
-    public HeartBeat(int registryListeningPort, boolean available, int dbVersion/*, int nConnections*/, String dbDirectory, String serviceName) { // tudo o que vai no hb
+    public HeartBeat(int registryListeningPort, boolean available, int dbVersion, String dbDirectory, String serviceName) { // tudo o que vai no hb
         this.registryListeningPort = registryListeningPort;
         this.available = available;
         this.dbVersion = dbVersion;
-        /*this.nConnections = nConnections;*/
         this.dbDirectory = dbDirectory;
         this.msg = "Estou bibo";
         this.RMIServiceName = serviceName;

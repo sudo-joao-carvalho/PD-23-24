@@ -99,12 +99,12 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
             }
 
         }catch (Exception e){
-            // lidar com esta exceção tal como todas as outras no projeto
+            e.printStackTrace();
         }
     }
 }
 
-public class BackupServer extends UnicastRemoteObject implements BackupServerRemoteInterface { // perguntar ao prof para ver se é mm assim
+public class BackupServer extends UnicastRemoteObject implements BackupServerRemoteInterface {
 
     private MulticastSocket mcastSocket = null;
     private NetworkInterface networkInterface;

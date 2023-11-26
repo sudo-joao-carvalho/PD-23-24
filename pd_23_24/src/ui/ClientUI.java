@@ -28,9 +28,11 @@ public class ClientUI {
                 return register();
             }
             default -> {
-                return false;
+                System.exit(0);
             }
         }
+
+        return false;
     }
 
     public boolean login(){
@@ -43,12 +45,6 @@ public class ClientUI {
         userParams.add(email);
         userParams.add(password);
 
-        /*if (client.getIsAdmin()) {
-            userParams.add("0"); //autenticado
-            userParams.add("0"); //admin
-
-            this.client.insertEvento(this.client.dbHelper, userParams);
-        }*/
 
         verifyLogin(email, password);
 
@@ -65,6 +61,7 @@ public class ClientUI {
                 idS.append(outputFromRequestResult.charAt(i));
             }
 
+
             int id = Integer.parseInt(idS.toString());
             this.client.setClientID(id);
 
@@ -79,7 +76,10 @@ public class ClientUI {
                 this.client.setIsAdmin(true);
             }
 
-            System.out.println(outputFromRequestResult);
+            int startI = outputFromRequestResult.indexOf("User logged in");
+            String extractedMessage = outputFromRequestResult.substring(startI, startI + "User logged in".length());
+
+            System.out.println(extractedMessage);
         }
 
         return true;
@@ -224,8 +224,7 @@ public class ClientUI {
                 }
 
                 case 5 -> {
-                    String endingHour = InputProtection.readString("New Event Ending Time (use this format hh:mm): ", true); // fazer validação de mês não ser maior que 12, dia não ser maior que 31, ano não ser muito pequeno ou muito grande
-
+                    String endingHour = InputProtection.readString("New Event Ending Time (use this format hh:mm): ", true);
                     if (!endingHour.contains(":")) {
                         System.out.println("Wrong date format.\n");
                         break;
@@ -463,13 +462,7 @@ public class ClientUI {
 
         String outputFromRequestResult = client.waitToReceiveResultRequest();
         System.out.println(outputFromRequestResult);
-        //int eventCode = Integer.parseInt(outputFromRequestResult);
 
-        /*if(eventCode != 0){
-            System.out.println("Code " + eventCode + " inserted successfully");
-        }else{
-            System.out.println("Couldnt insert the generated code");
-        }*/
     }
 
     private void checkRegisteredPresences(){
@@ -606,7 +599,6 @@ public class ClientUI {
                     userMenu();
                 } else if (isAdmin) {
                     adminUI();
-                    //case 1 -> adminMenu();
                 }
             }
         }

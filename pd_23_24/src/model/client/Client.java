@@ -121,24 +121,6 @@ public class Client {
             }
 
             while(srHandle.get()){
-                /*String str = "";
-                try {
-                    str = (String) ois.readObject();
-                    if(str.equals("QUIT")){
-                        System.out.println("a");
-                        socketServer.close();
-                        throw new IOException("Connection with server closed");
-                    }else if(str.equals("SUCCESS")){
-                        continue;
-                    }
-
-                } catch (IOException e) {
-                    closeClient();
-                    System.out.println("\nConnection with server closed");
-                    System.exit(0);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }*/
 
                 if(hasNewRequest.get()){
                     requestResult.set(""); //reset requestResult
@@ -164,7 +146,7 @@ public class Client {
                         hasNewRequest.set(false);
 
                     } catch (SocketException e) {
-                        System.out.println("Can't read or write to and from server! Reason: you took too long to login\n");
+                        System.out.println("Can't read or write to server! Reason: you took too long to login\n");
                         System.exit(-1);
                     } catch (IOException e) {
                         e.printStackTrace();

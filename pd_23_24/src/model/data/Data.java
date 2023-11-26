@@ -10,8 +10,7 @@ public class Data {
 
     private ResourceManager resourceManager;
 
-    public Data(/*ResourceManager resourceManager*/) throws SQLException {
-        //this.resourceManager = resourceManager;
+    public Data() throws SQLException {
         this.resourceManager = new ResourceManager();
     }
 

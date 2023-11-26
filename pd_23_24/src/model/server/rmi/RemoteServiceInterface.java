@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public interface RemoteServiceInterface extends Remote {
 
-    void makeBackUpDBChanges(String dbDirectory, String query/*, RemoteServerInterface cliRemoto*/) throws IOException, RemoteException;
+    void makeBackUpDBChanges(String dbDirectory, String query) throws IOException, RemoteException;
 
     int getCurrentDBVersion(String dbDirectory) throws IOException, SQLException;
 

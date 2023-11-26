@@ -126,7 +126,7 @@ public class DBManager {
         return str.toString();
     }
 
-    public boolean insertEvent(ArrayList<String> params) { // (? ver depois) precisa de devolver o id do evento criado, não apagar o return disto!
+    public boolean insertEvent(ArrayList<String> params) {
         Statement statement;
 
         try {
@@ -180,7 +180,7 @@ public class DBManager {
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            // Se houver algum registro no ResultSe"t, definimos existeRegistro como true
+            // Se houver algum registo no ResultSe"t, definimos existeRegistro como true
             existeRegisto = resultSet.next();
 
         } catch (SQLException e) {
@@ -190,12 +190,11 @@ public class DBManager {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // Lidar com a exceção, se necessário.
+                e.printStackTrace();
             }
         }
 
         if (existeRegisto) {
-            // Já existe um registro com nome ou utilizador igual, então retornamos false.
             return 0;
         }
 
@@ -207,7 +206,6 @@ public class DBManager {
 
         try{
             statement.executeUpdate(sqlQuery);
-            //saveQuery(sqlQuery);
         }catch (SQLException e){
             e.printStackTrace();
             return 0;
@@ -215,7 +213,7 @@ public class DBManager {
             try{
                 statement.close();
             }catch (SQLException e){
-
+                e.printStackTrace();
             }
         }
 
@@ -223,7 +221,6 @@ public class DBManager {
         try {
             ResultSet resultSet = statement.executeQuery(getId);
 
-            // Se houver algum registro no ResultSe"t, definimos existeRegistro como true
             idRegisto = resultSet.getInt("id");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -232,7 +229,7 @@ public class DBManager {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // Lidar com a exceção, se necessário.
+                e.printStackTrace();
             }
         }
 
@@ -257,7 +254,6 @@ public class DBManager {
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            // Se houver algum registro no ResultSet, definimos existeRegistro como true
             idRegisto = resultSet.getInt("id");
             isAdmin = resultSet.getInt("admin");
         } catch (SQLException e) {
@@ -267,7 +263,7 @@ public class DBManager {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // Lidar com a exceção, se necessário.
+                e.printStackTrace();
             }
         }
 
@@ -286,17 +282,12 @@ public class DBManager {
         String sqlQuery = null;
 
         if(idEvento == -1){
-            /*sqlQuery = "SELECT distinct evento.nome, evento.local, evento.data, evento.horaInicio FROM evento " +
-                    "JOIN presenca ON evento.id = presenca.idEvento " +
-                    "JOIN utilizador ON utilizador.id = Presenca.idUtilizador " +
-                    "WHERE utilizador.id = '" + idClient + "'";*/
             sqlQuery = "SELECT evento.Nome, evento.Local, evento.Data, evento.HoraInicio " +
                     "FROM Evento evento " +
                     "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
                     "JOIN Utilizador utilizador ON presenca.IdUtilizador = utilizador.Id " +
                     "WHERE utilizador.Id=" + idClient;
 
-            //sqlQuery = "SELECT * FROM Evento";
         }else{
             sqlQuery = "SELECT distinct evento.Nome, evento.Local, evento.Data, evento.HoraInicio FROM evento " +
                     "JOIN presenca ON evento.Id = presenca.IdEvento " +
@@ -323,7 +314,6 @@ public class DBManager {
                 str.append("\t\t").append(data).append(horaInicio).append("\t\t");
             }
 
-            //saveQuery(sqlQuery);
         }catch (SQLException e){
             e.printStackTrace();
             return "";
@@ -354,7 +344,6 @@ public class DBManager {
 
             try{
                 statement.executeUpdate(sqlQuery);
-                //saveQuery(sqlQuery);
             }catch (SQLException e){
                 e.printStackTrace();
                 return false;
@@ -375,7 +364,6 @@ public class DBManager {
 
             try{
                 statement.executeUpdate(sqlQuery);
-                //saveQuery(sqlQuery);
             }catch (SQLException e){
                 e.printStackTrace();
                 return false;
@@ -396,7 +384,6 @@ public class DBManager {
 
             try{
                 statement.executeUpdate(sqlQuery);
-                //saveQuery(sqlQuery);
             }catch (SQLException e){
                 e.printStackTrace();
                 return false;
@@ -417,7 +404,6 @@ public class DBManager {
 
             try{
                 statement.executeUpdate(sqlQuery);
-                //saveQuery(sqlQuery);
             }catch (SQLException e){
                 e.printStackTrace();
                 return false;
@@ -569,16 +555,6 @@ public class DBManager {
 
             String sqlQuery = "INSERT INTO presenca VALUES (NULL, (SELECT id FROM Evento WHERE lower(nome)='" + params.get(1).toLowerCase() + "'), (SELECT id FROM utilizador WHERE lower(email)='" + params.get(0).toLowerCase() + "'))";
 
-            /*String sqlQuery = "INSERT INTO presenca " +
-                    "SELECT NULL, e.id, u.id " +
-                    "FROM Evento e, utilizador u " +
-                    "WHERE e.nome = '" + params.get(1) + "' " +
-                    "AND u.email = '" + params.get(0) + "' " +
-                    "AND NOT EXISTS ( " +
-                    "  SELECT 1 FROM presenca p " +
-                    "  WHERE p.idEvento = e.id " +
-                    "  AND p.idUtilizador = u.id " +
-                    ")";*/
 
             statement.executeUpdate(sqlQuery);
             this.executedQuery = sqlQuery;
@@ -640,12 +616,10 @@ public class DBManager {
 
             String sqlQuery = "DELETE FROM evento WHERE id=" + eventId;
 
-            //statement.executeQuery(sqlQuery); estava a lancar excecao
 
             int rowsAffected = statement.executeUpdate(sqlQuery);
 
             if (rowsAffected == 0) {
-                // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
                 return false;
             }
 
@@ -710,23 +684,6 @@ public class DBManager {
             statement = conn.createStatement();
 
             switch (params.get(0)) {
-                /*case "codigo" -> { //nao faz sentido ter aqui pq so se pode editar estes parametros se nao existir qualquer presenca no evento mas so se pode gerar o codigo quando o evento ja esta a decorrer
-                    // verificar depois qunado o evento está a correr e assim, o código mais recente é que prevalece tb
-                    //Random rnd = new Random();
-
-                    //int minVal = 100000;
-
-                    //int maxVal = 999999;
-
-                    //int eventCode = rnd.nextInt(maxVal - minVal + 1) + minVal; // get random code for event
-
-                    // tirei porque não sei se o código é random ou é o admin que mete
-
-                    // depois não esquecer do tempo em minutos da validade do código
-
-                    sqlQuery = "UPDATE evento SET codigo='" + entry.getValue() + "' WHERE id=" + eventId;
-                }*/
-
                 case "nome" -> {
                     sqlQuery = "UPDATE evento SET nome='" + params.get(1) + "' WHERE id=" + eventId;
                 }
@@ -863,12 +820,12 @@ public class DBManager {
         String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "', codeExpireTime = '" + localTimeFormatado + "' WHERE id = " + eventId;
 
         try {
-            //ResultSet resultSet = statement.executeQuery(verificar);
+
 
             int rowsAffected = statement.executeUpdate(sqlQuery);
 
             if (rowsAffected == 0) {
-                // Se nenhum registro foi afetado, pode ser que o evento com o ID fornecido não exista.
+
                 return 0;
             }else{
                 this.executedQuery = sqlQuery;
@@ -876,7 +833,7 @@ public class DBManager {
                 return eventCode;
             }
 
-            // Se houver algum registro no ResultSet, definimos existeRegistro como true
+
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
@@ -884,7 +841,7 @@ public class DBManager {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // Lidar com a exceção, se necessário.
+                e.printStackTrace();
             }
         }
 
@@ -998,14 +955,13 @@ public class DBManager {
             try (FileWriter csvWriter = new FileWriter(file)) {
                 csvWriter.append("NomeCliente,NIF,Email\n");
 
-                //while (userResult.next()) {
-                    csvWriter.append(userResult.getString("Nome"))
-                            .append(",")
-                            .append(userResult.getString("NIF"))
-                            .append(",")
-                            .append(userResult.getString("Email"))
-                            .append("\n\n");
-                //}
+                csvWriter.append(userResult.getString("Nome"))
+                        .append(",")
+                        .append(userResult.getString("NIF"))
+                        .append(",")
+                        .append(userResult.getString("Email"))
+                        .append("\n\n");
+
 
                 csvWriter.append("NomeEvento, Local, Data, Hora Inicio\n");
 

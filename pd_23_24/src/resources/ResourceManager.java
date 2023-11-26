@@ -15,10 +15,6 @@ public class ResourceManager {
         return this.dbManager.connectToDB(DBDirectory);
     }
 
-    /*public String listUsers(Integer userId) throws SQLException {
-        return this.dbManager.listAllUsers(userId);
-    }*/
-
     //register
     public int insertUser(ArrayList<String> userParameters){
         return this.dbManager.insertUser(userParameters);

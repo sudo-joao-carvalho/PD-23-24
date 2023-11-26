@@ -16,6 +16,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.util.concurrent.atomic.AtomicReference;
 
 class SendHeartBeat extends Thread{
@@ -59,10 +60,7 @@ class SendHeartBeat extends Thread{
                     // Verifica se dbUpdated é true e envia um heartbeat
                     if (dbUpdated.get()) {
                         dbUpdated.set(false);
-                    } /*else {
-                        // Envia um heartbeat a cada 5 segundos
-                        sendHeartbeat(hearbeat);
-                    }*/
+                    }
 
                     sendHeartbeat(hearbeat);
                     hearbeat.setUpdateDB(false);
@@ -109,7 +107,7 @@ class RemoveUsersFromEvent extends Thread{
 }
 
 public class Server {
-    public static final int TIMEOUT = 10; // seconds TODO alterar para 10
+    public static final int TIMEOUT = 10; // seconds
     public static final String SERVICE_NAME = "TP-PD-2324";
 
     private final String dbDirectory;
@@ -155,13 +153,12 @@ public class Server {
         serverUI.start();
     }
 
-    public Server(int port, String dbDirectory /*, Integer rmiPort*/) throws SQLException, IOException {
+    public Server(int port, String dbDirectory) throws SQLException, IOException {
         this.serverPort = port;
         this.dbDirectory = dbDirectory;
 
-        this.data = new Data(/*new ResourceManager()*/);
+        this.data = new Data();
 
-        //System.setProperty("java.net.preferIPv4Stack", "true");
         // multicast
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));
@@ -170,7 +167,7 @@ public class Server {
         this.mcastSocket.joinGroup(socketAddr, networkInterface); // creates group for object comms
         // multicast
 
-        this.heartBeat = new HeartBeat(1099, true, data.getDBVersion()/*, 1*/, dbDirectory, SERVICE_NAME);
+        this.heartBeat = new HeartBeat(1099, true, data.getDBVersion(), dbDirectory, SERVICE_NAME);
 
         this.sendHeartBeat = new SendHeartBeat(this.heartBeat, mcastSocket, this.dbDirectory);
         sendHeartBeat.start();
@@ -182,53 +179,13 @@ public class Server {
         handlerClient = new AtomicReference<>(true);
 
         this.remoteService = new RemoteService();
-        startRemoteService("src/");
+        startRemoteService();
 
         this.removeUsersFromEvent = new RemoveUsersFromEvent(this.data);
         removeUsersFromEvent.start();
     }
 
-    public void startRemoteService(String arg) {
-        File localDirectory;
-
-        /*
-         * Se existirem varias interfaces de rede activas na maquina onde corre esta aplicacao,
-         * convem definir de forma explicita o endereco que deve ser incluido na referencia remota do servico
-         * RMI criado. Para o efeito, o endereco deve ser atribuido 'a propriedade java.rmi.server.hostname.
-         *
-         * Pode ser no codigo atraves do metodo System.setProperty():
-         *      - System.setProperty("java.rmi.server.hostname", "10.65.129.232"); //O endereco usado e' apenas um exemplo
-         *      - System.setProperty("java.rmi.server.hostname", args[3]); //Neste caso, assume-se que o endereco e' passado como quarto argumento na linha de comando
-         *
-         * Tambem pode ser como opcao passada 'a maquina virtual Java:
-         *      - java -Djava.rmi.server.hostname=10.202.128.22 GetRemoteFileClient ... //O endereco usado e' apenas um exemplo
-         *      - No Netbeans: Properties -> Run -> VM Options -> -Djava.rmi.server.hostname=10.202.128.22 //O endereco usado e' apenas um exemplo
-         */
-
-        /*
-         * Trata os argumentos da linha de comando
-         */
-
-        localDirectory = new File(arg.trim());
-
-        if (!localDirectory.exists()) {
-            System.out.println("A directoria " + localDirectory + " nao existe!");
-            return;
-        }
-
-        if (!localDirectory.isDirectory()) {
-            System.out.println("O caminho " + localDirectory + " nao se refere a uma diretoria!");
-            return;
-        }
-
-        if (!localDirectory.canRead()) {
-            System.out.println("Sem permissoes de leitura na diretoria " + localDirectory + "!");
-            return;
-        }
-
-        /*
-         * Lanca o rmiregistry localmente no porto TCP por omissao (1099).
-         */
+    public void startRemoteService() {
         try {
 
             try {
@@ -244,29 +201,11 @@ public class Server {
                 System.out.println("Registry provavelmente ja' em execucao!");
             }
 
-            /*
-             * Cria o servico.
-             */
-
-            //RemoteService service = new RemoteService();
-
             System.out.println("Servico RemoteService criado e em execucao (" + this.remoteService.getRef().remoteToString() + "...");
-
-            /*
-             * Regista o servico no rmiregistry local para que os clientes possam localiza'-lo, ou seja,
-             * obter a sua referencia remota (endereco IP, porto de escuta, etc.).
-             */
 
             Naming.bind("rmi://localhost/" + SERVICE_NAME, remoteService);
 
             System.out.println("Servico " + SERVICE_NAME + " registado no registry...");
-
-            /*
-             * Para terminar um servico RMI do tipo UnicastRemoteObject:
-             *
-             *  UnicastRemoteObject.unexportObject(fileService, true).
-             */
-            //UnicastRemoteObject.unexportObject(service, true);
 
         } catch (RemoteException e) {
             System.out.println("Erro remoto - " + e);
@@ -286,9 +225,6 @@ public class Server {
 
                 while (true) {
                     try {
-                        /*if(data.removeUsersOnEventEnd()){
-                            System.out.println("User removido do evento");
-                        }*/
                         Socket toClientSocket = serverSocket.accept();
 
                         InputStream is = toClientSocket.getInputStream();
@@ -308,12 +244,10 @@ public class Server {
 
                     } catch (SocketException e) {
                         throw new SocketTimeoutException("Too long to send request to server! Disconnecting...\n");
-                        //System.out.println("Error: " + e);
                     }
                 }
             } catch (Exception e) {
-                //throw new Exception("Failed to create socket!\n");
-                //System.out.println("Error: " + e);
+                e.printStackTrace();
             }
         }
     }
@@ -349,24 +283,9 @@ public class Server {
                     operationResult.set("");
 
                     if(!isUserAuth.get()){ //
-                        /*try {
-                            System.out.println("1");
-                            socket.setSoTimeout(TIMEOUT * 1000);
-                            if ((this.dbHelper = (DBHelper) ois.readObject()) != null) {
-                                System.out.println("\nServer received a new request from Client with\n\tIP:" +
-                                        socket.getInetAddress().getHostAddress() + "\tPort: " + socket.getPort());
-                            }
-                        } catch (SocketTimeoutException e) {
-                            // Timeout ocorreu, encerrar a conexão com o cliente
-                            System.out.println("Timeout occurred. Closing connection with client.");
-                            oos.writeObject("QUIT");
-                            socket.close();
-                            break;
-                        }*/
                         socket.setSoTimeout(TIMEOUT * 1000);
                     }else{
                         socket.setSoTimeout(0);
-                        //oos.writeObject("SUCCESS");
                     }
 
                     if ((this.dbHelper = (DBHelper) ois.readObject()) != null) {
@@ -616,6 +535,10 @@ public class Server {
                     }
                 }
 
+            } catch (SocketTimeoutException e) {
+                System.out.println("\nCan't read from client, took too long to login. Not accepting any more requests from that user.\n\n");
+            }catch(EOFException e){
+                System.out.println("\nUser unexpectedly disconnected");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
@@ -623,13 +546,6 @@ public class Server {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-
-            /*try {
-                socket.close();
-            } catch (IOException e) {
-                System.out.println("Error: " + e);
-            }*/
-
         }
     }
 }
