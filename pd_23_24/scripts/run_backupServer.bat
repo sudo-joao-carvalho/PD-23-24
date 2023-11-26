@@ -1,0 +1,1 @@
+java -cp "../src;../db/sqlite-jdbc-3.42.0.1.jar;" model.server.BackupServer ./ PD-2023-24-TP.db

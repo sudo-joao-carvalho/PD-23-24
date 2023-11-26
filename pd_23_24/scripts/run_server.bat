@@ -1,0 +1,1 @@
+java -cp "../src;../db/sqlite-jdbc-3.42.0.1.jar;" model.server.Server 5001 src/resources/db/ src/

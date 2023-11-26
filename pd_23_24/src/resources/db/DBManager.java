@@ -1535,5 +1535,3 @@ public class DBManager {
         return this.executedQuery;
     }
 }
-
-
