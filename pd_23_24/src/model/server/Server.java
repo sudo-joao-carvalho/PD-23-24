@@ -109,7 +109,7 @@ class RemoveUsersFromEvent extends Thread{
 }
 
 public class Server {
-    public static final int TIMEOUT = 20; // seconds TODO alterar para 10
+    public static final int TIMEOUT = 10; // seconds TODO alterar para 10
     public static final String SERVICE_NAME = "TP-PD-2324";
 
     private final String dbDirectory;
@@ -306,7 +306,7 @@ public class Server {
                             clientThread.start();
                         }
 
-                    } catch (Exception e) {
+                    } catch (SocketException e) {
                         throw new SocketTimeoutException("Too long to send request to server! Disconnecting...\n");
                         //System.out.println("Error: " + e);
                     }

@@ -80,11 +80,10 @@ public class Client {
             this.sTr = new ConnectToServer(socketSr);
             sTr.start();
         }catch(SocketException e){
-            System.out.println("Ligacao com o servidor encerrada");
+            System.out.println("Can't read from server!\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -164,6 +163,9 @@ public class Client {
 
                         hasNewRequest.set(false);
 
+                    } catch (SocketException e) {
+                        System.out.println("Can't read or write to and from server! Reason: you took too long to login\n");
+                        System.exit(-1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
