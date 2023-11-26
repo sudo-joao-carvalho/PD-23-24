@@ -1126,7 +1126,7 @@ public class DBManager {
                     "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
                     "WHERE utilizador.Id='" + userResult.getInt("Id") + "'";
 
-            File file = new File("src/resources/files/presencasUserByEmailAdmin.csv");
+            File file = new File("resources/files/presencasUserByEmailAdmin.csv");
 
             try (FileWriter csvWriter = new FileWriter(file)) {
                 csvWriter.append("NomeCliente,NIF,Email\n");

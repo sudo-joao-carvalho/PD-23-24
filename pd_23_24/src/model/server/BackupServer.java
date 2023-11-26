@@ -74,7 +74,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
 
-                            if(hb.getDbVersion() + 1 != remoteService.getCurrentDBVersion(dbDirectory)) {
+                            if(hb.getDbVersion() != remoteService.getCurrentDBVersion(dbDirectory)) {
                                 throw new Exception("Backup DB and Server DB have different versions");
                             }
                         }
@@ -190,8 +190,6 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             backupServer.getMHandler().setParams(getRemoteService, dbDirectory);
 
-            System.out.println(backupServer.getIsRunning().get());
-
             while(true){
                 if(!backupServer.getIsRunning().get()){
                     getRemoteService.removeBackupServiceObserver(backupServer);
@@ -216,7 +214,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
         // depois disso verificamos se existe ou não algum ficheiro dentro dela
 
         if(!fileDirectory.exists()) {
-            boolean created = fileDirectory.mkdir();
+            boolean created = fileDirectory.mkdirs();
             if (!created) {
                 System.out.println("Não foi possível criar o diretório de backup.");
                 return "Error";
