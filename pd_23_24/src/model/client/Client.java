@@ -71,7 +71,6 @@ public class Client {
         try {
             socketSr = new Socket(serverIP, serverPort);
 
-            //socketSr.setSoTimeout(10000);
             os = socketSr.getOutputStream();
             is = socketSr.getInputStream();
 
@@ -98,8 +97,6 @@ public class Client {
         private ObjectOutputStream oos;
         private ObjectInputStream ois;
 
-        private boolean clientConnected;
-
         public ConnectToServer(Socket socketServer) throws IOException {
             this.socketServer = socketServer;
             this.is = socketServer.getInputStream();
@@ -110,7 +107,6 @@ public class Client {
 
         @Override
         public void run() {
-            /*BufferedReader bufferedReaderIn = new BufferedReader(new InputStreamReader(is));*/
             ObjectOutputStream oos = null;
             try {
                 oos = new ObjectOutputStream(os);
@@ -163,8 +159,7 @@ public class Client {
                                 requestResult.set(result);
                             }
                         } catch (IOException | ClassNotFoundException e) {
-                            // Trate as exceções aqui, se necessário
-                            e.printStackTrace(); // ou qualquer outra lógica de tratamento desejada
+                            e.printStackTrace();
                         }
 
                         hasNewRequest.set(false);

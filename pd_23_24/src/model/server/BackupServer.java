@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 class MulticastHandler extends Thread { //thread to receive the hearbeat with the info (HEARTBEAT RECEIVER)
     public static final int MAX_SIZE = 1000;
     private MulticastSocket mcastSocket;
-    private boolean isRunning;
+    private AtomicReference<Boolean> isRunning;
 
     private RemoteServiceInterface remoteService;
 
@@ -25,13 +25,13 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
 
     private HeartBeat hb;
 
-    public MulticastHandler(MulticastSocket mcastSocket) {
+    public MulticastHandler(MulticastSocket mcastSocket, AtomicReference<Boolean> isRunning) {
         this.mcastSocket = mcastSocket;
-        this.isRunning = true;
+        this.isRunning = isRunning;
     }
 
     public void terminate() {
-        isRunning = false;
+        isRunning.set(false);
     }
 
     public void setParams(RemoteServiceInterface remoteService, String dbDirectory) {
@@ -47,12 +47,12 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
         HeartBeat hb;
         DatagramPacket pkt;
 
-        if (mcastSocket == null || !isRunning) {
+        if (mcastSocket == null || !isRunning.get()) {
             return;
         }
 
         try{
-            while (isRunning) {
+            while (isRunning.get()) {
 
                 pkt = new DatagramPacket(new byte[MAX_SIZE], MAX_SIZE);
                 mcastSocket.receive(pkt);
@@ -74,7 +74,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                                 remoteService.makeBackUpDBChanges(dbDirectory, hb.getQuery());
                             }
 
-                            if(hb.getDbVersion() != remoteService.getCurrentDBVersion(dbDirectory)) {
+                            if(hb.getDbVersion() + 1 != remoteService.getCurrentDBVersion(dbDirectory)) {
                                 throw new Exception("Backup DB and Server DB have different versions");
                             }
                         }
@@ -94,7 +94,7 @@ class MulticastHandler extends Thread { //thread to receive the hearbeat with th
                     System.out.println();
                     System.out.println("Excepcao: " + e);
                     terminate();
-                    //System.exit(0);
+                    return;
                 }
             }
 
@@ -111,6 +111,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     private InetAddress groupIp;
     private SocketAddress socketAddr;
     MulticastHandler mHandler; //thread
+    private AtomicReference<Boolean> isRunning;
 
     private static final String ID_FILE_PATH = "src/resources/files/backup_server_id.txt"; // ficheiro de texto serve apenas para guardar e puxar os ids dos sv backup
 
@@ -131,6 +132,7 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
     public BackupServer() throws IOException {
         this.id = ++idS;
+        this.isRunning = new AtomicReference<>(true);
 
         // Atualiza o arquivo com o novo ID
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ID_FILE_PATH))) { // escreve-se para o ficheiro o novo Id
@@ -139,13 +141,12 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             e.printStackTrace();
         }
 
-        //System.setProperty("java.net.preferIPv4Stack", "true");
         this.mcastSocket = new MulticastSocket(Integer.parseInt(MULTICAST.getValue(1)));
         this.groupIp = InetAddress.getByName(MULTICAST.getValue(0));
         this.socketAddr = new InetSocketAddress(groupIp, Integer.parseInt( MULTICAST.getValue(1)));
         this.networkInterface = NetworkInterface.getByIndex(0);
         this.mcastSocket.joinGroup(socketAddr, networkInterface); // creates group for object comms
-        this.mHandler = new MulticastHandler(mcastSocket);
+        this.mHandler = new MulticastHandler(mcastSocket, isRunning);
         mHandler.start();
     }
 
@@ -167,14 +168,13 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             System.out.println("Serviço BackupServer criado e em execução...\n");
 
-            //args seguintes sao mandados pelo heartbeat
-            //String objectUrl = "rmi://localhost/TP-PD-2324";
-
             while(backupServer.getMHandler().getHeartBeat() == null){ //este while serve para enquanto nao receber o primeiro hearbeat nao dar erro
 
             }
 
             RemoteServiceInterface getRemoteService = (RemoteServiceInterface) Naming.lookup(backupServer.getMHandler().getHeartBeat().getRMIServiceName());
+
+            getRemoteService.addBackupServiceObserver(backupServer);
 
             byte[] databaseCopy = getRemoteService.getDatabaseCopy();
 
@@ -188,21 +188,17 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
 
             dbDirectory = result;
 
-            getRemoteService.addBackupServiceObserver(backupServer);
-
             backupServer.getMHandler().setParams(getRemoteService, dbDirectory);
 
+            System.out.println(backupServer.getIsRunning().get());
 
-            //System.out.println("A espera para terminar...\n");
-
-            //System.out.println();
-
-            //System.in.read();
-
-            //getRemoteFileService.removeBackupServiceObserver(backupServer);
-
-            // terminar o serviço
-            //UnicastRemoteObject.unexportObject(backupServer, true);
+            while(true){
+                if(!backupServer.getIsRunning().get()){
+                    getRemoteService.removeBackupServiceObserver(backupServer);
+                    UnicastRemoteObject.unexportObject(backupServer, true);
+                    return;
+                }
+            }
 
         } catch (RemoteException e) {
             throw new RuntimeException(e);
@@ -232,22 +228,6 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
             return "Error";
         }
 
-        //File backupFile = new File(directory + "backupDirectory" + id + "/" + filename + "-" + id + ".db");
-
-        // Criar o caminho completo para o diretório de backup
-        /*String backupDirectoryPath = directory + id + "/";
-
-        // Criar o objeto File para representar o diretório de backup
-        File backupDirectory = new File(backupDirectoryPath);
-
-        if (!backupDirectory.exists()) {
-            boolean created = backupDirectory.mkdir();
-            if (!created) {
-                System.out.println("Não foi possível criar o diretório de backup.");
-                return false;
-            }
-        }*/
-
         // Criar o caminho completo para o arquivo de backup
         String backupFilePath = fileDirectory + "/" + filename + "-" + id + ".db";
 
@@ -266,6 +246,11 @@ public class BackupServer extends UnicastRemoteObject implements BackupServerRem
     public MulticastHandler getMHandler() {
         return mHandler;
     }
+
+    public AtomicReference<Boolean> getIsRunning() {
+        return isRunning;
+    }
+
 }
 
 
