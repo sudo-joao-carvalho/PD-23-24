@@ -12,8 +12,8 @@ public class ResourceManager {
         this.dbManager = new DBManager();
     }
 
-    public boolean connectToDB(String DBDirectory, int port){
-        return this.dbManager.connectToDB(DBDirectory, port);
+    public boolean connectToDB(String DBDirectory){
+        return this.dbManager.connectToDB(DBDirectory);
     }
 
     /*public String listUsers(Integer userId) throws SQLException {
@@ -46,7 +46,51 @@ public class ResourceManager {
         return this.dbManager.editEventData(eventId, params);
     }
 
+<<<<<<< Updated upstream
     // funções de BD (add, remove, consulta)
 
     // aqui só puxa do DBManager, só chama basicamente
+=======
+    public int addCodeToEvent(Integer eventId, Integer codeExpirationTime) {
+        return this.dbManager.addCodeToEvent(eventId, codeExpirationTime);
+    }
+
+    public String listPresencasFromUserEmail(String userEmail){
+        return this.dbManager.listPresencasFromUserEmail(userEmail);
+    }
+
+    public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException{
+        return this.dbManager.deleteUserFromEvent(params);
+    }
+
+    public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.dbManager.checkEventCodeAndInsertUser(eventCode, userID);}
+
+    public boolean getCSV(int userId) {
+        return this.dbManager.getCSV(userId);
+    }
+
+    public int getDBVersion(){return this.dbManager.getDBVersion();}
+
+    public boolean getCSVAdmin(int eventId) {
+        return this.dbManager.getCSVAdmin(eventId);
+    }
+
+    public boolean getCSVAdminListUserAttendanceByEmail(String email) {
+        return this.dbManager.getCSVAdminListUserAttendanceByEmail(email);
+    }
+
+    public String checkCreatedEvents(String pesquisa) {
+        return this.dbManager.checkCreatedEvents(pesquisa);
+    }
+
+    public String checkAllRegisteredPresences(int eventId){
+        return this.dbManager.checkAllRegisteredPresences(eventId);
+    }
+
+    public boolean removeUsersOnEventEnd(){
+        return this.dbManager.removeUsersOnEventEnd();
+    }
+
+    public String getExecutedQuery(){return this.dbManager.getExecutedQuery();}
+>>>>>>> Stashed changes
 }

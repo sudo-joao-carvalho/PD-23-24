@@ -16,14 +16,37 @@ public class DBHelper implements Serializable {
     private AtomicReference<String> requestResult;
     private boolean logout;
     private String email;
+<<<<<<< Updated upstream
     private Integer idPresenca;
 
     private boolean isRequestAlreadyProcessed;
+=======
+    private Integer idEvento;
+    private int eventCode;
+    private int codeExpirationTime;
+    private ArrayList<String> verifyEmail;
+    private boolean isRequestAlreadyProcessed;
+    private boolean isAdmin;
+    private boolean getCSV;
+
+    private String searchFilter;
+>>>>>>> Stashed changes
 
 
     public DBHelper(){
         this.requestResult = new AtomicReference<>("");
         this.isRequestAlreadyProcessed = false;
+<<<<<<< Updated upstream
+=======
+
+        this.isAdmin = false;
+        this.column = "";
+        this.getCSV = false;
+        this.email = "";
+        this.searchFilter = "";
+
+        this.idEvento = -1;
+>>>>>>> Stashed changes
     }
 
 
@@ -88,4 +111,55 @@ public class DBHelper implements Serializable {
     public void setRequestResult(String requestResult) {
         this.requestResult.set(requestResult);
     }
+<<<<<<< Updated upstream
+=======
+
+    public String getColumn() {
+        return column;
+    }
+
+    public void setColumn(String column) {
+        this.column = column;
+    }
+
+    public boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public int getEventCode() {
+        return eventCode;
+    }
+
+    public void setEventCode(int eventCode) {
+        this.eventCode = eventCode;
+    }
+
+    public int getCodeExpirationTime() {
+        return codeExpirationTime;
+    }
+
+    public void setCodeExpirationTime(int codeExpirationTime) {
+        this.codeExpirationTime = codeExpirationTime;
+    }
+
+    public boolean isGetCSV() {
+        return getCSV;
+    }
+
+    public void setGetCSV(boolean getCSV) {
+        this.getCSV = getCSV;
+    }
+
+    public String getSearchFilter() {
+        return searchFilter;
+    }
+
+    public void setSearchFilter(String searchFilter) {
+        this.searchFilter = searchFilter;
+    }
+>>>>>>> Stashed changes
 }

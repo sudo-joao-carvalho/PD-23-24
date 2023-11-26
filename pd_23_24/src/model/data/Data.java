@@ -10,12 +10,13 @@ public class Data {
 
     private ResourceManager resourceManager;
 
-    public Data(ResourceManager resourceManager) {
-        this.resourceManager = resourceManager;
+    public Data(/*ResourceManager resourceManager*/) throws SQLException {
+        //this.resourceManager = resourceManager;
+        this.resourceManager = new ResourceManager();
     }
 
-    public boolean connectToDB(String DBDirectory, int port){
-        return this.resourceManager.connectToDB(DBDirectory, port);
+    public boolean connectToDB(String DBDirectory){
+        return this.resourceManager.connectToDB(DBDirectory);
     }
 
     /*public int getVersion() {
@@ -47,4 +48,51 @@ public class Data {
     public boolean deleteEvent(int eventId) throws SQLException {
         return this.resourceManager.deleteEvent(eventId);
     }
+<<<<<<< Updated upstream
+=======
+
+    public int addCodeToEvent(Integer eventId, Integer codeExpirationTime) {
+        return this.resourceManager.addCodeToEvent(eventId, codeExpirationTime);
+    }
+
+    public String listPresencasFromUserEmail(String userEmail){
+        return this.resourceManager.listPresencasFromUserEmail(userEmail);
+    }
+
+    public boolean deleteUserFromEvent(ArrayList<String> params) throws SQLException {
+        return this.resourceManager.deleteUserFromEvent(params);
+    }
+
+    public boolean checkEventCodeAndInsertUser(int eventCode, int userID){return this.resourceManager.checkEventCodeAndInsertUser(eventCode, userID);}
+
+    public boolean getCSV(int userId) {
+        return this.resourceManager.getCSV(userId);
+    }
+
+    public int getDBVersion() {
+        return this.resourceManager.getDBVersion();
+    }
+
+    public boolean getCSVAdmin(int eventId) {
+        return this.resourceManager.getCSVAdmin(eventId);
+    }
+
+    public boolean getCSVAdminListUserAttendanceByEmail(String email) {
+        return this.resourceManager.getCSVAdminListUserAttendanceByEmail(email);
+    }
+
+    public String checkCreatedEvents(String pesquisa) {
+        return this.resourceManager.checkCreatedEvents(pesquisa);
+    }
+
+    public String checkAllRegisteredPresences(int eventId) {
+        return this.resourceManager.checkAllRegisteredPresences(eventId);
+    }
+
+    public boolean removeUsersOnEventEnd(){
+        return this.resourceManager.removeUsersOnEventEnd();
+    }
+
+    public String getExecutedQuery(){return this.resourceManager.getExecutedQuery();}
+>>>>>>> Stashed changes
 }
