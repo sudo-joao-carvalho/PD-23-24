@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,6 +49,7 @@ public class Application {
 		}
 
 		@Bean
+		@Order(1)
 		public SecurityFilterChain loginFilterChain(HttpSecurity http) throws Exception {
 			return http
 				.csrf(csrf -> csrf.disable())
@@ -58,25 +60,25 @@ public class Application {
 				.build();
 		}
 
-		/*@Bean
+		@Bean
 		public SecurityFilterChain unauthenticatedFilterChain(HttpSecurity http) throws Exception {
 			return http
 				.csrf(csrf -> csrf.disable())
-				.securityMatcher("/Evento", "/Evento/**", "/swagger-ui/**", "/v3/**")
+				.securityMatcher("/event", "/event/**", "/swagger-ui/**", "/v3/**", "/utilizador", "utilizador/**", "register/")
 				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.build();
-		}*/
+		}
 
-		@Bean
+		/*@Bean
 		public SecurityFilterChain genericFilterChain(HttpSecurity http) throws Exception {
 			return http
 				.csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(auth -> auth.requestMatchers("Evento/**", "Presenca/**", "Utilizador/**").permitAll().anyRequest().authenticated())
+				.authorizeHttpRequests(auth -> auth.requestMatchers("event/**", "presenca/**", "utilizador/**").authenticated())
 				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.build();
-		}
+		}*/
 
 	}
 

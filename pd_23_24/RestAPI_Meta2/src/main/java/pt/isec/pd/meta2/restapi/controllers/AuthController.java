@@ -1,4 +1,4 @@
-package pt.isec.pd.meta2.restapi.controllers;
+/*package pt.isec.pd.meta2.restapi.controllers;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,9 +15,5 @@ public class AuthController
         this.tokenService = tokenService;
     }
 
-    @PostMapping("/login")
-    public String login(Authentication authentication)
-    {
-        return tokenService.generateToken(authentication);
-    }
-}
+
+}*/

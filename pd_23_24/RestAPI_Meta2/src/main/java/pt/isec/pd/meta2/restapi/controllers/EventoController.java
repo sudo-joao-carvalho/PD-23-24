@@ -3,13 +3,13 @@ package pt.isec.pd.meta2.restapi.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pt.isec.pd.meta2.restapi.models.DBManager;
+import pt.isec.pd.meta2.restapi.database.DBManager;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 @RestController
-@RequestMapping("Evento")
+@RequestMapping("event")
 public class EventoController {
     private final DBManager dbManager;
 
@@ -23,13 +23,13 @@ public class EventoController {
         return "Bem-vindo à API Rest do Trabalho de Programação Distribuída 2023/2024! Está nos Eventos.";
     }
 
-    @GetMapping("/searchEvento")
+    @GetMapping("/search")
     public ResponseEntity<String> getCreatedEventsFiltered(@RequestParam(required = false) String pesquisa) {
         DBManager dbManager = new DBManager();
         return ResponseEntity.ok().body("Resultado: \n" + dbManager.checkCreatedEvents(pesquisa));
     }
 
-    @PostMapping("/createEvento")
+    @PostMapping("/create")
     public ResponseEntity<String> createEvento(String local, String nome, String data, String horaInicio, String horaFim) {
         DBManager dbManager = new DBManager();
         ArrayList<String> paramsToInsert = new ArrayList<>();
@@ -45,15 +45,15 @@ public class EventoController {
     }
 
     // mudar se isto não der para não ter o id no url
-    @DeleteMapping("/deleteEvento/{eventId}")
-    public ResponseEntity<String> deleteEvent(@PathVariable(value = "eventId") int eventId) throws SQLException {
+    @DeleteMapping("/delete/{eventId}")
+    public ResponseEntity<String> deleteEvent(@PathVariable(value = "eventId") int eventId) {
         if (dbManager.deleteEvent(eventId)) {
             return ResponseEntity.ok().body("Evento eliminado com sucesso.\n");
         }
         return ResponseEntity.badRequest().body("Evento não pode ser eliminado.\n");
     }
 
-    @PutMapping("/addCodeEvento/")
+    @PutMapping("/code")
     public ResponseEntity<String> addCodeToEvent(int eventId, int codeExpirationTime) {
         if (dbManager.addCodeToEvent(eventId, codeExpirationTime) == 0 || dbManager.addCodeToEvent(eventId, codeExpirationTime) == -2) {
             return ResponseEntity.badRequest().body("Não foi possível adicionar código ao evento " + eventId);
@@ -70,4 +70,6 @@ public class EventoController {
 
         return ResponseEntity.badRequest().body("Não foi possível registá-lo no evento. O código está errado/evento não existe.");
     }
+
+
 }

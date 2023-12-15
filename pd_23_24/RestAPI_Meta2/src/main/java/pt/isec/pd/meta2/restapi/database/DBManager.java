@@ -1,9 +1,6 @@
-package pt.isec.pd.meta2.restapi.models;
+package pt.isec.pd.meta2.restapi.database;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.sql.*;
@@ -207,7 +204,7 @@ public class DBManager {
 
         String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
                 userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +
-                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i++) + "')";
+                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i) + "')";
 
         try{
             statement.executeUpdate(sqlQuery);
@@ -272,7 +269,7 @@ public class DBManager {
             }
         }
 
-        return new int[]{idRegisto, isAdmin};
+        return new int[] {idRegisto, isAdmin};
     }
 
     public String listPresencas(Integer idEvento, Integer idClient) {
@@ -1115,6 +1112,32 @@ public class DBManager {
         }
 
         return "";
+    }
+
+    public boolean isUserAdmin(String email) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Admin FROM Utilizador WHERE lower(email) LIKE lower('" + email + "')";
+
+            int isAdmin = statement.executeQuery(sqlQuery).getInt("Admin");
+
+            return isAdmin == 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean getCSVAdminListUserAttendanceByEmail(String email) {
