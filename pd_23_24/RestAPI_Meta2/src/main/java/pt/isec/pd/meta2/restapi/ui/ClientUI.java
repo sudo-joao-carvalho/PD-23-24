@@ -7,6 +7,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import pt.isec.pd.meta2.restapi.consumer.Consumer;
 import pt.isec.pd.meta2.restapi.models.Evento;
+import pt.isec.pd.meta2.restapi.models.Utilizador;
 import pt.isec.pd.meta2.restapi.utils.InputProtection;
 import com.google.gson.Gson;
 
@@ -18,6 +19,8 @@ public class ClientUI {
     private String email;
 
     private String password;
+
+    private String token;
 
     public boolean loginRegister() throws IOException {
         int option = InputProtection.chooseOption("Choose a menu: " , "Login","Register","Exit");
@@ -55,6 +58,8 @@ public class ClientUI {
             return false;
         }
 
+        this.token = token;
+
         return true;
     }
 
@@ -64,9 +69,23 @@ public class ClientUI {
         int nif = InputProtection.readInt("\tNIF: ");
         String password = InputProtection.readString("\tPassword: ", true);
 
+        Utilizador newUser = new Utilizador();
+
+        newUser.setAdmin(0);
+
+        newUser.setEmail(email);
+
+        newUser.setPassword(password);
+
+        newUser.setNif(nif);
+
+        newUser.setNome(nome);
+
         String registerUri = "http://localhost:8080/register";
 
-        String requestBody = String.format("{\"nome\":\"%s\",\"email\":\"%s\",\"nif\":%d,\"password\":\"%s\"}", nome, email, nif, password);
+        Gson gson = new Gson();
+
+        String requestBody = gson.toJson(newUser);
 
         String response = Consumer.sendRequestAndShowResponse(registerUri, "POST", null, requestBody);
 
@@ -99,9 +118,7 @@ public class ClientUI {
 
         String submitEventCodeUri = "http://localhost:8080/submit?userId=" + userId + "&eventCode=" + eventCode;
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "PUT", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "PUT", "bearer " + this.token, null);
 
         if (response != null) {
             if (response.contains("Código inserido com sucesso")) {
@@ -122,9 +139,7 @@ public class ClientUI {
     public void isAdmin() throws IOException{
         String isAdminUri = "http://localhost:8080/isAdmin";
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-        String response = Consumer.sendRequestAndShowResponse(isAdminUri, "GET", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(isAdminUri, "GET", "bearer " + this.token, null);
 
         System.out.println(response);
     }
@@ -134,7 +149,7 @@ public class ClientUI {
 
         String credentials = Base64.getEncoder().encodeToString((this.email + ":" + this.password).getBytes());
 
-        String response = Consumer.sendRequestAndShowResponse(listPresencasUri, "GET", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(listPresencasUri, "GET", "bearer " + this.token, null);
 
         System.out.println(response);
     }
@@ -195,7 +210,7 @@ public class ClientUI {
 
         String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
 
-        String response = Consumer.sendRequestAndShowResponse(createEventUri, "POST", "basic " + credentials, requestBody);
+        String response = Consumer.sendRequestAndShowResponse(createEventUri, "POST", "bearer " + this.token, requestBody);
 
         if (response != null && response.contains("Evento criado com sucesso")) {
             System.out.println("Evento criado com sucesso!");
@@ -214,36 +229,29 @@ public class ClientUI {
 
         String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
 
-        String response = Consumer.sendRequestAndShowResponse(deleteEventUri, "POST", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(deleteEventUri, "DELETE", "bearer " + this.token, null);
 
         System.out.println(response);
     }
 
-    public boolean checkCreatedEvents() throws IOException {
+    public void checkCreatedEvents() throws IOException {
         String searchFilter = InputProtection.readString("Search: ", false);
 
         if (searchFilter != null) {
             String searchEventsAdminUri = "http://localhost:8080/event/admin/search?pesquisa=" + searchFilter;
 
-            String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-            String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "basic " + credentials, null);
+            String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
 
             System.out.println(response);
-
-            return true;
-
         }
+        else
+        {
+            String searchEventsAdminUri = "http://localhost:8080/event/admin/search/";
 
-        String searchEventsAdminUri = "http://localhost:8080/event/admin/search/";
+            String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-        String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "basic " + credentials, null);
-
-        System.out.println(response);
-
-        return false;
+            System.out.println(response);
+        }
     }
 
     private void generateEventCode() throws IOException {
@@ -254,23 +262,18 @@ public class ClientUI {
 
         String generateEventCodeUri = "http://localhost:8080/admin/code?eventId=" + idEvento + "&codeExpirationTime=" + codeExpirationTime;
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-        String response = Consumer.sendRequestAndShowResponse(generateEventCodeUri, "PUT", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(generateEventCodeUri, "PUT", "bearer " + this.token, null);
 
         System.out.println(response);
     }
 
     public void checkAllPresencasInEvent() throws IOException {
+
         int eventId = InputProtection.readInt("Id Evento: ");
 
         String checkAllPresencasInEventUri = "http://localhost:8080/event/admin/presences/" + eventId;
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
-        System.out.println(credentials);
-
-        String response = Consumer.sendRequestAndShowResponse(checkAllPresencasInEventUri, "GET", "basic " + credentials, null);
+        String response = Consumer.sendRequestAndShowResponse(checkAllPresencasInEventUri, "GET", "bearer " + this.token, null);
 
         System.out.println(response);
     }
@@ -298,7 +301,7 @@ public class ClientUI {
                     checkAllPresencasInEvent();
                 }
                 case 6 -> {
-                    return;
+                    System.exit(400);
                 }
                 default -> {
                     System.out.println("Input inválido!");

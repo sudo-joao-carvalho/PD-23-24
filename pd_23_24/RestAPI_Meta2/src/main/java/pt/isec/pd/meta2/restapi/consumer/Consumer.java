@@ -47,27 +47,8 @@ public class Consumer {
 
         connection.disconnect();
 
-        System.out.println(verb + " " + uri + (body==null?"":" with body: "+body) + " ==> " + responseBody);
-        System.out.println();
+        System.out.println("Recebido: " + verb + " " + uri + (body==null?"":" com corpo: "+ body));
 
         return responseBody;
-    }
-
-
-
-    public static void main(String args[]) throws MalformedURLException, IOException {
-
-        String loginUri = "http://localhost:8080/login";
-
-        System.out.println();
-
-        //OK
-        String credentials = Base64.getEncoder().encodeToString("admin:admin".getBytes());
-
-        String token = sendRequestAndShowResponse(loginUri, "POST","basic " + credentials, null); //Base64(admin:admin) YWRtaW46YWRtaW4=
-
-        //POST sem corpo de mensagem
-        sendRequestAndShowResponse(loginUri, "POST", "bearer " + token, null);
-
     }
 }
