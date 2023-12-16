@@ -124,6 +124,7 @@ public class EventoController {
     @PutMapping("/submit")
     public ResponseEntity<String> submitEventCode(@RequestParam int userId, @RequestParam int eventCode) {
         boolean success = dbManager.checkEventCodeAndInsertUser(eventCode, userId);
+
         if (success) {
             return ResponseEntity.ok("Código inserido com sucesso. Está com a presença registada neste evento.\n");
         }

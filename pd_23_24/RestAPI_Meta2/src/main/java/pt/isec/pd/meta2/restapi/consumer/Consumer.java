@@ -30,11 +30,12 @@ public class Consumer {
         connection.connect();
 
         int responseCode = connection.getResponseCode();
-        System.out.println("Response code: " +  responseCode + " (" + connection.getResponseMessage() + ")");
+
+        //System.out.println("Response code: " +  responseCode + " (" + connection.getResponseMessage() + ")");
 
         Scanner s;
 
-        if(connection.getErrorStream()!=null) {
+        if(connection.getErrorStream() != null) {
             s = new Scanner(connection.getErrorStream()).useDelimiter("\\A");
             responseBody = s.hasNext() ? s.next() : null;
         }
@@ -51,6 +52,8 @@ public class Consumer {
 
         return responseBody;
     }
+
+
 
     public static void main(String args[]) throws MalformedURLException, IOException {
 

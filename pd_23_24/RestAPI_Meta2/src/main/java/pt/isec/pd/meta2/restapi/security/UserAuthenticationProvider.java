@@ -40,7 +40,6 @@ public class UserAuthenticationProvider implements AuthenticationProvider
         int[] returnValue = dbManager.verifyLogin(loginParams);
 
         if (returnValue == null) { // se ele devolve null, user não existe.
-            System.out.println("estou aqui");
             return null;
         }
         // se ele não devolve null, user existe, prosseguir:

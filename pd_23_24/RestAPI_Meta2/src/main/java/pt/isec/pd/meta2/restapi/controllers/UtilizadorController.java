@@ -49,7 +49,9 @@ public class UtilizadorController {
             return ResponseEntity.badRequest().header("RegistarUtilizador", "Não foi possível registar o utilizador.").body("Utilizador não inserido. Já existe um com esse email.\n");
         }
 
-        return ResponseEntity.ok().body("Utilizador registado com sucesso!\n");
+        utilizador.setId(returnValue);
+
+        return ResponseEntity.ok().body("Utilizador " + utilizador.getId() + " registado com sucesso!");
     }
 
     @GetMapping("/isAdmin")
