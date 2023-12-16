@@ -168,81 +168,66 @@ public class DBManager {
         }
     }
 
-    public int insertUser(ArrayList<String> userParameters){
-
+    public int insertUser(ArrayList<String> userParameters) {
         Statement statement = null;
-        try{
-            statement = conn.createStatement();
-        }catch (SQLException e){
-            return 0;
-        }
-
-
-        boolean existeRegisto = false;
         int idRegisto = 0;
 
-        // Verificar se há algum com nome ou utilizador igual
-        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') AND lower(password) = lower('" + userParameters.get(3) + "')";
         try {
-            ResultSet resultSet = statement.executeQuery(verificar);
+            statement = conn.createStatement();
 
-            // Se houver algum registo no ResultSe"t, definimos existeRegistro como true
-            existeRegisto = resultSet.next();
+            boolean existeRegisto = false;
 
+            String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') AND lower(password) = lower('" + userParameters.get(3) + "')";
+            try {
+                ResultSet resultSet = statement.executeQuery(verificar);
+
+                existeRegisto = resultSet.next();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return 0;
+            }
+
+            if (existeRegisto) {
+                return 0;
+            }
+
+            int i = 0;
+
+            String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
+                    userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +
+                    userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i) + "')";
+
+            try {
+                statement.executeUpdate(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    idRegisto = generatedKeys.getInt(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return 0;
+            }
+
+            updateDBVersion();
+            this.executedQuery = sqlQuery;
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
         } finally {
             try {
-                statement.close();
+                if (statement != null) {
+                    statement.close();
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-
-        if (existeRegisto) {
-            return 0;
-        }
-
-        int i = 0;
-
-        String sqlQuery = "INSERT INTO utilizador VALUES (NULL, '" + userParameters.get(i++) + "' , '" +
-                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" +
-                userParameters.get(i++) + "' , '" + userParameters.get(i++) + "' , '" + userParameters.get(i) + "')";
-
-        try{
-            statement.executeUpdate(sqlQuery);
-        }catch (SQLException e){
-            e.printStackTrace();
-            return 0;
-        }finally {
-            try{
-                statement.close();
-            }catch (SQLException e){
-                e.printStackTrace();
-            }
-        }
-
-        String getId = "SELECT id FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
-        try {
-            ResultSet resultSet = statement.executeQuery(getId);
-
-            idRegisto = resultSet.getInt("id");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        updateDBVersion();
-        this.executedQuery = sqlQuery;
         return idRegisto;
     }
+
+
 
     public int[] verifyLogin(ArrayList<String> params){
 

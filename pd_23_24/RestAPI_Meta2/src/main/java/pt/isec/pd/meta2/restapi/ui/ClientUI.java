@@ -61,13 +61,11 @@ public class ClientUI {
         String response = Consumer.sendRequestAndShowResponse(registerUri, "POST", null, requestBody);
 
         if (response != null) {
-            if (response.contains("Utilizador registado com sucesso!")) {
+            if (response.contains("sucesso!")) {
                 String[] splitString = response.split("\\s+"); // dá split por " " (espaço em branco)
 
                 this.currentUserId = Integer.parseInt(splitString[1]); // dá assign ao id do utilizador atual na segunda string (pq o return é "Utilizador %d registado com sucesso) segunda parte é o id
-
                 System.out.println("Registo bem-sucedido!");
-                System.out.println(this.currentUserId);
                 return true;
             } else if (response.contains("Não foi possível registar o utilizador")) {
                 System.out.println("Erro no registo. Já existe um utilizador com o mesmo email.");
