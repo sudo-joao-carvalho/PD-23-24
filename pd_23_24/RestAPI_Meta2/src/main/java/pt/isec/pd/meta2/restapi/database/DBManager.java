@@ -128,7 +128,7 @@ public class DBManager {
         return str.toString();
     }
 
-    public boolean insertEvent(ArrayList<String> params) {
+    public boolean insertEvent(ArrayList<String> params) throws SQLException {
         Statement statement;
 
         try {
@@ -139,6 +139,10 @@ public class DBManager {
         }
 
         int i = 0;
+
+        if (params.get(0) == null || params.get(1) == null || params.get(2) == null || params.get(3) == null || params.get(4) == null) {
+            return false;
+        }
 
         String sqlQuery = "INSERT INTO Evento VALUES (NULL, 0, '" +
                 params.get(i++) + "' , '" + params.get(i++) + "' , '" +
@@ -178,7 +182,7 @@ public class DBManager {
         int idRegisto = 0;
 
         // Verificar se há algum com nome ou utilizador igual
-        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') OR lower(password) = lower('" + userParameters.get(3) + "')";
+        String verificar = "SELECT 1 FROM utilizador WHERE lower(email) = lower('" + userParameters.get(1) + "') AND lower(password) = lower('" + userParameters.get(3) + "')";
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
@@ -784,6 +788,8 @@ public class DBManager {
             return 0;
         }
 
+
+
         Random random = new Random();
         int eventCode = random.nextInt(900000) + 100000;
 
@@ -792,6 +798,12 @@ public class DBManager {
         String sqlTimeCheckerData = "SELECT Data FROM Evento WHERE Id=" + eventId;
 
         try {
+            String sqlQueryEventChecker = "SELECT Count(*) FROM Evento WHERE Id='" + eventId + "'";
+
+            if (statement.executeQuery(sqlQueryEventChecker).getInt(1) == 0) {
+                return -3;
+            }
+
             String data = statement.executeQuery(sqlTimeCheckerData).getString("Data");
 
             LocalDate todayDate = LocalDate.now();
@@ -826,8 +838,6 @@ public class DBManager {
         String sqlQuery = "UPDATE evento SET codigo = '" + eventCode + "', codeExpireTime = '" + localTimeFormatado + "' WHERE id = " + eventId;
 
         try {
-
-
             int rowsAffected = statement.executeUpdate(sqlQuery);
 
             if (rowsAffected == 0) {
@@ -1138,6 +1148,73 @@ public class DBManager {
                 e.printStackTrace();
             }
         }
+    }
+
+    public String listAllUserPresencas(int userId, String pesquisa) {
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+
+            String userQuery = "SELECT Nome, NIF, Email FROM Utilizador WHERE Id='" + userId + "'";
+            ResultSet userResult = statement.executeQuery(userQuery);
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("NomeCliente,NIF,Email\n");
+
+            sb.append(userResult.getString("Nome"))
+                    .append(",")
+                    .append(userResult.getString("NIF"))
+                    .append(",")
+                    .append(userResult.getString("Email"))
+                    .append("\n\n");
+
+
+            String eventQuery = "SELECT Evento.Nome as nomeEvento, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento evento " +
+                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                    "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                    "WHERE utilizador.Id='" + userId + "'";
+
+            if (pesquisa != null && !pesquisa.isEmpty()) {
+                eventQuery += " AND (Evento.Nome LIKE '%" + pesquisa + "%' OR Evento.Local LIKE '%" + pesquisa +
+                        "%' OR Evento.HoraInicio LIKE '%" + pesquisa + "%' OR Evento.HoraFim LIKE '%" + pesquisa +
+                        "%' OR Evento.Data LIKE '%" + pesquisa + "%)";
+            }
+
+            sb.append("NomeEvento, Local, Data, Hora Inicio\n");
+
+            ResultSet eventResult = statement.executeQuery(eventQuery);
+
+            while (eventResult.next()) {
+                sb
+                        .append(eventResult.getString("NomeEvento"))
+                        .append(",")
+                        .append(eventResult.getString("Local"))
+                        .append(",")
+                        .append(eventResult.getString("Data"))
+                        .append(",")
+                        .append(eventResult.getString("HoraInicio"))
+                        .append("\n");
+            }
+
+            return sb.toString();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return "";
+
     }
 
     public boolean getCSVAdminListUserAttendanceByEmail(String email) {

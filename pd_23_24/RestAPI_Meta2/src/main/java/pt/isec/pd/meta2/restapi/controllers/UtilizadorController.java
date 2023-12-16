@@ -32,7 +32,7 @@ public class UtilizadorController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody Utilizador utilizador) {
         if (utilizador == null) {
-            return ResponseEntity.badRequest().header("Registar Utilizador", "Por favor, insira todos os detalhes.\n").body("Utilizador não inserido.\n");
+            return ResponseEntity.badRequest().header("RegistarUtilizador", "Por favor, insira todos os detalhes.").body("Utilizador não inserido.\n");
         }
 
         ArrayList<String> params = new ArrayList<>();
@@ -46,7 +46,7 @@ public class UtilizadorController {
         int returnValue = dbManager.insertUser(params);
 
         if (returnValue == 0) {
-            return ResponseEntity.badRequest().header("Registar Utilizador", "Não foi possível registar o utilizador. Já existe um com esse nome.\n").body("Utilizador não inserido.\n");
+            return ResponseEntity.badRequest().header("RegistarUtilizador", "Não foi possível registar o utilizador.").body("Utilizador não inserido. Já existe um com esse email.\n");
         }
 
         return ResponseEntity.ok().body("Utilizador registado com sucesso!\n");

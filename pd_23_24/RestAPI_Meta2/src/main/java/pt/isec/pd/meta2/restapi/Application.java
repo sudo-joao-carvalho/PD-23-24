@@ -50,36 +50,37 @@ public class Application {
 
 		@Bean
 		@Order(1)
-		public SecurityFilterChain loginFilterChain(HttpSecurity http) throws Exception {
+		public SecurityFilterChain loginFilterChain(HttpSecurity http) throws Exception
+		{
 			return http
-				.csrf(csrf -> csrf.disable())
-				.securityMatcher("/login")
-				.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-				.httpBasic(Customizer.withDefaults())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.build();
-		}
-
-		@Bean
-		public SecurityFilterChain unauthenticatedFilterChain(HttpSecurity http) throws Exception {
-			return http
-				.csrf(csrf -> csrf.disable())
-				.securityMatcher("/event", "/event/**", "/swagger-ui/**", "/v3/**", "/utilizador", "utilizador/**", "register/")
-				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.build();
+					.csrf(csrf -> csrf.disable())
+					.securityMatcher("/login")
+					.authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+					.httpBasic(Customizer.withDefaults())
+					.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+					.build();
 		}
 
 		/*@Bean
-		public SecurityFilterChain genericFilterChain(HttpSecurity http) throws Exception {
+		public SecurityFilterChain unauthenticatedFilterChain(HttpSecurity http) throws Exception {
 			return http
 				.csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(auth -> auth.requestMatchers("event/**", "presenca/**", "utilizador/**").authenticated())
-				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+				.securityMatcher("/register")
+				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.build();
 		}*/
 
+		@Bean
+		public SecurityFilterChain genericFilterChain(HttpSecurity http) throws Exception
+		{
+			return http
+					.csrf(csrf -> csrf.disable())
+					.authorizeHttpRequests(auth -> auth.requestMatchers("/register").permitAll().anyRequest().authenticated())
+					.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+					.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+					.build();
+		}
 	}
 
 	@Bean

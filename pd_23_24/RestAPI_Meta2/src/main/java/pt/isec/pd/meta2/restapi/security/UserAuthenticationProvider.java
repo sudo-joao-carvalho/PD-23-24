@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import pt.isec.pd.meta2.restapi.database.DBManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -39,19 +40,23 @@ public class UserAuthenticationProvider implements AuthenticationProvider
         int[] returnValue = dbManager.verifyLogin(loginParams);
 
         if (returnValue == null) { // se ele devolve null, user não existe.
+            System.out.println("estou aqui");
             return null;
         }
         // se ele não devolve null, user existe, prosseguir:
 
+        System.out.println(Arrays.toString(returnValue));
+
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         if (returnValue[1] == 1) { // significa que é admin
-            authorities.add(new SimpleGrantedAuthority("ADMIN"));
+            authorities.add(new SimpleGrantedAuthority("Admin"));
         }
 
         else {
-            authorities.add(new SimpleGrantedAuthority("USER"));
+            authorities.add(new SimpleGrantedAuthority("User"));
         }
+
         return new UsernamePasswordAuthenticationToken(email, password, authorities);
     }
 
