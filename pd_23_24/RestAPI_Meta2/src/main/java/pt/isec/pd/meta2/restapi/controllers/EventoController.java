@@ -28,9 +28,16 @@ public class EventoController {
         return "Bem-vindo à API Rest do Trabalho de Programação Distribuída 2023/2024! Está nos Eventos.";
     }
 
-    @GetMapping("/search")
+    @GetMapping("/admin/search")
     public ResponseEntity<String> getCreatedEventsFiltered(@RequestParam(required = false) String pesquisa) {
-        DBManager dbManager = new DBManager();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean admin = auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("SCOPE_Admin"));
+
+        if (!admin) {
+            return ResponseEntity.badRequest().header("AdminAuth", "Tem de ser admin para realizar o pedido de consulta de eventos criados").body("Pedido não realizado. Por favor, dê login como admin.");
+        }
+
         return ResponseEntity.ok().body("Resultado: \n" + dbManager.checkCreatedEvents(pesquisa));
     }
 
@@ -44,12 +51,10 @@ public class EventoController {
             return ResponseEntity.badRequest().header("AdminAuth", "Tem de ser admin para realizar o pedido de criar evento").body("Pedido não realizado. Por favor, dê login como admin.");
         }
 
-
         if (evento == null) {
             return ResponseEntity.badRequest().header("CreateEvento", "Não foi possível criar").body("Por favor insira todos os detalhes necessários.");
         }
 
-        DBManager dbManager = new DBManager();
         ArrayList<String> paramsToInsert = new ArrayList<>();
         paramsToInsert.add(evento.getLocal());
         paramsToInsert.add(evento.getNome());
@@ -69,7 +74,6 @@ public class EventoController {
         return ResponseEntity.badRequest().body("Evento não pode ser criado. Verifique o que inseriu.\n");
     }
 
-    // mudar se isto não der para não ter o id no url
     @DeleteMapping("/admin/delete/{eventId}")
     public ResponseEntity<String> deleteEvent(@PathVariable(value = "eventId") int eventId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

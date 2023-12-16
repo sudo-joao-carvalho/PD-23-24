@@ -15,14 +15,12 @@ import java.util.ArrayList;
 @RestController
 public class UtilizadorController {
     private final DBManager dbManager;
-
     private final TokenService tokenService;
     @Autowired
     public UtilizadorController(DBManager dbManager, TokenService tokenService) {
         this.dbManager = dbManager;
         this.tokenService = tokenService;
     }
-
     @PostMapping("/login")
     public String login(Authentication authentication)
     {
