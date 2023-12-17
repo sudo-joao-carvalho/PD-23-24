@@ -16,7 +16,7 @@ public class InputProtection {
         sc = new Scanner(System.in);
     }
 
-    public static String readString(String title,boolean onlyOneWord) {
+    public static String readString(String title, boolean onlyOneWord, boolean allowEmpty) {
         String value;
         do {
             if (title != null)
@@ -24,11 +24,13 @@ public class InputProtection {
             else
                 System.out.print("> ");
             value = sc.nextLine().trim();
-        } while (value.isBlank());
+        } while (!allowEmpty && value.isEmpty());
+
         if (onlyOneWord) {
             Scanner auxsc = new Scanner(value);
             value = auxsc.next();
         }
+
         return value;
     }
 

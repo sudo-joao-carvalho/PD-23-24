@@ -414,13 +414,17 @@ public class DBManager {
         return false;
     }
 
-    public boolean checkForUserAttendance(int userId){
+    public boolean checkForUserAttendance(String email){
         Statement statement = null;
 
         try {
             statement = conn.createStatement();
 
             //retirar o id do evento pq falha se o user ja estiver registado quer naquele evento ou em qualquer outro
+
+            String sqlQueryToGetId = "SELECT Id FROM Utilizador WHERE lower(email) LIKE %" + email + "%";
+
+            int userId = statement.executeQuery(sqlQueryToGetId).getInt("Id");
 
             String sqlQuery = "SELECT Id FROM Presenca WHERE IdUtilizador='" + userId + "'";
 
@@ -464,63 +468,62 @@ public class DBManager {
     }
 
 
-    public boolean checkEventCodeAndInsertUser(int eventCode, int userId) {
-
-        Statement statement = null;
+    public boolean checkEventCodeAndInsertUser(int eventCode, String email) {
+        PreparedStatement preparedStatement = null;
 
         try {
-            statement = conn.createStatement();
+            String selectEventQuery = "SELECT Id, HoraFim, CodeExpireTime FROM Evento WHERE Codigo = ?";
+            preparedStatement = conn.prepareStatement(selectEventQuery);
+            preparedStatement.setInt(1, eventCode);
+            ResultSet eventResultSet = preparedStatement.executeQuery();
 
-            String sqlQuery = "SELECT Id, HoraFim FROM Evento WHERE Codigo='" + eventCode + "'";
+            if (eventResultSet.next()) {
+                int eventId = eventResultSet.getInt("Id");
+                String horaFim = eventResultSet.getString("HoraFim");
+                String expireTime = eventResultSet.getString("CodeExpireTime");
 
-            int value = statement.executeQuery(sqlQuery).getInt("Id");
-            String horaFim = statement.executeQuery(sqlQuery).getString("HoraFim");
+                LocalTime dbExpireTime = LocalTime.parse(expireTime, DateTimeFormatter.ofPattern("HH:mm"));
 
-            sqlQuery = "SELECT CodeExpireTime AS expireTime FROM Evento WHERE Codigo='" + eventCode + "'";
-            String expireTime = statement.executeQuery(sqlQuery).getString("expireTime");
+                if (checkForUserAttendance(email) || LocalTime.now().isAfter(dbExpireTime) || !checkIfEventNow(horaFim)) {
+                    return false;
+                }
 
-            LocalTime dbExpireTime = LocalTime.parse(expireTime, DateTimeFormatter.ofPattern("HH:mm"));
+                String selectUserIdQuery = "SELECT Id FROM Utilizador WHERE lower(email) LIKE ?";
+                preparedStatement = conn.prepareStatement(selectUserIdQuery);
+                preparedStatement.setString(1, "%" + email.toLowerCase() + "%");
+                ResultSet userResultSet = preparedStatement.executeQuery();
 
-            if (value == 0) {
-                return false;
+                if (userResultSet.next()) {
+                    int userId = userResultSet.getInt("Id");
+
+                    String insertUserQuery = "INSERT INTO Presenca VALUES (NULL, ?, ?)";
+                    preparedStatement = conn.prepareStatement(insertUserQuery);
+                    preparedStatement.setInt(1, eventId);
+                    preparedStatement.setInt(2, userId);
+
+                    preparedStatement.executeUpdate();
+                    updateDBVersion();
+                    return true;
+                }
             }
-
-            if(checkForUserAttendance(userId)){
-                System.out.println("ja esta num evento nessa hora");
-                return false;
-            }
-
-            if(LocalTime.now().isAfter(dbExpireTime)){
-                System.out.println("codigo expirado");
-                return false;
-            }
-
-            if(!checkIfEventNow(horaFim)){
-                System.out.println("evento nao esta a decorrer");
-                return false;
-            }
-
-            String insertUserQuery = "INSERT INTO Presenca VALUES (NULL, '" + value + "', '" + userId + "')";
-
-            statement.executeUpdate(insertUserQuery);
-
-            updateDBVersion();
-            this.executedQuery = sqlQuery;
-            return true;
-
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            closePreparedStatement(preparedStatement);
         }
         return false;
     }
+
+    private void closePreparedStatement(PreparedStatement preparedStatement) {
+        if (preparedStatement != null) {
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     public boolean insertUserInEvent(ArrayList<String> params) {
         Statement statement = null;
@@ -772,8 +775,6 @@ public class DBManager {
         }catch (SQLException e){
             return 0;
         }
-
-
 
         Random random = new Random();
         int eventCode = random.nextInt(900000) + 100000;
@@ -1058,6 +1059,32 @@ public class DBManager {
         return false;
     }
 
+    public int getUserIdByEmail(String email) throws SQLException{
+        Statement statement = null;
+
+        try {
+            statement = conn.createStatement();
+
+            String sqlQuery = "SELECT Id FROM Utilizador WHERE lower(email) LIKE %" + email + "%";
+
+            int userId = statement.executeQuery(sqlQuery).getInt("Id");
+
+            return userId;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        } finally {
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public String checkCreatedEvents(String pesquisa) {
         Statement statement = null;
 
@@ -1081,7 +1108,12 @@ public class DBManager {
                 return ret.toString();
             }
 
-            String sqlQuery = "SELECT Nome, Local, Data, HoraInicio, HoraFim FROM Evento WHERE lower(Nome) LIKE lower('" + pesquisa + "') OR lower(Local) LIKE lower('" + pesquisa + "') OR lower(Data) LIKE lower('" + pesquisa + "') OR lower(HoraInicio) LIKE lower('" + pesquisa + "') OR lower(HoraFim) LIKE lower('" + pesquisa + "')";
+            String sqlQuery = "SELECT Nome, Local, Data, HoraInicio, HoraFim FROM Evento " +
+                    "WHERE lower(Nome) LIKE lower('%" + pesquisa + "%') " +
+                    "OR lower(Local) LIKE lower('%" + pesquisa + "%') " +
+                    "OR lower(Data) LIKE lower('%" + pesquisa + "%') " +
+                    "OR lower(HoraInicio) LIKE lower('%" + pesquisa + "%') " +
+                    "OR lower(HoraFim) LIKE lower('%" + pesquisa + "%')";
 
             ResultSet rs = statement.executeQuery(sqlQuery);
 
@@ -1135,53 +1167,55 @@ public class DBManager {
         }
     }
 
-    public String listAllUserPresencas(int userId, String pesquisa) {
+    public String listAllUserPresencas(String email, String pesquisa) {
         Statement statement = null;
 
         try {
             statement = conn.createStatement();
 
-
-            String userQuery = "SELECT Nome, NIF, Email FROM Utilizador WHERE Id='" + userId + "'";
+            String userQuery = "SELECT Id, Nome, NIF, Email FROM Utilizador WHERE lower(email) LIKE '%" + email.toLowerCase() + "%'";
             ResultSet userResult = statement.executeQuery(userQuery);
 
             StringBuilder sb = new StringBuilder();
 
-            sb.append("NomeCliente,NIF,Email\n");
+            if (userResult.next()) {
+                sb.append("NomeCliente,NIF,Email\n");
 
-            sb.append(userResult.getString("Nome"))
-                    .append(",")
-                    .append(userResult.getString("NIF"))
-                    .append(",")
-                    .append(userResult.getString("Email"))
-                    .append("\n\n");
-
-
-            String eventQuery = "SELECT Evento.Nome as nomeEvento, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento evento " +
-                    "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
-                    "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
-                    "WHERE utilizador.Id='" + userId + "'";
-
-            if (pesquisa != null && !pesquisa.isEmpty()) {
-                eventQuery += " AND (Evento.Nome LIKE '%" + pesquisa + "%' OR Evento.Local LIKE '%" + pesquisa +
-                        "%' OR Evento.HoraInicio LIKE '%" + pesquisa + "%' OR Evento.HoraFim LIKE '%" + pesquisa +
-                        "%' OR Evento.Data LIKE '%" + pesquisa + "%)";
-            }
-
-            sb.append("NomeEvento, Local, Data, Hora Inicio\n");
-
-            ResultSet eventResult = statement.executeQuery(eventQuery);
-
-            while (eventResult.next()) {
-                sb
-                        .append(eventResult.getString("NomeEvento"))
+                sb.append(userResult.getString("Nome"))
                         .append(",")
-                        .append(eventResult.getString("Local"))
+                        .append(userResult.getString("NIF"))
                         .append(",")
-                        .append(eventResult.getString("Data"))
-                        .append(",")
-                        .append(eventResult.getString("HoraInicio"))
-                        .append("\n");
+                        .append(userResult.getString("Email"))
+                        .append("\n\n");
+
+                int userId = userResult.getInt("Id");
+
+                String eventQuery = "SELECT Evento.Nome as nomeEvento, Evento.Local, Evento.Data, Evento.HoraInicio FROM Evento evento " +
+                        "JOIN Presenca presenca ON evento.Id = presenca.IdEvento " +
+                        "JOIN Utilizador utilizador ON utilizador.Id = presenca.IdUtilizador " +
+                        "WHERE utilizador.Id = " + userId;
+
+                if (pesquisa != null && !pesquisa.isEmpty()) {
+                    eventQuery += " AND (Evento.Nome LIKE '%" + pesquisa + "%' OR Evento.Local LIKE '%" + pesquisa +
+                            "%' OR Evento.HoraInicio LIKE '%" + pesquisa + "%' OR Evento.HoraFim LIKE '%" + pesquisa +
+                            "%' OR Evento.Data LIKE '%" + pesquisa + "%')";
+                }
+
+                sb.append("NomeEvento, Local, Data, Hora Inicio\n");
+
+                ResultSet eventResult = statement.executeQuery(eventQuery);
+
+                while (eventResult.next()) {
+                    sb
+                            .append(eventResult.getString("nomeEvento"))
+                            .append(",")
+                            .append(eventResult.getString("Local"))
+                            .append(",")
+                            .append(eventResult.getString("Data"))
+                            .append(",")
+                            .append(eventResult.getString("HoraInicio"))
+                            .append("\n");
+                }
             }
 
             return sb.toString();
@@ -1199,8 +1233,8 @@ public class DBManager {
         }
 
         return "";
-
     }
+
 
     public boolean getCSVAdminListUserAttendanceByEmail(String email) {
         Statement statement = null;

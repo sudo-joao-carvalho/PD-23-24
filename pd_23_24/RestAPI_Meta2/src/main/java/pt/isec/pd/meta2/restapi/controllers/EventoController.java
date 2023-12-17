@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pt.isec.pd.meta2.restapi.database.DBManager;
 import pt.isec.pd.meta2.restapi.models.Evento;
@@ -125,30 +126,27 @@ public class EventoController {
         return ResponseEntity.ok().body("Código adicionado com sucesso ao evento " + eventId + "\n");
     }
 
-    @PutMapping("/submit")
-    public ResponseEntity<String> submitEventCode(@RequestParam int userId, @RequestParam int eventCode) {
-        boolean success = dbManager.checkEventCodeAndInsertUser(eventCode, userId);
+    @PostMapping("/submit")
+    public ResponseEntity<String> submitEventCode(Authentication authentication, @RequestParam int eventCode) {
+        String subject = authentication.getName();
+
+        boolean success = dbManager.checkEventCodeAndInsertUser(eventCode, subject);
 
         if (success) {
-            return ResponseEntity.ok("Código inserido com sucesso. Está com a presença registada neste evento.\n");
+            return ResponseEntity.ok().body("Código inserido com sucesso. Está com a presença registada neste evento.\n");
         }
-
         return ResponseEntity.badRequest().body("Não foi possível registá-lo no evento. O código está errado/evento não existe.");
     }
 
     @GetMapping("/list")
-    public ResponseEntity<String> listAllUserPresences(@RequestParam Integer userId, @RequestParam String pesquisa) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<String> listAllUserPresences(Authentication authentication, @RequestParam String pesquisa) {
 
-        boolean isUser = auth.getAuthorities().toString().equals("SCOPE_User");
+        String subject = authentication.getName();
 
-        if (!isUser) {
-            return ResponseEntity.badRequest().header("ListPresencas", "Não está autenticado como utilizador.").body("Autentique-se como User para ver as suas presenças");
-        }
-        String response = dbManager.listAllUserPresencas(userId, pesquisa);
+        String response = dbManager.listAllUserPresencas(subject, pesquisa);
 
         if (response.isEmpty()) {
-            return ResponseEntity.badRequest().header("ListPresencas", "Erro ao encontrar presenças").body("Erro ao listar as presenças do utilizador");
+            return ResponseEntity.badRequest().header("ListPresencas", "Erro ao encontrar presenças").body("Erro ao listar as presenças do utilizador. Tem a certeza que está em algum evento?");
         }
 
         return ResponseEntity.ok().body(response);

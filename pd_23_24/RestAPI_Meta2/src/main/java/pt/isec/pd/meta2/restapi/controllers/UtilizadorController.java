@@ -10,6 +10,7 @@ import pt.isec.pd.meta2.restapi.database.DBManager;
 import pt.isec.pd.meta2.restapi.models.Utilizador;
 import pt.isec.pd.meta2.restapi.security.TokenService;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 @RestController
@@ -49,7 +50,7 @@ public class UtilizadorController {
 
         utilizador.setId(returnValue);
 
-        return ResponseEntity.ok().body("Utilizador " + utilizador.getId() + " registado com sucesso!");
+        return ResponseEntity.ok().body("Utilizador registado com sucesso!");
     }
 
     @GetMapping("/isAdmin")

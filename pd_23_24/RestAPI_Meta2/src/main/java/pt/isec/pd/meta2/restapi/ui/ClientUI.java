@@ -13,27 +13,23 @@ import com.google.gson.Gson;
 
 public class ClientUI {
     private boolean isAdmin = false;
-
-    private int currentUserId = 0;
-
     private String email;
-
     private String password;
-
     private String token;
 
     public boolean loginRegister() throws IOException {
-        int option = InputProtection.chooseOption("Choose a menu: " , "Login","Register","Exit");
+        int option = InputProtection.chooseOption("Escolher: " , "Login","Registar","Sair");
 
         switch (option){
             case 1 -> {
                 return login();
             }
             case 2 -> {
-                return register();
+                if (register()) {
+                   return false;
+                }
             }
             default -> System.exit(0);
-
         }
 
         return false;
@@ -41,8 +37,8 @@ public class ClientUI {
 
     public boolean login() throws IOException {
 
-        this.email = InputProtection.readString("\tEmail: ", true);
-        this.password = InputProtection.readString("\tPassword: ", true);
+        this.email = InputProtection.readString("\tEmail: ", true, false);
+        this.password = InputProtection.readString("\tPassword: ", true, false);
 
         String loginUri = "http://localhost:8080/login";
 
@@ -60,40 +56,38 @@ public class ClientUI {
 
         this.token = token;
 
+        //String[] split = token.split("\\s+");
+
+        System.out.println(token);
+
+        //this.currentUserId = Integer.parseInt(split[1]);
+
         return true;
     }
 
     public boolean register() throws IOException {
-        String nome = InputProtection.readString("\tNome: ", false);
-        String email = InputProtection.readString("\tEmail: ", true);
+        String nome = InputProtection.readString("\tNome: ", false, false);
+        String email = InputProtection.readString("\tEmail: ", true, false);
         int nif = InputProtection.readInt("\tNIF: ");
-        String password = InputProtection.readString("\tPassword: ", true);
+        String password = InputProtection.readString("\tPassword: ", true, false);
 
         Utilizador newUser = new Utilizador();
-
         newUser.setAdmin(0);
-
         newUser.setEmail(email);
-
         newUser.setPassword(password);
-
         newUser.setNif(nif);
-
         newUser.setNome(nome);
 
         String registerUri = "http://localhost:8080/register";
 
         Gson gson = new Gson();
-
         String requestBody = gson.toJson(newUser);
 
         String response = Consumer.sendRequestAndShowResponse(registerUri, "POST", null, requestBody);
 
         if (response != null) {
             if (response.contains("sucesso!")) {
-                String[] splitString = response.split("\\s+"); // dá split por " " (espaço em branco)
-
-                this.currentUserId = Integer.parseInt(splitString[1]); // dá assign ao id do utilizador atual na segunda string (pq o return é "Utilizador %d registado com sucesso) segunda parte é o id
+                //this.currentUserId = Integer.parseInt(response.split("\\s+")[1]);
                 System.out.println("Registo bem-sucedido!");
                 this.email = email;
                 this.password = password;
@@ -110,17 +104,19 @@ public class ClientUI {
         return false;
     }
 
-    public boolean submitEventCode() throws IOException {
 
-        int userId = this.currentUserId;
+    public boolean submitEventCode() throws IOException {
 
         int eventCode = InputProtection.readInt("\tInsira o código do evento: ");
 
-        String submitEventCodeUri = "http://localhost:8080/submit?userId=" + userId + "&eventCode=" + eventCode;
+        String submitEventCodeUri = "http://localhost:8080/event/submit?eventCode=" + eventCode;
 
-        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "PUT", "bearer " + this.token, null);
+        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "POST", "bearer " + this.token, null);
 
-        if (response != null) {
+        System.out.println(response);
+
+        return true;
+        /*if (response != null) {
             if (response.contains("Código inserido com sucesso")) {
                 System.out.println("Código inserido com sucesso. Presença registada no evento.");
                 return true;
@@ -131,9 +127,7 @@ public class ClientUI {
             }
         } else {
             System.out.println("Erro de comunicação. Tente novamente mais tarde.");
-        }
-
-        return false;
+        }*/
     }
 
     public void isAdmin() throws IOException{
@@ -144,10 +138,11 @@ public class ClientUI {
         System.out.println(response);
     }
 
-    public void listPresencas() throws IOException {
-        String listPresencasUri = "http://localhost:8080/list";
+    public void listPresencas() throws IOException { // CONSULTAR PRESENÇAS DO USER NÃO ADMIN
 
-        String credentials = Base64.getEncoder().encodeToString((this.email + ":" + this.password).getBytes());
+        String pesquisa = InputProtection.readString("Pesquisa: ", false, true);
+
+        String listPresencasUri = "http://localhost:8080/event/list?pesquisa=" + pesquisa;
 
         String response = Consumer.sendRequestAndShowResponse(listPresencasUri, "GET", "bearer " + this.token, null);
 
@@ -182,15 +177,15 @@ public class ClientUI {
 
     public boolean createEvent() throws IOException {
 
-        String local = InputProtection.readString("\tLocal: ", false);
-        String nome = InputProtection.readString("\tNome: ", false);
-        String dia = InputProtection.readString("\tDia: ", true);
-        String mes = InputProtection.readString("\tMês: ", true);
-        String ano = InputProtection.readString("\tAno: ", true);
-        String horaInicio = InputProtection.readString("Hora início (apenas hora): ", true);
-        String minutoInicio = InputProtection.readString("Minuto da hora início (apenas minutos): ", true);
-        String horaFim = InputProtection.readString("Hora fim (apenas hora): ", true);
-        String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true);
+        String local = InputProtection.readString("\tLocal: ", false, false);
+        String nome = InputProtection.readString("\tNome: ", false, false);
+        String dia = InputProtection.readString("\tDia: ", true, false);
+        String mes = InputProtection.readString("\tMês: ", true, false);
+        String ano = InputProtection.readString("\tAno: ", true, false);
+        String horaInicio = InputProtection.readString("Hora início (apenas hora): ", true, false);
+        String minutoInicio = InputProtection.readString("Minuto da hora início (apenas minutos): ", true, false);
+        String horaFim = InputProtection.readString("Hora fim (apenas hora): ", true, false);
+        String minutoFim = InputProtection.readString("Minuto da hora fim (apenas minutos): ", true, false);
 
         Evento eventoNovo = new Evento();
 
@@ -207,8 +202,6 @@ public class ClientUI {
         System.out.println(requestBody);
 
         String createEventUri = "http://localhost:8080/event/admin/create";
-
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
 
         String response = Consumer.sendRequestAndShowResponse(createEventUri, "POST", "bearer " + this.token, requestBody);
 
@@ -227,17 +220,15 @@ public class ClientUI {
 
         String deleteEventUri = "http://localhost:8080/event/admin/delete/" + idEvento;
 
-        String credentials = Base64.getEncoder().encodeToString((email + ":" + password).getBytes());
-
         String response = Consumer.sendRequestAndShowResponse(deleteEventUri, "DELETE", "bearer " + this.token, null);
 
         System.out.println(response);
     }
 
     public void checkCreatedEvents() throws IOException {
-        String searchFilter = InputProtection.readString("Search: ", false);
+        String searchFilter = InputProtection.readString("Search: ", false, true);
 
-        if (searchFilter != null) {
+        if (searchFilter != null && !searchFilter.trim().isEmpty()) {
             String searchEventsAdminUri = "http://localhost:8080/event/admin/search?pesquisa=" + searchFilter;
 
             String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
@@ -246,7 +237,7 @@ public class ClientUI {
         }
         else
         {
-            String searchEventsAdminUri = "http://localhost:8080/event/admin/search/";
+            String searchEventsAdminUri = "http://localhost:8080/event/admin/search?pesquisa=";
 
             String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
 
@@ -260,14 +251,14 @@ public class ClientUI {
         int codeExpirationTime = InputProtection.readInt("Tempo de validade do codigo (em minutos) : ");
         System.out.println("A inserir codigo de 6 digitos aleatorio na base de dados...");
 
-        String generateEventCodeUri = "http://localhost:8080/admin/code?eventId=" + idEvento + "&codeExpirationTime=" + codeExpirationTime;
+        String generateEventCodeUri = "http://localhost:8080/event/admin/code?eventId=" + idEvento + "&codeExpirationTime=" + codeExpirationTime;
 
         String response = Consumer.sendRequestAndShowResponse(generateEventCodeUri, "PUT", "bearer " + this.token, null);
 
         System.out.println(response);
     }
 
-    public void checkAllPresencasInEvent() throws IOException {
+    public void checkAllPresencasInEvent() throws IOException { // CONSULTAR PRESENÇAS NUM EVENTO ADMIN
 
         int eventId = InputProtection.readInt("Id Evento: ");
 
@@ -282,7 +273,7 @@ public class ClientUI {
         while(true){
             System.out.print("\nMenu de Administrador");
 
-            int input = InputProtection.chooseOption("Escolher acao: ",  "Criar um evento", "Apagar um evento",  "Consultar os eventos criados", "Gerar codigo para evento", "Consultar presencas registadas num evento", "Sair");
+            int input = InputProtection.chooseOption("Escolher acao: ",  "Criar um evento", "Apagar um evento",  "Consultar os eventos criados", "Gerar codigo para evento", "Consultar presencas registadas num evento", "Verificar se e admin","Sair");
 
             switch (input){
                 case 1 -> {
@@ -301,6 +292,9 @@ public class ClientUI {
                     checkAllPresencasInEvent();
                 }
                 case 6 -> {
+                    isAdmin();
+                }
+                case 7 -> {
                     System.exit(400);
                 }
                 default -> {
@@ -314,7 +308,7 @@ public class ClientUI {
             if (loginRegister()) {
                 if (!isAdmin) {
                     userMenu();
-                } else if (isAdmin) {
+                } else {
                     adminUI();
                 }
             }

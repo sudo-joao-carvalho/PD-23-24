@@ -44,18 +44,14 @@ public class UserAuthenticationProvider implements AuthenticationProvider
         }
         // se ele não devolve null, user existe, prosseguir:
 
-        System.out.println(Arrays.toString(returnValue));
-
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         if (returnValue[1] == 1) { // significa que é admin
             authorities.add(new SimpleGrantedAuthority("Admin"));
         }
-
         else {
             authorities.add(new SimpleGrantedAuthority("User"));
         }
-
         return new UsernamePasswordAuthenticationToken(email, password, authorities);
     }
 
