@@ -1,6 +1,7 @@
 package pt.isec.pd.meta2.restapi.ui;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -10,6 +11,10 @@ import pt.isec.pd.meta2.restapi.models.Evento;
 import pt.isec.pd.meta2.restapi.models.Utilizador;
 import pt.isec.pd.meta2.restapi.utils.InputProtection;
 import com.google.gson.Gson;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 public class ClientUI {
     private boolean isAdmin = false;
@@ -81,6 +86,7 @@ public class ClientUI {
         String registerUri = "http://localhost:8080/register";
 
         Gson gson = new Gson();
+
         String requestBody = gson.toJson(newUser);
 
         String response = Consumer.sendRequestAndShowResponse(registerUri, "POST", null, requestBody);
@@ -109,25 +115,18 @@ public class ClientUI {
 
         int eventCode = InputProtection.readInt("\tInsira o código do evento: ");
 
-        String submitEventCodeUri = "http://localhost:8080/event/submit?eventCode=" + eventCode;
+        // insere o código de evento num json para depois ir para o body
 
-        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "POST", "bearer " + this.token, null);
+        String submitEventCodeUri = "http://localhost:8080/event/";
+
+        String eventCodeAsString = String.valueOf(eventCode);
+
+        // insere o json no request body
+        String response = Consumer.sendRequestAndShowResponse(submitEventCodeUri, "POST", "bearer " + this.token, eventCodeAsString);
 
         System.out.println(response);
 
         return true;
-        /*if (response != null) {
-            if (response.contains("Código inserido com sucesso")) {
-                System.out.println("Código inserido com sucesso. Presença registada no evento.");
-                return true;
-            } else if (response.contains("Não foi possível registá-lo no evento")) {
-                System.out.println("Erro: Não foi possível registar o código. Verifique se o código está correto ou se o evento existe.");
-            } else {
-                System.out.println("Erro desconhecido ao registar o código do evento.");
-            }
-        } else {
-            System.out.println("Erro de comunicação. Tente novamente mais tarde.");
-        }*/
     }
 
     public void isAdmin() throws IOException{
@@ -142,7 +141,7 @@ public class ClientUI {
 
         String pesquisa = InputProtection.readString("Pesquisa: ", false, true);
 
-        String listPresencasUri = "http://localhost:8080/event/list?pesquisa=" + pesquisa;
+        String listPresencasUri = "http://localhost:8080/event/presences?pesquisa=" + pesquisa;
 
         String response = Consumer.sendRequestAndShowResponse(listPresencasUri, "GET", "bearer " + this.token, null);
 
@@ -201,7 +200,7 @@ public class ClientUI {
 
         System.out.println(requestBody);
 
-        String createEventUri = "http://localhost:8080/event/admin/create";
+        String createEventUri = "http://localhost:8080/event/admin";
 
         String response = Consumer.sendRequestAndShowResponse(createEventUri, "POST", "bearer " + this.token, requestBody);
 
@@ -218,7 +217,7 @@ public class ClientUI {
 
         int idEvento = InputProtection.readInt("Inserir ID do evento que deseja eliminar: ");
 
-        String deleteEventUri = "http://localhost:8080/event/admin/delete/" + idEvento;
+        String deleteEventUri = "http://localhost:8080/event/admin/" + idEvento;
 
         String response = Consumer.sendRequestAndShowResponse(deleteEventUri, "DELETE", "bearer " + this.token, null);
 
@@ -229,7 +228,7 @@ public class ClientUI {
         String searchFilter = InputProtection.readString("Search: ", false, true);
 
         if (searchFilter != null && !searchFilter.trim().isEmpty()) {
-            String searchEventsAdminUri = "http://localhost:8080/event/admin/search?pesquisa=" + searchFilter;
+            String searchEventsAdminUri = "http://localhost:8080/event/admin?pesquisa=" + searchFilter;
 
             String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
 
@@ -237,7 +236,7 @@ public class ClientUI {
         }
         else
         {
-            String searchEventsAdminUri = "http://localhost:8080/event/admin/search?pesquisa=";
+            String searchEventsAdminUri = "http://localhost:8080/event/admin?pesquisa=";
 
             String response = Consumer.sendRequestAndShowResponse(searchEventsAdminUri, "GET", "bearer " + this.token, null);
 
@@ -249,11 +248,14 @@ public class ClientUI {
         int idEvento = InputProtection.readInt("Evento Id: ");
 
         int codeExpirationTime = InputProtection.readInt("Tempo de validade do codigo (em minutos) : ");
+
         System.out.println("A inserir codigo de 6 digitos aleatorio na base de dados...");
 
-        String generateEventCodeUri = "http://localhost:8080/event/admin/code?eventId=" + idEvento + "&codeExpirationTime=" + codeExpirationTime;
+        String generateEventCodeUri = "http://localhost:8080/event/admin/" + idEvento;
 
-        String response = Consumer.sendRequestAndShowResponse(generateEventCodeUri, "PUT", "bearer " + this.token, null);
+        String codeTimeInString = String.valueOf(codeExpirationTime);
+
+        String response = Consumer.sendRequestAndShowResponse(generateEventCodeUri, "PUT", "bearer " + this.token, codeTimeInString);
 
         System.out.println(response);
     }
@@ -262,7 +264,7 @@ public class ClientUI {
 
         int eventId = InputProtection.readInt("Id Evento: ");
 
-        String checkAllPresencasInEventUri = "http://localhost:8080/event/admin/presences/" + eventId;
+        String checkAllPresencasInEventUri = "http://localhost:8080/event/admin/" + eventId;
 
         String response = Consumer.sendRequestAndShowResponse(checkAllPresencasInEventUri, "GET", "bearer " + this.token, null);
 

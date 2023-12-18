@@ -245,8 +245,8 @@ public class DBManager {
         try {
             ResultSet resultSet = statement.executeQuery(verificar);
 
-            idRegisto = resultSet.getInt("id");
-            isAdmin = resultSet.getInt("admin");
+            idRegisto = resultSet.getInt("id"); // emaildoze@ password123 VÁLIDO -> 12 0
+            isAdmin = resultSet.getInt("admin"); // 1 ou 0
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

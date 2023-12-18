@@ -22,13 +22,13 @@ public class UtilizadorController {
         this.dbManager = dbManager;
         this.tokenService = tokenService;
     }
-    @PostMapping("/login")
+    @PostMapping("/login") // /login
     public String login(Authentication authentication)
     {
         return tokenService.generateToken(authentication);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register") // /register/nome=9021381/password=28978921 X /register/(hidden) V
     public ResponseEntity<String> register(@RequestBody Utilizador utilizador) {
         if (utilizador == null) {
             return ResponseEntity.badRequest().header("RegistarUtilizador", "Por favor, insira todos os detalhes.").body("Utilizador não inserido.\n");
@@ -53,7 +53,7 @@ public class UtilizadorController {
         return ResponseEntity.ok().body("Utilizador registado com sucesso!");
     }
 
-    @GetMapping("/isAdmin")
+    @GetMapping("/isAdmin") // /isAdmin GET -> É admin?
     public String getIsAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

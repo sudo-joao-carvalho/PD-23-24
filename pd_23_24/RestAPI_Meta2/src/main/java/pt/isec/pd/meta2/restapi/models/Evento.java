@@ -8,6 +8,16 @@ public class Evento {
     private String horaInicio;
     private String horaFim;
 
+    private int codigo;
+
+    public int getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
     public String getLocal() {
         return local;
     }

@@ -24,12 +24,12 @@ public class EventoController {
         this.dbManager = dbManager;
     }
 
-    @GetMapping("/")
+    @GetMapping("/") // event/
     public String Index() {
         return "Bem-vindo à API Rest do Trabalho de Programação Distribuída 2023/2024! Está nos Eventos.";
     }
 
-    @GetMapping("/admin/search")
+    @GetMapping("/admin") // event/admin GET -> tem que ser admin // localhost:8080/event/admin?pesquisa=
     public ResponseEntity<String> getCreatedEventsFiltered(@RequestParam(required = false) String pesquisa) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -42,7 +42,7 @@ public class EventoController {
         return ResponseEntity.ok().body("Resultado: \n" + dbManager.checkCreatedEvents(pesquisa));
     }
 
-    @PostMapping("/admin/create")
+    @PostMapping("/admin") // /event/admin -> POST -> é para criar evento
     public ResponseEntity<String> createEvento(@RequestBody Evento evento) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -64,7 +64,7 @@ public class EventoController {
         paramsToInsert.add(evento.getHoraFim());
 
         try {
-            if (dbManager.insertEvent(paramsToInsert)) {
+            if (dbManager.insertEvent(paramsToInsert)) { // INSERT INTO Evento VALUES (valores)
                 return ResponseEntity.ok().body("Evento criado com sucesso!");
             }
         }
@@ -75,7 +75,7 @@ public class EventoController {
         return ResponseEntity.badRequest().body("Evento não pode ser criado. Verifique o que inseriu.\n");
     }
 
-    @DeleteMapping("/admin/delete/{eventId}")
+    @DeleteMapping("/admin/{eventId}") // ?
     public ResponseEntity<String> deleteEvent(@PathVariable(value = "eventId") int eventId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("SCOPE_Admin"));
@@ -95,7 +95,7 @@ public class EventoController {
         return ResponseEntity.badRequest().body("Evento não pode ser eliminado.\n");
     }
 
-    @GetMapping("admin/presences/{eventId}")
+    @GetMapping("admin/{eventId}") // admin/10 -> GET
     public ResponseEntity<String> getPresencasInEvent(@PathVariable(value = "eventId") Integer eventId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("SCOPE_Admin"));
@@ -104,11 +104,11 @@ public class EventoController {
             return ResponseEntity.badRequest().header("AdminAuth", "Tem de ser admin para realizar o pedido de criar evento").body("Pedido não realizado. Por favor, dê login como admin.");
         }
 
-        return ResponseEntity.ok().body(dbManager.checkAllRegisteredPresences(eventId));
+        return ResponseEntity.ok().body(dbManager.checkAllRegisteredPresences(eventId)); //
     }
 
-    @PutMapping("/admin/code")
-    public ResponseEntity<String> addCodeToEvent(@RequestParam Integer eventId, @RequestParam Integer codeExpirationTime) {
+    @PutMapping("/admin/{eventId}") ///event/admin/10 -> PUT EDITAR
+    public ResponseEntity<String> addCodeToEvent(@PathVariable(value = "eventId") Integer eventId, @RequestBody int codeExpirationTime) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean admin = auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("SCOPE_Admin"));
 
@@ -117,18 +117,20 @@ public class EventoController {
         }
 
         if (dbManager.addCodeToEvent(eventId, codeExpirationTime) == 0 || dbManager.addCodeToEvent(eventId, codeExpirationTime) == -2) {
+            System.out.println("Estou aqui1");
             return ResponseEntity.badRequest().body("Não foi possível adicionar código ao evento " + eventId);
         }
 
         else if (dbManager.addCodeToEvent(eventId, codeExpirationTime) == -3) {
+            System.out.println("estou aqui 2");
             return ResponseEntity.badRequest().body("Não foi possível encontrar o evento com o ID especificado.");
         }
         return ResponseEntity.ok().body("Código adicionado com sucesso ao evento " + eventId + "\n");
     }
 
-    @PostMapping("/submit")
-    public ResponseEntity<String> submitEventCode(Authentication authentication, @RequestParam int eventCode) {
-        String subject = authentication.getName();
+    @PostMapping("/") // /event/ -> POST //evento/129820 -> INFO SENSIVEL
+    public ResponseEntity<String> submitEventCode(Authentication authentication, @RequestBody int eventCode) {
+        String subject = authentication.getName(); // vai buscar o email
 
         boolean success = dbManager.checkEventCodeAndInsertUser(eventCode, subject);
 
@@ -138,7 +140,7 @@ public class EventoController {
         return ResponseEntity.badRequest().body("Não foi possível registá-lo no evento. O código está errado/evento não existe.");
     }
 
-    @GetMapping("/list")
+    @GetMapping("/presences") // @GetMapping("/") // event/presences?pesquisa=
     public ResponseEntity<String> listAllUserPresences(Authentication authentication, @RequestParam String pesquisa) {
 
         String subject = authentication.getName();
